@@ -157,6 +157,7 @@ from enum import Enum
 class SensitivityLevel(Enum):
     NONE   = "none"
     LOW    = "low"      # Artikel 4-data hittad
+    MEDIUM = "medium"   # Indirekta identifierare eller kombinationer (pusselbitseffekten)
     HIGH   = "high"     # Artikel 9-data hittad
 
 @dataclass(frozen=True)
@@ -322,9 +323,12 @@ class Aggregator:
         self, findings: list[Finding]
     ) -> SensitivityLevel:
         """
-        NONE:  inga fynd
-        LOW:   enbart Artikel 4-fynd
-        HIGH:  minst ett Artikel 9-fynd
+        NONE:   inga fynd
+        LOW:    enbart Artikel 4-fynd
+        MEDIUM: indirekta identifierare eller kombinationer som tillsammans
+                ökar identifieringsrisken drastiskt (pusselbitseffekten),
+                t.ex. postkod + ovanligt yrke
+        HIGH:   minst ett Artikel 9-fynd
         """
         ...
 ```
