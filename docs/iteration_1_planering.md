@@ -545,3 +545,32 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Öppet/Nästa steg:**
 - Synkpunkten: När pipeline-spåret (Issue #10, #12) är klart kan det första integrationstestet köras med detta testdataset!
 
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 4
+**Mål:** Implementera `TelefonRecognizer` (Issue #7) som regex-baserad recognizer för svenska telefonnummer.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/pattern/recognizers/telefon.py` - `TelefonRecognizer` (stdlib `re`, emitterar `Finding` med `source="pattern.regex_telefon"` och `confidence=0.9`).
+- `gdpr_classifier/layers/pattern/recognizers/__init__.py` - re-exporterar `TelefonRecognizer` via `__all__` (alfabetisk ordning: Email, Personnummer, Telefon).
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Kompilerad regex `(?<![\d+])(?:\+46|0046|0)[-\s]?[1-9](?:[-\s]?\d){6,8}(?!\d)` - täcker domestikt format (`0XX...`), internationellt (`+46...`) och dubbelnolla (`0046...`), med valfria bindestreck/mellanslag som separatorer mellan siffergrupper.
+- Prefix-alternation ordnad längst först (`\+46 | 0046 | 0`) så att `0046`-prefix inte felaktigt konsumeras av domestik-branchen.
+- Första siffran efter prefix begränsad till `[1-9]` (inga extra inledande nollor), resterande 6-8 siffror ger totalt 7-9 abonnentsiffror efter prefix - motsvarar svenska nummers totala längd på 8-10 siffror.
+- `(?<![\d+])`/`(?!\d)`-vakter hindrar matchning mitt i längre siffersekvenser, samma idé som `personnummer.py`.
+- `Finding` byggs med `match.start()`/`match.end()`/`match.group()` analogt med `email.py`-mönstret.
+- Manuell verifiering mot DoD-fallen: `070-123 45 67`, `0701234567`, `+46701234567`, `+46 70 123 45 67`, `08-123 456 78`, `0046 70 123 45 67`, `+46-70-123-45-67` → alla matchar som förväntat. `rum 307 pa klockan 0800` och tom sträng → inga träffar. Text med två nummer → två separata findings.
+- `ReadLints` rena på båda ändrade filerna. Inga tester skrivna (egna issues).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - avsnitt 4.2 matchade redan koden (`source="pattern.regex_telefon"`, `confidence=0.9`).
+
+**Beslut fattade:**
+- Inga avvikelser från SSOT. Följde exakt samma filstruktur, import-ordning och klassmönster som `EmailRecognizer`/`PersonnummerRecognizer` för konsistens inom `recognizers/`-paketet.
+- Valde en enhetlig regex med prefix-alternation i stället för flera separata mönster i alternation - ger kortare/tydligare kod och samma täckning. Accepterar vissa falska positiver (t.ex. `01234567` i fritext) vilket motiverar `confidence=0.9` i stället för 1.0.
+- Telefon-recognizern filtrerar inte bort personnummer-liknande spann; enligt issue-beskrivningen är det aggregatorns ansvar att hantera överlapp.
+
+**Öppet/Nästa steg:**
+- Issue #8: `recognizers/iban.py` (regex + mod97, `source="pattern.checksum_iban"`).
+- Issue #10: `PatternLayer` som itererar registrerade recognizers.
+
