@@ -333,6 +333,8 @@ class Aggregator:
         ...
 ```
 
+I iteration 1 tilldelas endast `NONE`, `LOW` och `HIGH`. `MEDIUM` är definierad i `SensitivityLevel` men används först när kontextuella indirekt-identifierare (pusselbitseffekten) införs i iteration 3 (`ContextLayer`).
+
 
 ## 9. Utvärdering
 
