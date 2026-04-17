@@ -244,6 +244,12 @@ class Recognizer(Protocol):
 - `source`: `"pattern.checksum_iban"`
 - `confidence`: 1.0 vid lyckad kontrollsiffervalidering.
 
+**Betalkort** (`betalkort.py`):
+- Matchar betalkortsnummer (PAN) på 13-16 siffror.
+- Validerar siffrorna med Luhn-algoritmen för att hantera bl.a. Visa, Mastercard och Amex.
+- `source`: `"pattern.luhn_betalkort"`
+- `confidence`: 1.0 vid lyckad Luhn-validering.
+
 
 ## 5. Lager 2: Entitetsigenkänning (NER) - Iteration 2
 

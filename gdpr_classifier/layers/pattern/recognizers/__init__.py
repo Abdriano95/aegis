@@ -11,10 +11,12 @@ from .email import EmailRecognizer
 from .iban import IbanRecognizer
 from .personnummer import PersonnummerRecognizer
 from .telefon import TelefonRecognizer
+from .betalkort import BetalkortRecognizer
 
 __all__ = [
     "EmailRecognizer",
     "IbanRecognizer",
     "PersonnummerRecognizer",
     "TelefonRecognizer",
+    "BetalkortRecognizer",
 ]

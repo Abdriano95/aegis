@@ -15,7 +15,7 @@ class Category(str, Enum):
     ADRESS = "article4.adress"
     POSTORT = "article4.postort"
     POSTNUMMER = "article4.postnummer"
-    KORTNUMMER = "article4.kortnummer"
+    BETALKORT = "article4.betalkort"
     CVV = "article4.cvv"
     EXPIRY_DATE = "article4.expiry_date"
     SECURITY_CODE = "article4.security_code"

@@ -633,3 +633,28 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #12: `pipeline.py` som kör aktiva lager.
 - Issue #13: `aggregator.py`.
 
+#### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
+
+**Iteration:** 1 (v0.1.0), Issue #21
+**Mål:** Implementera betalkorts-detektion (PCI-data) i PatternLager.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/category.py` - Ersatte `KORTNUMMER` med `BETALKORT`.
+- `gdpr_classifier/layers/pattern/recognizers/betalkort.py` - Ny recognizer med Regex och Luhn.
+- `gdpr_classifier/layers/pattern/recognizers/__init__.py` - Exporterade `BetalkortRecognizer`.
+- `gdpr_classifier/layers/pattern/pattern_layer.py` - Registrerade `BetalkortRecognizer`.
+- `docs/arkitektur.md` - Uppdaterade teknisk dokumentation för betalkort.
+- `tests/data/iteration_1/test_dataset.json` - Lade till 5 st testfall.
+- `tests/unit/test_betalkort.py` - Skapade enhetstester.
+
+**Gjort:**
+- Refaktorerade `KORTNUMMER` till `BETALKORT="article4.betalkort"`.
+- Logiska implementationen för Luhn från höger till vänster för 13-16 siffror är gjord. Stödjer vanliga kort (Visa, Mastercard, Amex).
+- Nya enhetstester och integrationstester (testdatan) slår igenom till 100%.
+
+**Beslut fattade:**
+- Utvecklade en standardiserad Luhn-funktion som jobbar från höger till vänster istället för att återanvända den i `personnummer.py` då kort varibel längd gör originalet otillräckligt. Sträng-ersättning för existerande kategori tillgodosåg renare domänmodell.
+
+**Öppet/Nästa steg:**
+- Klar med Issue #21!
+
