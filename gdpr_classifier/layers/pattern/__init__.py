@@ -7,6 +7,7 @@ checksum validation (e.g. Swedish personnummer, email, phone, IBAN).
 
 from __future__ import annotations
 
+from .pattern_layer import PatternLayer
 from .recognizer import Recognizer
 
-__all__ = ["Recognizer"]
+__all__ = ["PatternLayer", "Recognizer"]

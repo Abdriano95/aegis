@@ -604,3 +604,32 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Öppet/Nästa steg:**
 - Issue #10: `PatternLayer` som itererar registrerade recognizers och konkatenerar findings.
 
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 6
+**Mål:** Implementera `PatternLayer` (Issue #10) som uppfyller `Layer`-protokollet och delegerar till de fyra registrerade recognizers.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/pattern/pattern_layer.py` - `PatternLayer` (stdlib only, default-recognizers via `__init__(recognizers=None)`, `name="pattern"`, `detect(text)` konkatenerar findings).
+- `gdpr_classifier/layers/pattern/__init__.py` - re-exporterar `PatternLayer` via `__all__` (alfabetisk ordning: `PatternLayer`, `Recognizer`).
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Implementerade `PatternLayer` enligt `docs/arkitektur.md` avsnitt 3.2 och 4.1: layern äger ingen detektionslogik själv, utan itererar över registrerade recognizers och slår ihop deras `list[Finding]` till en enda lista.
+- Default-konstruktion `PatternLayer()` instansierar alla fyra recognizers i ordningen Personnummer, Email, Telefon, IBAN - deterministisk men semantiskt irrelevant (aggregatorn sorterar).
+- Konstruktorn accepterar `list[Recognizer] | None` så att tester och konfigurationer kan injicera en delmängd, t.ex. `PatternLayer([PersonnummerRecognizer()])`.
+- Recognizer-listan kopieras med `list(recognizers)` för att undvika aliasing med uppringarens lista.
+- `detect` bygger en lokal `findings: list[Finding]`, kör `extend` per recognizer och returnerar. Ingen sortering, filtrering eller dedup - det är aggregatorns ansvar (avsnitt 3.4).
+- Uppfyller `Layer`-protokollets runtime-checkable kontrakt (property `name`, metod `detect(text) -> list[Finding]`).
+- `ReadLints` rena på båda ändrade filerna. Inga tester skrivna (egna issues).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - avsnitt 3.2 och 4.1 matchade redan koden.
+
+**Beslut fattade:**
+- Inga avvikelser från SSOT. Default-recognizers motsvarar iteration 1:s fyra Artikel 4-kategorier exakt.
+- Valde att importera recognizer-klasserna på modulnivå (inte lazy) - de är redan laddade via `recognizers/__init__.py` och eager-import ger tydligare fel om någon klass saknas.
+
+**Öppet/Nästa steg:**
+- Issue #11: `layers/entity/entity_layer.py` och `layers/context/context_layer.py` som stubs (returnerar tom lista).
+- Issue #12: `pipeline.py` som kör aktiva lager.
+- Issue #13: `aggregator.py`.
+
