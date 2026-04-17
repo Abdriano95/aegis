@@ -8,7 +8,13 @@ numbers, and IBAN.
 from __future__ import annotations
 
 from .email import EmailRecognizer
+from .iban import IbanRecognizer
 from .personnummer import PersonnummerRecognizer
 from .telefon import TelefonRecognizer
 
-__all__ = ["EmailRecognizer", "PersonnummerRecognizer", "TelefonRecognizer"]
+__all__ = [
+    "EmailRecognizer",
+    "IbanRecognizer",
+    "PersonnummerRecognizer",
+    "TelefonRecognizer",
+]
