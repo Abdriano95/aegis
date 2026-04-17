@@ -633,6 +633,88 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #12: `pipeline.py` som kör aktiva lager.
 - Issue #13: `aggregator.py`.
 
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 7
+**Mål:** Implementera `EntityLayer` och `ContextLayer` (Issue #11) som stubs som uppfyller `Layer`-protokollet och returnerar tom lista, så pipelinen kan instansiera alla tre lager utan fel i iteration 1.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/entity/entity_layer.py` - `EntityLayer` (stdlib only, `name="entity"`, `detect(text)` returnerar `[]`).
+- `gdpr_classifier/layers/entity/__init__.py` - re-exporterar `EntityLayer` via `__all__`.
+- `gdpr_classifier/layers/context/context_layer.py` - `ContextLayer` (stdlib only, `name="context"`, `detect(text)` returnerar `[]`).
+- `gdpr_classifier/layers/context/__init__.py` - re-exporterar `ContextLayer` via `__all__`.
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Skapade minimala stubs enligt `docs/arkitektur.md` avsnitt 5 (NER, iteration 2) och avsnitt 6 (kontextuell analys, iteration 3), båda redan dokumenterade som "Stub i iteration 1. Returnerar tom lista."
+- Båda klasserna följer samma mönster som `PatternLayer`: `@property name` + `detect(text) -> list[Finding]`. Inga konstruktorargument behövs för stubs.
+- `Finding` importeras från `gdpr_classifier.core` (samma import-stil som `pattern_layer.py`).
+- Module-docstrings innehåller frasen "Stub for iteration 1" enligt spec, och pekar ut vad den framtida implementationen ska göra samt tillhörande avsnitt i arkitektur.md.
+- Verifierat med en liten runtime-check: `isinstance(EntityLayer(), Layer)` och `isinstance(ContextLayer(), Layer)` returnerar `True`; båda `detect("x")` returnerar `[]`; `name`-property:erna returnerar `"entity"` respektive `"context"`.
+- `ReadLints` rena på alla fyra ändrade filerna. Inga tester skrivna (egna issues).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - avsnitt 5 och 6 matchade redan koden.
+
+**Beslut fattade:**
+- Inga avvikelser från SSOT. Strikt minimal stub-implementation enligt issue-specen; ingen spekulativ NER-/zero-shot-struktur i förväg.
+- Stubs implementeras som vanliga klasser (inte ABC eller Protocol) eftersom de ska *uppfylla* `Layer`-protokollet, inte definiera ett nytt kontrakt.
+
+**Öppet/Nästa steg:**
+- Issue #12: `pipeline.py` som kör aktiva lager.
+- Issue #13: `aggregator.py`.
+
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 8
+**Mål:** Implementera `Pipeline` (Issue #12) som ren orkestrerare: kör alla aktiva lager mot indatan, samlar findings och delegerar till aggregatorn.
+
+**Ändrade filer:**
+- `gdpr_classifier/pipeline.py` - `Pipeline` (stdlib only, `classify(text) -> Classification`, duck-typad `Aggregator` via `TYPE_CHECKING`-guard).
+- `gdpr_classifier/__init__.py` - re-exporterar `Pipeline` via `__all__` så `from gdpr_classifier import Pipeline` fungerar.
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Implementerade `Pipeline` exakt enligt `docs/arkitektur.md` avsnitt 7: `__init__(layers, aggregator)` sparar båda attributen; `classify(text)` itererar `self.layers`, `extend`ar findings och returnerar `self.aggregator.aggregate(findings=..., active_layers=[l.name for l in self.layers])`.
+- Ingen klassificeringslogik i Pipeline - ingen sortering, dedup, sensitivity-bedömning eller överlappshantering. Allt sådant är aggregatorns ansvar (avsnitt 8).
+- `Aggregator`-beroendet löst via duck typing + `TYPE_CHECKING`-guard så Pipeline kan skrivas innan Issue #13 är klar utan runtime-import av den ännu obefintliga `gdpr_classifier.aggregator`. Annotationen `aggregator: Aggregator` är giltig tack vare `from __future__ import annotations` (PEP 563: annotationer utvärderas aldrig vid runtime).
+- Defensiv kopia `self.layers = list(layers)` så att uppringarens lista inte kan muteras av Pipeline - samma mönster som `PatternLayer.__init__` använder för recognizers.
+- `ReadLints` rena på båda ändrade filerna. Inga tester skrivna (egna issues).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - avsnitt 7 innehåller redan exakt den klasskropp som implementerades (rad 278-293), inget att synka.
+
+**Beslut fattade:**
+- Duck typing för `Aggregator` (inte en ny `Protocol`) enligt issuens "Välj det enklare alternativet". `TYPE_CHECKING`-importen bevarar läsbarhet och IDE-stöd utan att tvinga fram ett kontrakt innan aggregatorn finns.
+- `Pipeline` re-exporteras från pakettoppen eftersom det är systemets publika entry point (arkitektur.md avsnitt 7), konsistent med hur `core/__init__.py` exponerar domän-primitiverna.
+
+**Öppet/Nästa steg:**
+- Issue #13: `aggregator.py` - `aggregate(findings, active_layers) -> Classification`, `_find_overlaps`, `_determine_sensitivity` enligt arkitektur.md avsnitt 8.
+
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 9
+**Mål:** Implementera `Aggregator` (Issue #13) så `Pipeline` kan köra end-to-end: hitta överlappande fynd, avgöra känslighetsnivå och returnera en `Classification`.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` - `Aggregator` (stdlib only, `aggregate`, `_find_overlaps` via `itertools.combinations`, `_determine_sensitivity` via `article9.`/`context.`-prefix på `Category.value`).
+- `gdpr_classifier/__init__.py` - re-exporterar `Aggregator` i `__all__` bredvid `Pipeline` (alfabetisk ordning).
+- `docs/arkitektur.md` - avsnitt 8 utökat med iteration 1-not: `MEDIUM` är definierad i `SensitivityLevel` men tilldelas inte förrän `ContextLayer` finns i iteration 3.
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Implementerade `Aggregator.aggregate` exakt enligt arkitektur.md avsnitt 8: kallar `_find_overlaps`, `_determine_sensitivity` och bygger en fryst `Classification`. Ingen sortering, dedup eller filtrering - findings förs vidare i den ordning de producerades av lagren, i linje med avsnitt 3.4 ("båda fynden bevaras").
+- `_find_overlaps` använder `itertools.combinations(findings, 2)` för att garantera unika par (ingen `(a, b)` + `(b, a)`, ingen `(a, a)`). Överlappsvillkoret `a.start < b.end and b.start < a.end` matchar exakt formuleringen i issuen och i arkitektur.md avsnitt 3.4.
+- `_determine_sensitivity`: tom lista `-> NONE`; minst ett fynd med kategori vars `value` börjar med `"article9."` eller `"context."` `-> HIGH`; annars `-> LOW`. Kontrollen görs via `Category.value.startswith((...))` eftersom `Category` är en `str, Enum` (`gdpr_classifier/core/category.py`), vilket gör prefix-strategin explicit knuten till enum-namngivningskonventionen.
+- `MEDIUM` tilldelas aldrig i iteration 1 - dokumenterat i metodens docstring och synkat i `docs/arkitektur.md` avsnitt 8.
+- `ReadLints` rena på `gdpr_classifier/aggregator.py` och `gdpr_classifier/__init__.py`.
+- Smoke-check: `Pipeline([PatternLayer()], Aggregator()).classify("test")` returnerar `Classification(findings=[], sensitivity=SensitivityLevel.NONE, active_layers=["pattern"], overlapping_findings=[])`. Pipelinen kör nu end-to-end utan fel.
+- Inga tester skrivna (egna issues), inga ändringar i `core/`.
+
+**Beslut fattade:**
+- `MEDIUM` tilldelas inte i iteration 1. Den är definierad i enumen (arkitektur.md avsnitt 3.3) men aktiveras först tillsammans med `ContextLayer` (iteration 3), där pusselbitseffekten kan detekteras. Iteration 1 har inga kontextuella indirekt-identifierare, så ingen input skulle kunna producera `MEDIUM` meningsfullt - att tilldela den vore att hitta på en gräns. Avvikelsen är dokumenterad direkt i arkitektur.md avsnitt 8 i samma stil som 0.7-vägs-noten i avsnitt 4.2.
+- Prefix-detektion på `Category.value` (`startswith("article9.", "context.")`) i stället för en separat mappningstabell. Enum-värdena *är* kontraktet (`article4.*`, `article9.*`, `context.*`); en parallell tabell skulle dubblera samma information och riskera att driva isär när nya kategorier läggs till. Byt strategi när/om prefixnamnen ändras.
+- Ingen sortering eller dedup av findings i aggregatorn. Spårbarhet (arkitektur.md avsnitt 3.4) vinner över kompakthet: båda överlappande fynden bevaras i `findings`, och `overlapping_findings` pekar ut deras relation för analys.
+
+**Öppet/Nästa steg:**
+- Pipeline-spåret steg 1-9 är nu klara i iteration 1. Kvar i iterationen: evaluation-spåret (Issue #14+), tester per komponent (egna issues) samt formell loggboksmotivering av `MEDIUM` inför iteration 3.
+
 #### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
 
 **Iteration:** 1 (v0.1.0), Issue #21
