@@ -525,3 +525,23 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #8: `recognizers/iban.py` (regex + mod97, `source="pattern.checksum_iban"`).
 - Issue #10: `PatternLayer` som itererar registrerade recognizers.
 
+#### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
+
+**Iteration:** 1 (v0.1.0), dag 1
+**Mål:** Skapa slutgiltigt testdataset (JSON) för Iteration 1 (Issue #18, #19, #20).
+
+**Ändrade filer:**
+- `tests/data/iteration_1/test_dataset.json` - Skapade 40 st testfall med 0-baserade exakta index för testning av mönsterigenkänning.
+
+**Gjort:**
+- Skapade ett temporärt Python-skript för att bygga datan, beräkna teckenindex och validera strängar med `assert` för att undvika "off-by-one"-fel.
+- Genererade testfall med fördelning: 10 personnummer, 5 e-post, 5 telefonnummer, 5 IBAN, 4 blandad känslig data, samt 11 okänsliga texter.
+- Inkluderade edge-cases (olika mönster, landsnummer, okänslig kontext och parenteser) enligt specifikation.
+- Utförde ingen commit, enligt instruktioner.
+
+**Beslut fattade:**
+- Valde systemgenererad JSON (via scratch-skript) i stället för manuell strängräkning för att garantera att de 0-baserade teckenindexen (för tecken som åäö) blev hundraprocentigt korrekta in i det sista.
+
+**Öppet/Nästa steg:**
+- Synkpunkten: När pipeline-spåret (Issue #10, #12) är klart kan det första integrationstestet köras med detta testdataset!
+
