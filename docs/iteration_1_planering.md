@@ -473,3 +473,28 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #7: `recognizers/telefon.py` (regex för svenska telefonnummer).
 - Issue #8: `recognizers/iban.py` (regex + mod97).
 - Issue #10: `PatternLayer` som itererar registrerade recognizers.
+
+#### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
+
+**Iteration:** 1 (v0.1.0), dag 1
+**Mål:** Implementera rapportgenerator, confusion matrix och utvärderingsrunner (Issue #17).
+
+**Ändrade filer:**
+- `evaluation/confusion_matrix.py` - Implementerade `ConfusionMatrix` för ackumulering av TP/FP/FN.
+- `evaluation/report.py` - Skapade dataklasserna `RunMetrics` och `Report`, samt `print_report`.
+- `evaluation/runner.py` - Implementerade `run_evaluation` som orkestrerar klassificering, matchning och resultatsammanställning.
+- `evaluation/__init__.py` - Uppdaterade re-exporterna.
+- `tests/unit/test_evaluation_flow.py` - Lade till enhetstester för aggregering och runnern.
+- `docs/arkitektur.md` - Uppdaterade dokumentet för att notera att True Negatives (TN) utelämnas från ConfusionMatrix.
+
+**Gjort:**
+- Alla tre angivna dimensioner implementerades (totalt, kategori, lager).
+- Rapporten formatkodades i enkla f-strängar enligt feedback.
+- Pytest körda framgångsrikt (100% pass för validering).
+
+**Beslut fattade:**
+- Lagerspecifika falska negativa (FN) avsänds inte aktivt / ignoreras då individuella lager inte utvidgas till hela taxonomin. Detta resonemang bekräftades av uppdragsgivaren och stäms av som konvention.
+- True Negatives (TN) ströks från arkitekturen kring spann-klassificeringen.
+
+**Öppet/Nästa steg:**
+- Johanna: Skapa testdata (Issue #18 - #20).
