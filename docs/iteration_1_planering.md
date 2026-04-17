@@ -199,6 +199,7 @@ Tillgängliga category-värden:
 - `article4.email`
 - `article4.telefonnummer`
 - `article4.iban`
+- `article4.betalkort`
 
 Krav på testdata:
 - `start` och `end` är teckenpositioner (0-indexerat)
