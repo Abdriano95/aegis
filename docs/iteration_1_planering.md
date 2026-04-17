@@ -376,6 +376,30 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Öppet/Nästa steg:**
 - Johanna: fortsätt med evaluation-spåret, steg 2 (Issue #15, `evaluation/matcher.py`).
 
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 1
+**Mål:** Implementera Recognizer-protokollet (Issue #9) som kontrakt för lager 1:s mönsterigenkännare.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/pattern/recognizer.py` - `Recognizer` som `typing.Protocol` med `@runtime_checkable`, properties `category` och `source_name`, metod `recognize(text) -> list[Finding]`.
+- `gdpr_classifier/layers/pattern/__init__.py` - re-exporterar `Recognizer` via `__all__`.
+
+**Gjort:**
+- Implementerade protokollet enligt `docs/arkitektur.md` avsnitt 4.1, samma mönster som `core/layer.py` (stdlib only, `from __future__ import annotations`, korta member-docstrings).
+- Importerade `Category` och `Finding` från `gdpr_classifier.core` - inga duplicerade typer.
+- Verifierade `from gdpr_classifier.layers.pattern import Recognizer` (OK) och `ReadLints` (rena).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - dokumentet matchade redan koden.
+- Inga tester skrivna (egna issues).
+
+**Beslut fattade:**
+- `source`-strängen på `Finding` byggs av recognizern själv (alternativ 2 i issue-specen), t.ex. `"pattern.luhn_personnummer"`. `source_name` förblir den lager-lokala identifieraren för spårbarhet/registerlogik. Motivering: protokollets kontrakt är `recognize(text) -> list[Finding]`, så recognizern konstruerar redan `Finding`-objekten - alternativ 1 hade krävt post-processing i `PatternLayer`. Valet är dokumenterat i module-docstringen i `recognizer.py` så att Issues #5-#8 och #10 har ett tydligt kontrakt.
+
+**Öppet/Nästa steg:**
+- Issue #5: `recognizers/personnummer.py` (regex + Luhn-validering, `source="pattern.luhn_personnummer"`).
+- Issues #6-#8: e-post, telefon, IBAN-recognizers.
+- Issue #10: `PatternLayer` som itererar registrerade recognizers och konkatenerar findings.
+
 #### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
 
 **Iteration:** 1 (v0.1.0), dag 1
