@@ -17,8 +17,8 @@
 ### Miljösetup
 
 ```bash
-git clone https://github.com/Abdriano95/gdpr-classifier.git
-cd gdpr-classifier
+git clone https://github.com/Abdriano95/aegis.git
+cd aegis
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
