@@ -687,3 +687,31 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Öppet/Nästa steg:**
 - Issue #13: `aggregator.py` - `aggregate(findings, active_layers) -> Classification`, `_find_overlaps`, `_determine_sensitivity` enligt arkitektur.md avsnitt 8.
 
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 9
+**Mål:** Implementera `Aggregator` (Issue #13) så `Pipeline` kan köra end-to-end: hitta överlappande fynd, avgöra känslighetsnivå och returnera en `Classification`.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` - `Aggregator` (stdlib only, `aggregate`, `_find_overlaps` via `itertools.combinations`, `_determine_sensitivity` via `article9.`/`context.`-prefix på `Category.value`).
+- `gdpr_classifier/__init__.py` - re-exporterar `Aggregator` i `__all__` bredvid `Pipeline` (alfabetisk ordning).
+- `docs/arkitektur.md` - avsnitt 8 utökat med iteration 1-not: `MEDIUM` är definierad i `SensitivityLevel` men tilldelas inte förrän `ContextLayer` finns i iteration 3.
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Implementerade `Aggregator.aggregate` exakt enligt arkitektur.md avsnitt 8: kallar `_find_overlaps`, `_determine_sensitivity` och bygger en fryst `Classification`. Ingen sortering, dedup eller filtrering - findings förs vidare i den ordning de producerades av lagren, i linje med avsnitt 3.4 ("båda fynden bevaras").
+- `_find_overlaps` använder `itertools.combinations(findings, 2)` för att garantera unika par (ingen `(a, b)` + `(b, a)`, ingen `(a, a)`). Överlappsvillkoret `a.start < b.end and b.start < a.end` matchar exakt formuleringen i issuen och i arkitektur.md avsnitt 3.4.
+- `_determine_sensitivity`: tom lista `-> NONE`; minst ett fynd med kategori vars `value` börjar med `"article9."` eller `"context."` `-> HIGH`; annars `-> LOW`. Kontrollen görs via `Category.value.startswith((...))` eftersom `Category` är en `str, Enum` (`gdpr_classifier/core/category.py`), vilket gör prefix-strategin explicit knuten till enum-namngivningskonventionen.
+- `MEDIUM` tilldelas aldrig i iteration 1 - dokumenterat i metodens docstring och synkat i `docs/arkitektur.md` avsnitt 8.
+- `ReadLints` rena på `gdpr_classifier/aggregator.py` och `gdpr_classifier/__init__.py`.
+- Smoke-check: `Pipeline([PatternLayer()], Aggregator()).classify("test")` returnerar `Classification(findings=[], sensitivity=SensitivityLevel.NONE, active_layers=["pattern"], overlapping_findings=[])`. Pipelinen kör nu end-to-end utan fel.
+- Inga tester skrivna (egna issues), inga ändringar i `core/`.
+
+**Beslut fattade:**
+- `MEDIUM` tilldelas inte i iteration 1. Den är definierad i enumen (arkitektur.md avsnitt 3.3) men aktiveras först tillsammans med `ContextLayer` (iteration 3), där pusselbitseffekten kan detekteras. Iteration 1 har inga kontextuella indirekt-identifierare, så ingen input skulle kunna producera `MEDIUM` meningsfullt - att tilldela den vore att hitta på en gräns. Avvikelsen är dokumenterad direkt i arkitektur.md avsnitt 8 i samma stil som 0.7-vägs-noten i avsnitt 4.2.
+- Prefix-detektion på `Category.value` (`startswith("article9.", "context.")`) i stället för en separat mappningstabell. Enum-värdena *är* kontraktet (`article4.*`, `article9.*`, `context.*`); en parallell tabell skulle dubblera samma information och riskera att driva isär när nya kategorier läggs till. Byt strategi när/om prefixnamnen ändras.
+- Ingen sortering eller dedup av findings i aggregatorn. Spårbarhet (arkitektur.md avsnitt 3.4) vinner över kompakthet: båda överlappande fynden bevaras i `findings`, och `overlapping_findings` pekar ut deras relation för analys.
+
+**Öppet/Nästa steg:**
+- Pipeline-spåret steg 1-9 är nu klara i iteration 1. Kvar i iterationen: evaluation-spåret (Issue #14+), tester per komponent (egna issues) samt formell loggboksmotivering av `MEDIUM` inför iteration 3.
+
