@@ -538,7 +538,7 @@ Följande designbeslut ska dokumenteras löpande, som råmaterial för designpri
 - Varför alla lager får samma input (parallell pipeline) istället för sekventiell kedja
 - Varför överlappande fynd bevaras istället för att filtreras
 - Val av recognizer-gränssnitt och dess påverkan på utbytbarhet
-- Presidios roll: ramverk eller ett av lagren (se avsnitt 13)
+- Presidios roll: inspiration (se avsnitt 13)
 - Val av matchningsnivå i utvärderingen (span vs dokument)
 - Teknikval inom varje lager och motivering
 
@@ -547,9 +547,9 @@ Dokumentationsformatet ska följa mönstret: *beslut, alternativ som övervägde
 
 ## 13. Öppna designfrågor
 
-### 13.1 Presidio: ramverk eller lager?
+### 13.1 Presidio
 
-Om Presidio används som hela ramverket blir artefakten en konfiguration av Presidio plus ett kontextlager. Det arkitekturella bidraget (delfråga 1.2) blir tunnare. Om Presidio istället används som implementationen bakom lager 1 och 2, äger vi pipelinen själva och Presidio är en utbytbar komponent. Rekommendation: det senare, men beslutet fattas under iteration 1.
+Presidio ska inte användas, varken som hela ramverket eller som implementationen bakom lager 1 och 2. Vi ska bygga allt själva men kan använda Presidio som inspiration på grund av dess liknande användningsområde. Den del av Presidio som "motsvarar" vår artefakt heter Presidio Analyzer och identifierar personuppgifter i text utan att klassificera dem enligt GDPR. 
 
 ### 13.2 Konfidensaggregering
 
