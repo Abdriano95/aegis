@@ -399,3 +399,31 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #5: `recognizers/personnummer.py` (regex + Luhn-validering, `source="pattern.luhn_personnummer"`).
 - Issues #6-#8: e-post, telefon, IBAN-recognizers.
 - Issue #10: `PatternLayer` som itererar registrerade recognizers och konkatenerar findings.
+
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 2
+**Mål:** Implementera `PersonnummerRecognizer` (Issue #5) med regex-matchning, datumvalidering och Luhn-kontroll.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/pattern/recognizers/personnummer.py` - `PersonnummerRecognizer` (stdlib `re` + Luhn + datumvalidering, emitterar `Finding` med `source="pattern.luhn_personnummer"` och `confidence=1.0`).
+- `gdpr_classifier/layers/pattern/recognizers/__init__.py` - re-exporterar `PersonnummerRecognizer` via `__all__`.
+- `docs/arkitektur.md` - avsnitt 4.2 uppdaterat: personnummer-recognizern emitterar endast Luhn-validerade träffar (0.7-konfidensvägen för formatmatch utan validering är borttagen i iteration 1).
+
+**Gjort:**
+- En kompilerad regex med ordnad alternation (längst först: 12-siffror, 8+sep, 10-siffror, 6+sep) och `(?<!\d)`/`(?!\d)`-vakter för att undvika matchning mitt i längre siffersekvenser (t.ex. kreditkort).
+- Separator `-` och `+` stöds. Århundradeprefixet (2 eller 4 inledande siffror) normaliseras bort; datum- och Luhn-kontroll körs på de sista 10 siffrorna.
+- Datumvalidering: månad 1-12, dag 1-31 eller 61-91 (samordningsnummer). Ingen per-månads-dagsräkning (rimlighetskontroll enligt spec).
+- Luhn: dubblar varannan siffra från vänster, -9 om resultatet > 9, giltig vid sum % 10 == 0.
+- `Finding` byggs med `start`/`end` från `match.start(1)`/`match.end(1)` och `text_span` som den exakta råsträngen.
+- Inga tester skrivna (egna issues).
+
+**Beslut fattade:**
+- Avvikelse från tidigare formulering i `arkitektur.md` avsnitt 4.2: issue #5 kräver att endast Luhn-validerade träffar emitteras, så 0.7-vägen är borttagen för iteration 1. Motivering: en format-bara-match utan checksum är i praktiken en falsk positiv; iteration 1 prioriterar recall på validerade nummer utan att späda ut precisionen med osäkra kandidater.
+- Issue-beskrivningens påstående att `850101-1234` är ett giltigt personnummer är felaktigt (Luhn-summa = 28). Det korrekta giltiga exemplet för samma datum/serienummer är `850101-1236` (Luhn-summa = 30). Implementationen följer algoritmen, inte det felaktiga exemplet.
+
+**Öppet/Nästa steg:**
+- Issue #6: `recognizers/email.py` (regex för e-post).
+- Issue #7: `recognizers/telefon.py` (regex för svenska telefonnummer).
+- Issue #8: `recognizers/iban.py` (regex + mod97).
+- Issue #10: `PatternLayer` som itererar registrerade recognizers.
