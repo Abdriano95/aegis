@@ -3,7 +3,7 @@
 **Projekt:** Examensarbete HT26 - Automatiserad klassificering av textinnehåll enligt GDPR  
 **Författare:** Abdulla Mehdi & Johanna Gull  
 **Handledare:** Johannes Sahlin, Högskolan i Borås  
-**Version:** 1.0 (Iteration 1)  
+**Version:** 0.1.0 (Iteration 1)  
 **Senast uppdaterad:** 2026-04-17
 
 ---
