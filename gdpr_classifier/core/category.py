@@ -16,10 +16,7 @@ class Category(str, Enum):
     POSTORT = "article4.postort"
     POSTNUMMER = "article4.postnummer"
     BETALKORT = "article4.betalkort"
-    CVV = "article4.cvv"
-    EXPIRY_DATE = "article4.expiry_date"
-    SECURITY_CODE = "article4.security_code"
-
+    
     # Artikel 9: Särskilda behandlingar av personuppgifter
     HALSODATA = "article9.halsodata"
     ETNISKT_URSPRUNG = "article9.etniskt_ursprung"
