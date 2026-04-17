@@ -467,5 +467,58 @@
     "text": "Exception in thread 'main' java.lang.NullPointerException vid radering av cache. Töm minnet och försök starta om podden.",
     "description": "Okänslig: Stacktrace/Systemfel",
     "expected_findings": []
+  },
+  {
+    "text": "Visa: 4111 1111 1111 1111 dras imorgon.",
+    "description": "Betalkort: Visa (16 siffror)",
+    "expected_findings": [
+      {
+        "category": "article4.betalkort",
+        "start": 6,
+        "end": 25,
+        "text_span": "4111 1111 1111 1111"
+      }
+    ]
+  },
+  {
+    "text": "Här är ett Mastercard: 5105105105105100 i löpande text.",
+    "description": "Betalkort: Mastercard i löpande text",
+    "expected_findings": [
+      {
+        "category": "article4.betalkort",
+        "start": 23,
+        "end": 39,
+        "text_span": "5105105105105100"
+      }
+    ]
+  },
+  {
+    "text": "Kort Amex 3782-822463-10005 är spärrat.",
+    "description": "Betalkort: Amex med mellanslag/bindestreck",
+    "expected_findings": [
+      {
+        "category": "article4.betalkort",
+        "start": 10,
+        "end": 27,
+        "text_span": "3782-822463-10005"
+      }
+    ]
+  },
+  {
+    "text": "Det här kortet 4111 1111 1111 1112 borde faktiskt ignoreras.",
+    "description": "Betalkort: Negativt fall (Luhn fallerar)",
+    "expected_findings": []
+  },
+  {
+    "text": "Dubbelkolla min order, jag betalade med 4111111111111111 förut.",
+    "description": "Betalkort: 16 siffror utan avgränsningar",
+    "expected_findings": [
+      {
+        "category": "article4.betalkort",
+        "start": 40,
+        "end": 56,
+        "text_span": "4111111111111111"
+      }
+    ]
   }
 ]

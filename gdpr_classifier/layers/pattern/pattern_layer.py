@@ -10,6 +10,7 @@ from .recognizers import (
     IbanRecognizer,
     PersonnummerRecognizer,
     TelefonRecognizer,
+    BetalkortRecognizer,
 )
 
 
@@ -21,6 +22,7 @@ class PatternLayer:
                 EmailRecognizer(),
                 TelefonRecognizer(),
                 IbanRecognizer(),
+                BetalkortRecognizer(),
             ]
         self._recognizers: list[Recognizer] = list(recognizers)
 

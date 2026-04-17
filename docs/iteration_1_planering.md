@@ -199,6 +199,7 @@ Tillgängliga category-värden:
 - `article4.email`
 - `article4.telefonnummer`
 - `article4.iban`
+- `article4.betalkort`
 
 Krav på testdata:
 - `start` och `end` är teckenpositioner (0-indexerat)
@@ -714,4 +715,29 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Öppet/Nästa steg:**
 - Pipeline-spåret steg 1-9 är nu klara i iteration 1. Kvar i iterationen: evaluation-spåret (Issue #14+), tester per komponent (egna issues) samt formell loggboksmotivering av `MEDIUM` inför iteration 3.
+
+#### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
+
+**Iteration:** 1 (v0.1.0), Issue #21
+**Mål:** Implementera betalkorts-detektion (PCI-data) i PatternLager.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/category.py` - Ersatte `KORTNUMMER` med `BETALKORT`.
+- `gdpr_classifier/layers/pattern/recognizers/betalkort.py` - Ny recognizer med Regex och Luhn.
+- `gdpr_classifier/layers/pattern/recognizers/__init__.py` - Exporterade `BetalkortRecognizer`.
+- `gdpr_classifier/layers/pattern/pattern_layer.py` - Registrerade `BetalkortRecognizer`.
+- `docs/arkitektur.md` - Uppdaterade teknisk dokumentation för betalkort.
+- `tests/data/iteration_1/test_dataset.json` - Lade till 5 st testfall.
+- `tests/unit/test_betalkort.py` - Skapade enhetstester.
+
+**Gjort:**
+- Refaktorerade `KORTNUMMER` till `BETALKORT="article4.betalkort"`.
+- Logiska implementationen för Luhn från höger till vänster för 13-16 siffror är gjord. Stödjer vanliga kort (Visa, Mastercard, Amex).
+- Nya enhetstester och integrationstester (testdatan) slår igenom till 100%.
+
+**Beslut fattade:**
+- Utvecklade en standardiserad Luhn-funktion som jobbar från höger till vänster istället för att återanvända den i `personnummer.py` då kort varibel längd gör originalet otillräckligt. Sträng-ersättning för existerande kategori tillgodosåg renare domänmodell.
+
+**Öppet/Nästa steg:**
+- Klar med Issue #21!
 

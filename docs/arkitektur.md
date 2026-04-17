@@ -16,7 +16,7 @@ Artefakten klassificerar. Den dirigerar inte, maskerar inte och anonymiserar int
 
 **GDPR-scope:**
 
-- Iteration 1: Artikel 4 (personuppgifter) - personnummer, e-post, telefonnummer, IBAN
+- Iteration 1: Artikel 4 (personuppgifter) - personnummer, e-post, telefonnummer, IBAN, betalkort
 - Iteration 2-3: Artikel 9 (särskilda kategorier) - hälsodata, etniskt ursprung, politiska åsikter, fackmedlemskap, biometrisk data, sexuell läggning, religiös övertygelse
 
 
@@ -112,6 +112,7 @@ class Category(Enum):
     IBAN            = "article4.iban"
     NAMN            = "article4.namn"
     ADRESS          = "article4.adress"
+    BETALKORT       = "article4.betalkort"
 
     # Artikel 9: Särskilda kategorier (iteration 2-3)
     HALSODATA             = "article9.halsodata"
@@ -243,6 +244,12 @@ class Recognizer(Protocol):
 - Matchar IBAN-format, validerar kontrollsiffror (mod 97).
 - `source`: `"pattern.checksum_iban"`
 - `confidence`: 1.0 vid lyckad kontrollsiffervalidering.
+
+**Betalkort** (`betalkort.py`):
+- Matchar betalkortsnummer (PAN) på 13-16 siffror.
+- Validerar siffrorna med Luhn-algoritmen för att hantera bl.a. Visa, Mastercard och Amex.
+- `source`: `"pattern.luhn_betalkort"`
+- `confidence`: 1.0 vid lyckad Luhn-validering.
 
 
 ## 5. Lager 2: Entitetsigenkänning (NER) - Iteration 2
