@@ -7,5 +7,6 @@ F1), and a runner that ties it all together.
 """
 
 from .matcher import MatchResult, match
+from .metrics import f1, precision, recall
 
-__all__ = ["MatchResult", "match"]
+__all__ = ["MatchResult", "match", "f1", "precision", "recall"]
