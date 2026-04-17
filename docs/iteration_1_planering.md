@@ -662,3 +662,28 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #12: `pipeline.py` som kör aktiva lager.
 - Issue #13: `aggregator.py`.
 
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 8
+**Mål:** Implementera `Pipeline` (Issue #12) som ren orkestrerare: kör alla aktiva lager mot indatan, samlar findings och delegerar till aggregatorn.
+
+**Ändrade filer:**
+- `gdpr_classifier/pipeline.py` - `Pipeline` (stdlib only, `classify(text) -> Classification`, duck-typad `Aggregator` via `TYPE_CHECKING`-guard).
+- `gdpr_classifier/__init__.py` - re-exporterar `Pipeline` via `__all__` så `from gdpr_classifier import Pipeline` fungerar.
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Implementerade `Pipeline` exakt enligt `docs/arkitektur.md` avsnitt 7: `__init__(layers, aggregator)` sparar båda attributen; `classify(text)` itererar `self.layers`, `extend`ar findings och returnerar `self.aggregator.aggregate(findings=..., active_layers=[l.name for l in self.layers])`.
+- Ingen klassificeringslogik i Pipeline - ingen sortering, dedup, sensitivity-bedömning eller överlappshantering. Allt sådant är aggregatorns ansvar (avsnitt 8).
+- `Aggregator`-beroendet löst via duck typing + `TYPE_CHECKING`-guard så Pipeline kan skrivas innan Issue #13 är klar utan runtime-import av den ännu obefintliga `gdpr_classifier.aggregator`. Annotationen `aggregator: Aggregator` är giltig tack vare `from __future__ import annotations` (PEP 563: annotationer utvärderas aldrig vid runtime).
+- Defensiv kopia `self.layers = list(layers)` så att uppringarens lista inte kan muteras av Pipeline - samma mönster som `PatternLayer.__init__` använder för recognizers.
+- `ReadLints` rena på båda ändrade filerna. Inga tester skrivna (egna issues).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - avsnitt 7 innehåller redan exakt den klasskropp som implementerades (rad 278-293), inget att synka.
+
+**Beslut fattade:**
+- Duck typing för `Aggregator` (inte en ny `Protocol`) enligt issuens "Välj det enklare alternativet". `TYPE_CHECKING`-importen bevarar läsbarhet och IDE-stöd utan att tvinga fram ett kontrakt innan aggregatorn finns.
+- `Pipeline` re-exporteras från pakettoppen eftersom det är systemets publika entry point (arkitektur.md avsnitt 7), konsistent med hur `core/__init__.py` exponerar domän-primitiverna.
+
+**Öppet/Nästa steg:**
+- Issue #13: `aggregator.py` - `aggregate(findings, active_layers) -> Classification`, `_find_overlaps`, `_determine_sensitivity` enligt arkitektur.md avsnitt 8.
+
