@@ -574,3 +574,33 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #8: `recognizers/iban.py` (regex + mod97, `source="pattern.checksum_iban"`).
 - Issue #10: `PatternLayer` som itererar registrerade recognizers.
 
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 5
+**Mål:** Implementera `IbanRecognizer` (Issue #8) som regex + ISO 7064 mod97-baserad recognizer för IBAN-nummer.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/pattern/recognizers/iban.py` - `IbanRecognizer` (stdlib `re` + mod97, emitterar `Finding` med `source="pattern.checksum_iban"` och `confidence=1.0`).
+- `gdpr_classifier/layers/pattern/recognizers/__init__.py` - re-exporterar `IbanRecognizer` via `__all__` (alfabetisk ordning: Email, Iban, Personnummer, Telefon).
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Kompilerad regex `(?<![A-Za-z0-9])[A-Za-z]{2}\d{2}(?:[ ]?[A-Za-z0-9]){10,30}(?![A-Za-z0-9])` - matchar landskod (2 bokstäver) + 2 kontrollsiffror + 10-30 alfanumeriska BBAN-tecken med valfritt enskilt mellanslag mellan varje BBAN-tecken. Täcker både kompakt form (`SE3550000000054910000003`) och 4-grupperad form (`SE35 5000 0000 0549 1000 0003`).
+- Teckenklasser hanterar case direkt (ingen `re.IGNORECASE`); validering görs på en separat uppercasad och space-strippad kopia så `text_span` bevaras exakt som skrivet.
+- Boundary-vakter `(?<![A-Za-z0-9])`/`(?![A-Za-z0-9])` hindrar matchning inuti längre alfanumeriska tokens, samma idé som `(?<!\d)`/`(?!\d)` i `personnummer.py`.
+- Litteralt mellanslag `[ ]?` (ej `\s`) så matchningen inte korsar nyradstecken.
+- Privat `_mod97_valid(iban: str) -> bool`: flyttar första 4 tecken till slutet, ersätter bokstäver med numeriskt värde (A=10..Z=35 via `ord(c) - 55`), konverterar till `int` och returnerar `% 97 == 1`. Defensiv fallback `return False` om ett oväntat tecken skulle slinka igenom.
+- Längdkontroll `15 <= len(normalized) <= 34` innan mod97 - defensiv mot regex-quirks, bevarar korrekt IBAN-intervall enligt specifikation.
+- `Finding` byggs med `match.start()`/`match.end()`/`match.group()` analogt med `email.py`/`telefon.py`-mönstret; `text_span` är råsträngen med originalmellanslag.
+- Manuell verifiering mot DoD: `SE3550000000054910000003` (mod97=1), `SE35 5000 0000 0549 1000 0003` (spaced, samma IBAN, mod97=1), `DE89370400440532013000` (mod97=1) matchar. `SE0000000000000000000000` matchar regex men mod97=3 → filtreras bort. IBAN mitt i mening ("Betala till SE35... senast fredag") plockas upp via boundary-vakter. Tom text eller text utan IBAN → tom lista.
+- `ReadLints` rena på båda ändrade filerna. Inga tester skrivna (egna issues).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - avsnitt 4.2 matchade redan koden (`source="pattern.checksum_iban"`, `confidence=1.0`).
+
+**Beslut fattade:**
+- Inga avvikelser från SSOT. Följde exakt samma filstruktur, import-ordning och klassmönster som `PersonnummerRecognizer`/`EmailRecognizer`/`TelefonRecognizer` för konsistens inom `recognizers/`-paketet.
+- Valde `(?:[ ]?[A-Za-z0-9]){10,30}` i stället för explicit 4-char-gruppering - enklare mönster som accepterar både standardformateringen (mellanslag var 4:e tecken) och godtycklig formatering, och förlitar sig på mod97 för slutgiltig validering. Greedy-backtracking hittar korrekt slut via `(?![A-Za-z0-9])`-vakten.
+- Konvertering A-Z via `ord(c) - 55` direkt i mod97-hjälparen (operates on pre-normalized uppercase input) i stället för en separat tabell - kortare, lika läsbart, matchar algoritmens matematiska definition.
+
+**Öppet/Nästa steg:**
+- Issue #10: `PatternLayer` som itererar registrerade recognizers och konkatenerar findings.
+
