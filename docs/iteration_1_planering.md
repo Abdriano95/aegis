@@ -633,3 +633,32 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #12: `pipeline.py` som kör aktiva lager.
 - Issue #13: `aggregator.py`.
 
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 7
+**Mål:** Implementera `EntityLayer` och `ContextLayer` (Issue #11) som stubs som uppfyller `Layer`-protokollet och returnerar tom lista, så pipelinen kan instansiera alla tre lager utan fel i iteration 1.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/entity/entity_layer.py` - `EntityLayer` (stdlib only, `name="entity"`, `detect(text)` returnerar `[]`).
+- `gdpr_classifier/layers/entity/__init__.py` - re-exporterar `EntityLayer` via `__all__`.
+- `gdpr_classifier/layers/context/context_layer.py` - `ContextLayer` (stdlib only, `name="context"`, `detect(text)` returnerar `[]`).
+- `gdpr_classifier/layers/context/__init__.py` - re-exporterar `ContextLayer` via `__all__`.
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Skapade minimala stubs enligt `docs/arkitektur.md` avsnitt 5 (NER, iteration 2) och avsnitt 6 (kontextuell analys, iteration 3), båda redan dokumenterade som "Stub i iteration 1. Returnerar tom lista."
+- Båda klasserna följer samma mönster som `PatternLayer`: `@property name` + `detect(text) -> list[Finding]`. Inga konstruktorargument behövs för stubs.
+- `Finding` importeras från `gdpr_classifier.core` (samma import-stil som `pattern_layer.py`).
+- Module-docstrings innehåller frasen "Stub for iteration 1" enligt spec, och pekar ut vad den framtida implementationen ska göra samt tillhörande avsnitt i arkitektur.md.
+- Verifierat med en liten runtime-check: `isinstance(EntityLayer(), Layer)` och `isinstance(ContextLayer(), Layer)` returnerar `True`; båda `detect("x")` returnerar `[]`; `name`-property:erna returnerar `"entity"` respektive `"context"`.
+- `ReadLints` rena på alla fyra ändrade filerna. Inga tester skrivna (egna issues).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - avsnitt 5 och 6 matchade redan koden.
+
+**Beslut fattade:**
+- Inga avvikelser från SSOT. Strikt minimal stub-implementation enligt issue-specen; ingen spekulativ NER-/zero-shot-struktur i förväg.
+- Stubs implementeras som vanliga klasser (inte ABC eller Protocol) eftersom de ska *uppfylla* `Layer`-protokollet, inte definiera ett nytt kontrakt.
+
+**Öppet/Nästa steg:**
+- Issue #12: `pipeline.py` som kör aktiva lager.
+- Issue #13: `aggregator.py`.
+
