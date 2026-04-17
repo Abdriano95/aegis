@@ -352,6 +352,30 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Johanna: påbörja evaluation-spåret, steg 1 (Issue #14, dataset-moduler).
 - Loggboken behöver en post som motiverar `MEDIUM`-nivån formellt (pusselbitseffekten, empiriskt stöd).
 
+#### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
+
+**Iteration:** 1 (v0.1.0), dag 1
+**Mål:** Implementera evaluation dataset-modeller och loader samt tester (Issue #14).
+
+**Ändrade filer:**
+- `evaluation/dataset/labeled_finding.py` - Skapade `LabeledFinding` dataclass.
+- `evaluation/dataset/labeled_text.py` - Skapade `LabeledText` dataclass.
+- `evaluation/dataset/loader.py` - Implementerade `load_dataset` för JSON-inläsning.
+- `evaluation/dataset/__init__.py` - Lade till publika re-exporter.
+- `tests/unit/test_loader.py` - Implementerade enhetstester för inläsningen av testdata.
+- `docs/iteration_1_planering.md` - Lade till denna sessionslogg.
+
+**Gjort:**
+- Skapat frysta dataklasser för utvärderingsfasit så att de kan användas med matchningslogik senare.
+- Loadern validerar korrekt json och höjer `ValueError` vid inmatning av felaktiga kategorier baserat på `Category` enum från godkänd core struktur.
+- Enhetstest skrivna och verifierade via pytest. Inga konstigheter eller omdesigningar behövdes. 
+
+**Beslut fattade:**
+- Inga större nya konventionella eller arkitekturella byten. Gjorde rakt enligt arkitektur.md och specifikationen (inga avvikelser från SSOT).
+
+**Öppet/Nästa steg:**
+- Johanna: fortsätt med evaluation-spåret, steg 2 (Issue #15, `evaluation/matcher.py`).
+
 #### Session 2026-04-17 - Cursor agent (Opus 4.7)
 
 **Iteration:** 1 (v0.1.0), pipeline-spåret steg 1
@@ -375,4 +399,3 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #5: `recognizers/personnummer.py` (regex + Luhn-validering, `source="pattern.luhn_personnummer"`).
 - Issues #6-#8: e-post, telefon, IBAN-recognizers.
 - Issue #10: `PatternLayer` som itererar registrerade recognizers och konkatenerar findings.
-
