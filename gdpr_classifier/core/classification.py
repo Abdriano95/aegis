@@ -11,6 +11,7 @@ from .finding import Finding
 class SensitivityLevel(str, Enum):
     NONE = "none"
     LOW = "low"
+    MEDIUM = "medium"
     HIGH = "high"
 
 
