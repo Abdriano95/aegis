@@ -9,5 +9,6 @@ from __future__ import annotations
 
 from .email import EmailRecognizer
 from .personnummer import PersonnummerRecognizer
+from .telefon import TelefonRecognizer
 
-__all__ = ["EmailRecognizer", "PersonnummerRecognizer"]
+__all__ = ["EmailRecognizer", "PersonnummerRecognizer", "TelefonRecognizer"]
