@@ -6,6 +6,7 @@ from enum import Enum
 
 
 class Category(str, Enum):
+    # Artikel 4: Personuppgifter
     PERSONNUMMER = "article4.personnummer"
     EMAIL = "article4.email"
     TELEFONNUMMER = "article4.telefonnummer"
@@ -19,6 +20,7 @@ class Category(str, Enum):
     EXPIRY_DATE = "article4.expiry_date"
     SECURITY_CODE = "article4.security_code"
 
+    # Artikel 9: Särskilda behandlingar av personuppgifter
     HALSODATA = "article9.halsodata"
     ETNISKT_URSPRUNG = "article9.etniskt_ursprung"
     POLITISK_ASIKT = "article9.politisk_asikt"
@@ -27,4 +29,5 @@ class Category(str, Enum):
     BIOMETRISK_DATA = "article9.biometrisk_data"
     SEXUELL_LAGGNING = "article9.sexuell_laggning"
 
+    # Kontextuellt känsligt data
     KONTEXTUELLT_KANSLIG = "context.identifierbar"

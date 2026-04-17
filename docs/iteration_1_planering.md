@@ -284,3 +284,71 @@ Saker att dokumentera:
 - Val av recognizer-gränssnitt och dess påverkan på utbytbarhet
 - Val av matchningsnivå i utvärderingen (span vs dokument)
 - Teknikval inom varje lager och motivering
+
+---
+
+## Agent-sessionslogg
+
+### Regel
+
+**Varje agent (AI eller människa) som arbetar i en session ska logga sin session här efter avslutad iteration.** Loggen är komplement till Loggboken ovan: Loggboken dokumenterar *beslut och motiveringar*, medan sessionsloggen dokumenterar *vad som faktiskt gjordes, i vilken ordning, och av vem*. Syftet är spårbarhet och att nästa agent (eller granskare) snabbt ska kunna förstå repots historik utan att läsa hela git-loggen.
+
+### Format
+
+Lägg till en ny post längst ner. Använd följande mall:
+
+```markdown
+### Session YYYY-MM-DD - [Agent/Person]
+
+**Iteration:** [t.ex. 1 / v0.1.0]
+**Mål:** [en mening om vad sessionen skulle åstadkomma]
+
+**Ändrade filer:**
+- `path/till/fil.py` - [kort beskrivning]
+
+**Gjort:**
+- [punkt per konkret åtgärd]
+
+**Beslut fattade:** [kort; länka till Loggboken om längre motivering behövs]
+**Öppet/Nästa steg:** [vad som återstår eller blockerar]
+```
+
+### Regler för loggning
+
+1. Logga **efter varje iteration** (eller efter en sammanhållen arbetssession om iterationen sträcker sig över flera dagar).
+2. En post per session, inte per commit.
+3. Håll det kort: punktlistor, inga resonemang (de hör hemma i Loggboken).
+4. Ändra aldrig tidigare poster. Lägg till en ny post om något behöver korrigeras.
+5. Om sessionen genererade arkitekturbeslut ska dessa även föras in i Loggboken med full motivering.
+
+### Poster
+
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), dag 1
+**Mål:** Implementera core-domänmodellen (Issues #1-#4) och synka arkitekturdokumentet.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/category.py` - `Category(str, Enum)` med Artikel 4-värden, Artikel 9-platshållare och `KONTEXTUELLT_KANSLIG`.
+- `gdpr_classifier/core/finding.py` - fryst `Finding`-dataclass enligt spec.
+- `gdpr_classifier/core/classification.py` - `SensitivityLevel` (`NONE`/`LOW`/`MEDIUM`/`HIGH`) och fryst `Classification`-dataclass.
+- `gdpr_classifier/core/layer.py` - `Layer` som `typing.Protocol` med `@runtime_checkable`.
+- `gdpr_classifier/core/__init__.py` - publika re-exporter via `__all__`.
+- `docs/arkitektur.md` - uppdaterad enum-definition i 3.3 och `_determine_sensitivity`-docstring i avsnitt 8 för att spegla `MEDIUM`.
+
+**Gjort:**
+- Ersatte fyra docstring-endast filer under `gdpr_classifier/core/` med faktiska implementationer, stdlib-only, `from __future__ import annotations` i varje fil.
+- Lade till `SensitivityLevel.MEDIUM = "medium"` för indirekta identifierare / kombinationer (pusselbitseffekten).
+- Synkade `docs/arkitektur.md` så dokument och kod stämmer överens.
+- Inga tester skrivna (per instruktion - hör till senare issues).
+
+**Beslut fattade:**
+- `SensitivityLevel` ärver från `str, Enum` (matchar `Category`, ger JSON-serialiserbarhet utan extra kod).
+- `Layer` implementerad som `@runtime_checkable Protocol` i stället för ABC (strukturell typning, låter externa klasser uppfylla kontraktet utan arv).
+- Tillägget av `MEDIUM` motiveras i Loggboken (pusselbitseffekten: indirekta identifierare som i kombination ökar identifieringsrisken).
+
+**Öppet/Nästa steg:**
+- Abdulla: påbörja pipeline-spåret, steg 1 (Issue #9, `layers/pattern/recognizer.py`).
+- Johanna: påbörja evaluation-spåret, steg 1 (Issue #14, dataset-moduler).
+- Loggboken behöver en post som motiverar `MEDIUM`-nivån formellt (pusselbitseffekten, empiriskt stöd).
+
