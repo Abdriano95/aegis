@@ -1,8 +1,15 @@
-"""Layer protocol.
+"""Layer protocol."""
 
-Defines the Layer protocol that every detection layer (pattern,
-entity, context, ...) must implement. A layer exposes a single
-``detect(text: str) -> list[Finding]`` method that returns all
-findings produced for the given text. The pipeline treats layers
-uniformly through this protocol.
-"""
+from __future__ import annotations
+
+from typing import Protocol, runtime_checkable
+
+from .finding import Finding
+
+
+@runtime_checkable
+class Layer(Protocol):
+    @property
+    def name(self) -> str: ...
+
+    def detect(self, text: str) -> list[Finding]: ...

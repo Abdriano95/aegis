@@ -1,8 +1,22 @@
-"""Classification result and sensitivity level.
+"""Classification result and sensitivity level."""
 
-Defines the Classification dataclass, which represents the aggregated
-classification of a whole text (or document) based on the collected
-findings, and the SensitivityLevel enum used to grade the overall
-sensitivity (e.g. none, personal, sensitive) according to GDPR
-Articles 4 and 9.
-"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import Enum
+
+from .finding import Finding
+
+
+class SensitivityLevel(str, Enum):
+    NONE = "none"
+    LOW = "low"
+    HIGH = "high"
+
+
+@dataclass(frozen=True)
+class Classification:
+    findings: list[Finding]
+    sensitivity: SensitivityLevel
+    active_layers: list[str]
+    overlapping_findings: list[tuple[Finding, Finding]]

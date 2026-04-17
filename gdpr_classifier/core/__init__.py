@@ -1,6 +1,16 @@
-"""Core domain primitives for the GDPR classifier.
+"""Core domain primitives for the GDPR classifier."""
 
-Contains the fundamental types shared across all layers and the
-pipeline: categories, findings, classifications, and the Layer
-protocol that every detection layer must satisfy.
-"""
+from __future__ import annotations
+
+from .category import Category
+from .classification import Classification, SensitivityLevel
+from .finding import Finding
+from .layer import Layer
+
+__all__ = [
+    "Category",
+    "Classification",
+    "Finding",
+    "Layer",
+    "SensitivityLevel",
+]
