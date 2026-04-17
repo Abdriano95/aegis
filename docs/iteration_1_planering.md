@@ -474,6 +474,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #8: `recognizers/iban.py` (regex + mod97).
 - Issue #10: `PatternLayer` som itererar registrerade recognizers.
 
+
 #### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
 
 **Iteration:** 1 (v0.1.0), dag 1
@@ -498,3 +499,29 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Öppet/Nästa steg:**
 - Johanna: Skapa testdata (Issue #18 - #20).
+
+#### Session 2026-04-17 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), pipeline-spåret steg 3
+**Mål:** Implementera `EmailRecognizer` (Issue #6) som regex-baserad recognizer för e-postadresser.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/pattern/recognizers/email.py` - `EmailRecognizer` (stdlib `re`, case-insensitive regex, emitterar `Finding` med `source="pattern.regex_email"` och `confidence=1.0`).
+- `gdpr_classifier/layers/pattern/recognizers/__init__.py` - re-exporterar `EmailRecognizer` via `__all__` (alfabetisk ordning).
+
+**Gjort:**
+- Kompilerad regex `[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}` med `re.IGNORECASE` - täcker punkt, bindestreck, understreck och plus i local part, domän med minst en punkt och TLD på minst 2 bokstäver.
+- `Finding` byggs med `match.start()`/`match.end()`/`match.group()` i en loop över `finditer`, analogt med `personnummer.py`-mönstret.
+- Avslutande interpunktion (t.ex. `"anna@test.se."`) hamnar inte i spanet eftersom TLD-delen `[a-zA-Z]{2,}` bara accepterar bokstäver; regex-motorns backtracking stannar på sista bokstavsgruppen.
+- `ReadLints` rena på båda filerna. Inga tester skrivna (egna issues).
+- Inga ändringar i `core/` eller `docs/arkitektur.md` - avsnitt 4.2 matchade redan koden (`source="pattern.regex_email"`, `confidence=1.0`).
+
+**Beslut fattade:**
+- Inga avvikelser från SSOT. Följde exakt samma filstruktur, import-ordning och klassmönster som `PersonnummerRecognizer` för konsistens inom `recognizers/`-paketet.
+- `re.IGNORECASE` adderad trots att regex-teckenklasser redan täcker båda casen - defensiv mot framtida förenklingar av mönstret.
+
+**Öppet/Nästa steg:**
+- Issue #7: `recognizers/telefon.py` (regex för svenska telefonnummer, `source="pattern.regex_telefon"`, `confidence=0.9`).
+- Issue #8: `recognizers/iban.py` (regex + mod97, `source="pattern.checksum_iban"`).
+- Issue #10: `PatternLayer` som itererar registrerade recognizers.
+
