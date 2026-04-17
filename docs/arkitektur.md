@@ -227,7 +227,7 @@ class Recognizer(Protocol):
 - Validerar kontrollsiffran med Luhn-algoritmen. Detta minskar falska positiva (Mishra et al., 2025).
 - Validerar att datum-delen är ett giltigt datum.
 - `source`: `"pattern.luhn_personnummer"`
-- `confidence`: 1.0 vid lyckad Luhn-validering, 0.7 vid formatmatch utan validering.
+- `confidence`: 1.0. Endast Luhn-validerade träffar emitteras i iteration 1; kandidater som inte passerar Luhn filtreras bort.
 
 **E-post** (`email.py`):
 - Matchar standardformat via regex.
