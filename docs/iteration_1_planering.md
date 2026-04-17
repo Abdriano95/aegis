@@ -423,3 +423,25 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Öppet/Nästa steg:**
 - Johanna: fortsätt med evaluation-spåret, steg 3 (Issue #16, `evaluation/metrics.py`).
+
+#### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
+
+**Iteration:** 1 (v0.1.0), dag 1
+**Mål:** Implementera metriker för utvärdering (Issue #16).
+
+**Ändrade filer:**
+- `evaluation/metrics.py` - Implementerade funktionerna `recall`, `precision` och `f1`.
+- `evaluation/__init__.py` - Re-exporterade de nya funktionerna i `__all__`.
+- `tests/unit/test_metrics.py` - Skapade enhetstester för alla funktioner, med täckning för 0-division.
+- `docs/iteration_1_planering.md` - Lade till denna sessionslogg.
+
+**Gjort:**
+- Skapat funktioner för Recall, Precision och F1.
+- Inkluderat hantering av ZeroDivisionError via exakta `denominator == 0` kontroller, enligt specifikationen.
+- Samtliga testfall implementerade och verifierade via `pytest`.
+
+**Beslut fattade:**
+- Följer exakt den angivna specifikationen för division med noll utan undantag (returnerar `0.0`).
+
+**Öppet/Nästa steg:**
+- Johanna: fortsätt med evaluation-spåret, steg 4 (Issue #17, `evaluation/runner.py`).
