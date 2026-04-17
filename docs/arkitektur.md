@@ -348,7 +348,7 @@ Utvärderingen följer FEDS (Venable, Pries-Heje & Baskerville, 2016) med artifi
 - TP: predikterat fynd matchar ett fasit-fynd (kategori + överlappande span).
 - FP: predikterat fynd saknar matchande fasit-fynd.
 - FN: fasit-fynd saknar matchande predikterat fynd.
-- TN: appliceras på dokumentnivå (text utan känslig data korrekt klassificerad som icke-känslig).
+- TN: appliceras på dokumentnivå (text utan känslig data korrekt klassificerad som icke-känslig) - *Notera: Implementeras ej i klassificeringens ConfusionMatrix i iteration 1 då alla mätvärden (Recall, Precision, F1) beräknas på spannivå och ej kräver TN.*
 
 **Mätvärden:**
 - Recall = TP / (TP + FN). Primärt mätvärde. Missad känslig data innebär potentiellt lagbrott (Opitz, 2024).
@@ -391,7 +391,7 @@ Märkt testdataset (LabeledText[])
     Matcher: jämför Finding[] mot LabeledFinding[]
          │
          ▼
-    ConfusionMatrix: TP, FP, FN, TN
+    ConfusionMatrix: TP, FP, FN
          │
          ▼
     Rapport: Recall, Precision, F1 (totalt + per kategori + per lager)
