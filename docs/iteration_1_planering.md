@@ -399,3 +399,27 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Issue #5: `recognizers/personnummer.py` (regex + Luhn-validering, `source="pattern.luhn_personnummer"`).
 - Issues #6-#8: e-post, telefon, IBAN-recognizers.
 - Issue #10: `PatternLayer` som itererar registrerade recognizers och konkatenerar findings.
+
+#### Session 2026-04-17 - Antigravity agent (Gemini 3.1 Pro (High))
+
+**Iteration:** 1 (v0.1.0), dag 1
+**Mål:** Implementera matchningslogik och enhetstester (Issue #15).
+
+**Ändrade filer:**
+- `evaluation/matcher.py` - Definierade `MatchResult` och implementerade `match`-funktionen.
+- `evaluation/__init__.py` - Re-exporterade publikt `MatchResult` och `match`.
+- `tests/unit/test_matcher.py` - Omfattande enhetstester för alla matchningsregler.
+- `docs/iteration_1_planering.md` - Lade till denna sessionslogg.
+
+**Gjort:**
+- Skapat logik för att utvärdera modellens funna data mot förväntad LabeledFinding på spann-nivå.
+- Hanterat greedy match med avseende på överlappande spann för konfidensvärden (högst vinner, lägst blir False Positive).
+- Enhetstest verifierar hantering av exakt överlapp, partiell överlapp, misstapade kategorier, helt felplacerade detektioner samt dubblett-problematiken med konfidens.
+- Tester och lints ok.
+
+**Beslut fattade:**
+- Vald en girig heuristik för matchning där `predicted` sorteras på konfidens nedåtgående och den förväntade listan itereras för check med `id()` – ett säkrare och effektivare alternativ än komplexa dubbelriktade map-strukturer.
+- `MatchResult` representeras som en `frozendataclass` precis i linje med projektets övriga output-strukturer.
+
+**Öppet/Nästa steg:**
+- Johanna: fortsätt med evaluation-spåret, steg 3 (Issue #16, `evaluation/metrics.py`).
