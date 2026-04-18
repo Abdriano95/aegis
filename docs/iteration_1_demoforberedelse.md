@@ -428,3 +428,20 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Parens-varianten omfattar endast `+46`/`0046`, inte domestikt `0` (FP-risk + inte i verkligt bruk). SSOT 4.2 uppdaterad i samma session.
 **Öppet/Nästa steg:** Kvarvarande 2 FP på telefon (IBAN-fragment som matchar telefon-regex) hör till issue #39. Commit sker efter granskning (ingen commit i denna session).
 
+#### Session 2026-04-18 - Cursor-agent (Opus)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Lösa issue #39 - dokumentera IBAN-telefon-FP som känd begränsning i SSOT.
+
+**Ändrade filer:**
+- `docs/arkitektur.md` - nytt avsnitt 14 "Kända begränsningar (iteration 1)" infört före Referenser; "Referenser" renumrerad från 14 till 15.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- Lagt in ~24 raders prosa som beskriver fenomenet (telefon-regex matchar siffersekvenser inom IBAN-fynd), de två konkreta FP-exemplen verbatim (`"0555 5555 55"` inom `SE96 5000 0000 0555 5555 55` och `"05 1234 5678"` inom `SE05 1234 5678 9012 3456 78`), grundorsak på aggregator-nivå, motivering till att inte åtgärda i iteration 1 (koppling till designprincip 3 och intressentdiskussion), samt planerad containment-regel för iteration 2.
+- Renumrerat "Referenser" från 14 till 15.
+- Ingen kodfil rörd; verifierat med `git status` att endast `docs/arkitektur.md` och `docs/iteration_1_demoforberedelse.md` är ändrade.
+
+**Beslut fattade:** Placering som nytt avsnitt 14 före Referenser valdes framför renumrering av sektion 12-13 eller underrubrik under Iterationsplan, efter granskning i Plan Mode. Terminologi "tar bort"/"bortfiltrerat" valdes framför anglicismen "droppa" för att matcha SSOT-prosans ton ("reducera fyndmängden", "aktiv reduktionsregel").
+**Öppet/Nästa steg:** Issue #39 klar för commit efter granskning. Nästa: issue #40 (SpaCy EntityLayer i `layers/entity/entity_layer.py`). Commit sker efter granskning (ingen commit i denna session).
+
