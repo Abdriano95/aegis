@@ -58,15 +58,15 @@ class EvaluationResult:
 
 
 def evaluate_demo(data_path: Optional[str] = None) -> Optional[EvaluationResult]:
-    """Load the dataset and run evaluation, returning None on failure."""
+    """Load the dataset and run evaluation, returning None on dataset-load failure."""
     path = Path(data_path) if data_path else _DEFAULT_DATA_PATH
     try:
-        pipeline = build_pipeline()
         dataset = load_dataset(str(path))
-        report = run_evaluation(pipeline, dataset)
-    except (OSError, ValueError, json.JSONDecodeError):
-        _LOG.exception("Failed to run demo evaluation (data_path=%s)", path)
+    except (OSError, json.JSONDecodeError):
+        _LOG.exception("Failed to load dataset (data_path=%s)", path)
         return None
+    pipeline = build_pipeline()
+    report = run_evaluation(pipeline, dataset)
     return EvaluationResult(dataset=dataset, report=report, data_path=path)
 
 
