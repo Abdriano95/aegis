@@ -390,6 +390,30 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 ### Poster
 
+#### Session 2026-04-18 – Agent (Antigravity)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Implementera Issue #42 – Dash webbgränssnitt med rapportvy.
+
+**Ändrade filer:**
+- `pyproject.toml` – Lade till optional dependencies: `demo`, `nlp`, `all`.
+- `demo/__init__.py` – Ny, standard init-fil.
+- `demo/app.py` – Ny, Dash entry point med layout och callback-registrering.
+- `demo/layout.py` – Ny, `get_layout()` med `dcc.Tabs` (tre flikar: "Utvärderingsrapport", "Fritext-analys", "Testdata").
+- `demo/callbacks.py` – Ny, kör `run_evaluation()` vid modulstart, verbose-toggle callback.
+
+**Gjort:**
+- Uppdaterat `pyproject.toml` med `demo = ["dash>=2.0"]`, `nlp = ["spacy>=3.7"]`, `all = [...]` under `[project.optional-dependencies]`.
+- Skapat `demo/`-paketet med fyra filer enligt planen.
+- Flik 1 ("Utvärderingsrapport") visar totala mätvärden i en DataTable; verbose-toggle visar per-kategori- och per-lager-tabeller.
+- Flik 2 ("Fritext-analys") är en stub/placeholder för Issue #43.
+- Utvärderingen körs en gång globalt vid modulstart mot `tests/data/iteration_1/test_dataset.json`.
+- Per-lager-tabellen visar "N/A" för Recall och F1 (arkitekturbeslut).
+- Verifierat: appen startar utan fel, callbacks returnerar korrekt data, verbose-toggle döljer/visar detaljer.
+
+**Beslut fattade:** Utvärderingen körs globalt en gång vid uppstart (inte per toggle-klick) för responsivt UI.
+**Öppet/Nästa steg:** Issue #43 (fritext-analys med markeringar).
+
 #### Session 2026-04-18 - Cursor-agent (Opus)
 
 **Iteration:** 1 / v0.1.1
@@ -427,4 +451,3 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Parens-varianten omfattar endast `+46`/`0046`, inte domestikt `0` (FP-risk + inte i verkligt bruk). SSOT 4.2 uppdaterad i samma session.
 **Öppet/Nästa steg:** Kvarvarande 2 FP på telefon (IBAN-fragment som matchar telefon-regex) hör till issue #39. Commit sker efter granskning (ingen commit i denna session).
-
