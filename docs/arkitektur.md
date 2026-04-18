@@ -238,6 +238,7 @@ class Recognizer(Protocol):
 
 **Telefonnummer** (`telefon.py`):
 - Matchar svenska telefonnummer (07X-XXX XX XX, +46-XXX-XXX XX XX, varianter).
+- Stödjer valfria balanserade parenteser runt landskoden (t.ex. `(+46)70 999 88 77`, `(0046)...`); domestikt prefix `0` omfattas inte av parentes-varianten.
 - `source`: `"pattern.regex_telefon"`
 - `confidence`: 0.9 (telefonnummer-regex ger fler falska positiva än Luhn-validerade personnummer).
 
