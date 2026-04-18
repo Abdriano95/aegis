@@ -26,5 +26,8 @@ class Category(str, Enum):
     BIOMETRISK_DATA = "article9.biometrisk_data"
     SEXUELL_LAGGNING = "article9.sexuell_laggning"
 
+    # Kontextsignaler: inte art 4-data i sig, bidrar till klassificering i kombination
+    ORGANISATION = "context.organisation"
+
     # Kontextuellt känsligt data
     KONTEXTUELLT_KANSLIG = "context.identifierbar"
