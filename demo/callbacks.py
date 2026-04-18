@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -10,7 +12,7 @@ from typing import Optional
 from dash import Input, Output, callback, dash_table, dcc, html
 
 from evaluation.dataset.loader import load_dataset
-from evaluation.report import Report, _context_snippet
+from evaluation.report import Report
 from evaluation.runner import run_evaluation
 from gdpr_classifier import Aggregator, Pipeline
 from gdpr_classifier.layers.context import ContextLayer
@@ -27,6 +29,15 @@ _DEFAULT_DATA_PATH = (
     / "iteration_1"
     / "test_dataset.json"
 )
+
+
+def _context_snippet(text: str, start: int, end: int, window: int = 20) -> str:
+    """Return a short snippet of ``text`` around ``[start, end)`` with ellipses."""
+    ctx_start = max(0, start - window)
+    ctx_end = min(len(text), end + window)
+    prefix = "..." if ctx_start > 0 else ""
+    suffix = "..." if ctx_end < len(text) else ""
+    return f"{prefix}{text[ctx_start:ctx_end]}{suffix}"
 
 
 def build_pipeline() -> Pipeline:
@@ -53,7 +64,7 @@ def evaluate_demo(data_path: Optional[str] = None) -> Optional[EvaluationResult]
         pipeline = build_pipeline()
         dataset = load_dataset(str(path))
         report = run_evaluation(pipeline, dataset)
-    except Exception:
+    except (OSError, ValueError, json.JSONDecodeError):
         _LOG.exception("Failed to run demo evaluation (data_path=%s)", path)
         return None
     return EvaluationResult(dataset=dataset, report=report, data_path=path)
@@ -61,14 +72,17 @@ def evaluate_demo(data_path: Optional[str] = None) -> Optional[EvaluationResult]
 
 _EVAL_CACHE: Optional[EvaluationResult] = None
 _EVAL_INITIALIZED: bool = False
+_EVAL_LOCK = threading.Lock()
 
 
 def _get_evaluation() -> Optional[EvaluationResult]:
-    """Return the cached evaluation result, running it exactly once."""
+    """Return the cached evaluation result, running it exactly once (thread-safe)."""
     global _EVAL_CACHE, _EVAL_INITIALIZED
     if not _EVAL_INITIALIZED:
-        _EVAL_CACHE = evaluate_demo()
-        _EVAL_INITIALIZED = True
+        with _EVAL_LOCK:
+            if not _EVAL_INITIALIZED:
+                _EVAL_CACHE = evaluate_demo()
+                _EVAL_INITIALIZED = True
     return _EVAL_CACHE
 
 
