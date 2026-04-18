@@ -7,6 +7,7 @@ from pathlib import Path
 from dash import Input, Output, callback, dash_table, dcc, html
 
 from evaluation.dataset.loader import load_dataset
+from evaluation.report import _context_snippet
 from evaluation.runner import run_evaluation
 from gdpr_classifier import Aggregator, Pipeline
 from gdpr_classifier.layers.context import ContextLayer
@@ -33,7 +34,9 @@ _report = run_evaluation(_pipeline, _dataset)
 # ---------------------------------------------------------------------------
 
 
-def _make_table(table_id: str, columns: list[dict], data: list[dict]) -> dash_table.DataTable:
+def _make_table(
+    table_id: str, columns: list[dict], data: list[dict]
+) -> dash_table.DataTable:
     return dash_table.DataTable(
         id=table_id,
         columns=columns,
@@ -130,6 +133,46 @@ _layer_data = [
     for layer, m in sorted(_report.per_layer.items())
 ]
 
+_FP_COLUMNS = [
+    {"name": "Källa", "id": "source"},
+    {"name": "Matchad text", "id": "text_span"},
+    {"name": "Start", "id": "start"},
+    {"name": "End", "id": "end"},
+    {"name": "Kontext", "id": "context"},
+]
+
+_fp_data = [
+    {
+        "source": fp.source,
+        "text_span": fp.text_span,
+        "start": fp.start,
+        "end": fp.end,
+        "context": _context_snippet(sample.text, fp.start, fp.end),
+    }
+    for sample in _report.samples
+    for fp in sample.false_positives
+]
+
+_FN_COLUMNS = [
+    {"name": "Kategori", "id": "category"},
+    {"name": "Förväntad text", "id": "text_span"},
+    {"name": "Start", "id": "start"},
+    {"name": "End", "id": "end"},
+    {"name": "Kontext", "id": "context"},
+]
+
+_fn_data = [
+    {
+        "category": fn.category.value,
+        "text_span": fn.text_span,
+        "start": fn.start,
+        "end": fn.end,
+        "context": _context_snippet(sample.text, fn.start, fn.end),
+    }
+    for sample in _report.samples
+    for fn in sample.false_negatives
+]
+
 
 # ---------------------------------------------------------------------------
 # Callbacks
@@ -175,15 +218,27 @@ def update_report(verbose_values: list[str]) -> list:
     children: list = [
         html.H3("Totala mätvärden"),
         _make_table("total-table", _TOTAL_COLUMNS, _total_data),
+        html.H3("Per kategori"),
+        _make_table("category-table", _CATEGORY_COLUMNS, _category_data),
+        html.H3("Per lager"),
+        _make_table("layer-table", _LAYER_COLUMNS, _layer_data),
     ]
 
     if verbose:
         children.extend(
             [
-                html.H3("Per kategori"),
-                _make_table("category-table", _CATEGORY_COLUMNS, _category_data),
-                html.H3("Per lager"),
-                _make_table("layer-table", _LAYER_COLUMNS, _layer_data),
+                html.H3(f"False Positives ({len(_fp_data)})"),
+                (
+                    _make_table("fp-table", _FP_COLUMNS, _fp_data)
+                    if _fp_data
+                    else html.P("Inga false positives.")
+                ),
+                html.H3(f"False Negatives ({len(_fn_data)})"),
+                (
+                    _make_table("fn-table", _FN_COLUMNS, _fn_data)
+                    if _fn_data
+                    else html.P("Inga false negatives.")
+                ),
             ],
         )
 
