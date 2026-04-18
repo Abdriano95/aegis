@@ -173,6 +173,26 @@ _fn_data = [
     for fn in sample.false_negatives
 ]
 
+_TESTDATA_COLUMNS = [
+    {"name": "#", "id": "index"},
+    {"name": "Beskrivning", "id": "description"},
+    {"name": "Text", "id": "text"},
+    {"name": "Förväntade fynd", "id": "expected"},
+]
+
+_testdata_rows = [
+    {
+        "index": i + 1,
+        "description": item.description,
+        "text": item.text,
+        "expected": ", ".join(
+            f"{f.category.value} ({f.text_span})" for f in item.expected_findings
+        )
+        or "(inga)",
+    }
+    for i, item in enumerate(_dataset)
+]
+
 
 # ---------------------------------------------------------------------------
 # Callbacks
@@ -196,6 +216,17 @@ def render_tab(tab: str) -> html.Div:
                     style={"marginBottom": "16px"},
                 ),
                 html.Div(id="report-content"),
+            ],
+        )
+    if tab == "tab-testdata":
+        return html.Div(
+            [
+                html.H2("Testdata"),
+                html.P(
+                    f"Visar {len(_testdata_rows)} testfall från "
+                    f"{_DATA_PATH}.",
+                ),
+                _make_table("testdata-table", _TESTDATA_COLUMNS, _testdata_rows),
             ],
         )
     # Stub for issue #43

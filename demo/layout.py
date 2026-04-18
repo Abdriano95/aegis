@@ -16,6 +16,7 @@ def get_layout() -> html.Div:
                 children=[
                     dcc.Tab(label="Utvärderingsrapport", value="tab-report"),
                     dcc.Tab(label="Fritext-analys", value="tab-freetext"),
+                    dcc.Tab(label="Testdata", value="tab-testdata"),
                 ],
             ),
             html.Div(id="tab-content", style={"padding": "24px"}),
