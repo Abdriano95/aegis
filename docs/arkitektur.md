@@ -575,7 +575,20 @@ Ska aggregatorn vikta fynd baserat på konfidens? I iteration 1 är alla fynd bi
 Kan en textbit tillhöra flera GDPR-kategorier samtidigt? Exempelvis ett namn som också avslöjar etniskt ursprung (Artikel 4 + Artikel 9). Nuvarande modell stöder detta genom att flera fynd kan rapporteras med överlappande span men olika kategorier.
 
 
-## 14. Referenser
+## 14. Kända begränsningar (iteration 1)
+
+Utvärderingen på testdatat i iteration 1 visar två återstående falska positiva som båda produceras av samma systeminteraktion. Telefon-recognizern (`pattern.regex_telefon`) matchar siffersekvenser som också ingår i fynd från IBAN-recognizern (`pattern.checksum_iban`), eftersom svenska telefonnummer och IBAN:ens BBAN-segment delar numerisk struktur (sifferblock separerade med mellanslag). Fenomenet är alltså inte en felaktighet i telefon-regexen i isolation, utan en konsekvens av att två recognizers arbetar oberoende på samma text.
+
+Konkret rör det följande två fall i testdatat: textspanet `"0555 5555 55"` matchas som telefonnummer inom IBAN-fyndet `SE96 5000 0000 0555 5555 55`, och textspanet `"05 1234 5678"` matchas som telefonnummer inom IBAN-fyndet `SE05 1234 5678 9012 3456 78`. Båda telefon-fynden ligger helt inneslutna i respektive IBAN-fynd.
+
+Grundorsaken sitter på aggregator-nivå, inte på recognizer-nivå. Varje recognizer i `PatternLayer` är designmässigt oberoende av övriga och känner inte till deras fynd (avsnitt 4.1). Aggregatorn registrerar överlapp mellan fynd i `overlapping_findings` (avsnitt 3.4) men reducerar inte fyndmängden utifrån detta - den beslutar om känslighetsnivå, inte om deduplicering. Telefon-fynden rapporteras därför som fullvärdiga fynd trots att de är inneslutna i ett fynd med högre konfidens.
+
+Begränsningen åtgärdas inte i iteration 1 eftersom en lösning kräver en aktiv reduktionsregel i aggregatorn, vilket är en arkitekturförändring som berör designprincip 3 (spårbarhet): ett filtrerat fynd får inte försvinna tyst utan måste fortfarande vara synligt i utvärderingen. En sådan förändring behöver dessutom diskuteras med intressenter under demon innan den implementeras, eftersom den påverkar vilken bild av artefaktens falska positiva som presenteras.
+
+Planerad åtgärd i iteration 2 (BIE-cykel 2): `Aggregator` utökas med en containment-regel som tar bort ett fynd från `findings` om det är helt inneslutet i ett fynd från en annan recognizer med strikt högre konfidens (till exempel 1.0 över 0.9). Det borttagna fyndet bevaras i `overlapping_findings` så spårbarheten mot designprincip 3 upprätthålls. Åtgärden planeras för iteration 2:s Build-fas. Denna issue (#39) dokumenterar enbart begränsningen som underlag för framtida arbete.
+
+
+## 15. Referenser
 
 Buschmann, F., Meunier, R., Rohnert, H., Sommerlad, P. & Stal, M. (1996). *Pattern-Oriented Software Architecture: A System of Patterns*. Chichester: Wiley.
 
