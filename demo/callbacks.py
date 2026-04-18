@@ -60,13 +60,15 @@ def evaluate_demo(data_path: Optional[str] = None) -> Optional[EvaluationResult]
 
 
 _EVAL_CACHE: Optional[EvaluationResult] = None
+_EVAL_INITIALIZED: bool = False
 
 
 def _get_evaluation() -> Optional[EvaluationResult]:
-    """Return the cached evaluation result, running it once on first access."""
-    global _EVAL_CACHE
-    if _EVAL_CACHE is None:
+    """Return the cached evaluation result, running it exactly once."""
+    global _EVAL_CACHE, _EVAL_INITIALIZED
+    if not _EVAL_INITIALIZED:
         _EVAL_CACHE = evaluate_demo()
+        _EVAL_INITIALIZED = True
     return _EVAL_CACHE
 
 
@@ -293,11 +295,12 @@ def render_tab(tab: str) -> html.Div:
         if result is None:
             return _evaluation_unavailable()
         rows = _testdata_rows(result.dataset)
+        display_name = result.data_path.name
         return html.Div(
             [
                 html.H2("Testdata"),
                 html.P(
-                    f"Visar {len(rows)} testfall från {result.data_path}.",
+                    f"Visar {len(rows)} testfall från {display_name}.",
                 ),
                 _make_table("testdata-table", _TESTDATA_COLUMNS, rows),
             ],
@@ -324,9 +327,6 @@ def update_report(verbose_values: list[str]) -> list:
     report = result.report
     verbose = "verbose" in (verbose_values or [])
 
-    fp_data = _fp_rows(report)
-    fn_data = _fn_rows(report)
-
     children: list = [
         html.H3("Totala mätvärden"),
         _make_table("total-table", _TOTAL_COLUMNS, _total_rows(report)),
@@ -337,6 +337,8 @@ def update_report(verbose_values: list[str]) -> list:
     ]
 
     if verbose:
+        fp_data = _fp_rows(report)
+        fn_data = _fn_rows(report)
         children.extend(
             [
                 html.H3(f"False Positives ({len(fp_data)})"),
