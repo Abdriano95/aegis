@@ -377,13 +377,24 @@ def build_summary(classification: Classification) -> html.Div:
         per_layer[f.source.split(".")[0]] += 1
 
     category_rows = [
-        html.Tr([html.Td(cat), html.Td(str(count))])
+        html.Tr(
+            [
+                html.Td(cat, style=cell_style), 
+                html.Td(str(count), style=cell_style)
+                ]
+        )
         for cat, count in sorted(per_category.items())
     ]
     layer_rows = [
-        html.Tr([html.Td(layer), html.Td(str(count))])
+        html.Tr(
+            [
+                html.Td(layer, style=cell_style), 
+                html.Td(str(count), style=cell_style)
+            ]
+        )
         for layer, count in sorted(per_layer.items())
     ]
+
     table_style = {"borderCollapse": "collapse", "marginTop": "8px", "width": "auto"}
     cell_style = {"border": "1px solid #ccc", "padding": "4px 12px"}
 
@@ -418,17 +429,7 @@ def build_summary(classification: Classification) -> html.Div:
                                             ]
                                         )
                                     ),
-                                    html.Tbody(
-                                        [
-                                            html.Tr(
-                                                [
-                                                    html.Td(cat, style=cell_style),
-                                                    html.Td(str(cnt), style=cell_style),
-                                                ]
-                                            )
-                                            for cat, cnt in sorted(per_category.items())
-                                        ]
-                                    ),
+                                    html.Tbody(category_rows),
                                 ],
                                 style=table_style,
                             )
@@ -450,17 +451,7 @@ def build_summary(classification: Classification) -> html.Div:
                                             ]
                                         )
                                     ),
-                                    html.Tbody(
-                                        [
-                                            html.Tr(
-                                                [
-                                                    html.Td(layer, style=cell_style),
-                                                    html.Td(str(cnt), style=cell_style),
-                                                ]
-                                            )
-                                            for layer, cnt in sorted(per_layer.items())
-                                        ]
-                                    ),
+                                    html.Tbody(layer_rows),
                                 ],
                                 style=table_style,
                             )
@@ -581,10 +572,10 @@ def analyze_text(n_clicks: int, text: str | None) -> tuple:
     except Exception:
         _LOG.exception("Pipeline failed during freetext analysis")
         error_msg = html.Div(
-            "Analysen misslyckades – kontrollera serverloggen för detaljer.",
+            "Analysen misslyckades - kontrollera serverloggen för detaljer.",
             style={"color": "red"},
         )
-        return [], error_msg
+        return [error_msg], []
     return (
         build_highlighted_text(text, classification.findings),
         build_summary(classification),
