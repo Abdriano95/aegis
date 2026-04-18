@@ -376,6 +376,9 @@ def build_summary(classification: Classification) -> html.Div:
         per_category[f.category.value] += 1
         per_layer[f.source.split(".")[0]] += 1
 
+    table_style = {"borderCollapse": "collapse", "marginTop": "8px", "width": "auto"}
+    cell_style = {"border": "1px solid #ccc", "padding": "4px 12px"}
+
     category_rows = [
         html.Tr(
             [
@@ -394,9 +397,6 @@ def build_summary(classification: Classification) -> html.Div:
         )
         for layer, count in sorted(per_layer.items())
     ]
-
-    table_style = {"borderCollapse": "collapse", "marginTop": "8px", "width": "auto"}
-    cell_style = {"border": "1px solid #ccc", "padding": "4px 12px"}
 
     return html.Div(
         [
