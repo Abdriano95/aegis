@@ -399,7 +399,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 - `pyproject.toml` – Lade till optional dependencies: `demo`, `nlp`, `all`.
 - `demo/__init__.py` – Ny, standard init-fil.
 - `demo/app.py` – Ny, Dash entry point med layout och callback-registrering.
-- `demo/layout.py` – Ny, `get_layout()` med `dcc.Tabs` (två flikar).
+- `demo/layout.py` – Ny, `get_layout()` med `dcc.Tabs` (tre flikar: "Utvärderingsrapport", "Fritext-analys", "Testdata").
 - `demo/callbacks.py` – Ny, kör `run_evaluation()` vid modulstart, verbose-toggle callback.
 
 **Gjort:**

@@ -6,10 +6,10 @@ from dash import dash_table, dcc, html
 
 
 def get_layout() -> html.Div:
-    """Return the top-level Dash layout with two tabs."""
+    """Return the top-level Dash layout with three tabs: report, freetext, and testdata."""
     return html.Div(
         children=[
-            html.H1("GDPR-classifier – Demo", style={"textAlign": "center"}),
+            html.H1("GDPR-classifier - Demo", style={"textAlign": "center"}),
             dcc.Tabs(
                 id="main-tabs",
                 value="tab-report",
