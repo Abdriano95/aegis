@@ -517,3 +517,23 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** DoD-raden "Total recall/precision ska inte regressera mot iteration 1-baseline" i originalprompten ersattes efter Plan Mode-granskning av två sanningsenliga krav: (a) recall för `article4.*`-kategorier ska inte regressera (uppfyllt, 100% per kategori), och (b) nya FP från NER-lagret rapporteras med antal och exempel (2 LOC-FP, se ovan). Totalprecision regresserade från 95.65% till 91.67% - förväntad arkitektonisk effekt av att NER-lagret aktiveras innan datasetet har NER-ground-truth. Effekten upphör när #45-47 levererar PER/LOC/ORG-labels. Kategoriplacering i `core/category.py` enligt Alternativ A: `ORGANISATION` och `KONTEXTUELLT_KANSLIG` behålls i två separata kommentargrupper (speglar SSOT och Plan Mode-beslutet att deras semantik är olika trots gemensamt `context.*`-prefix).
 **Öppet/Nästa steg:** Johannas #45-47 (NER-testdata med ground-truth PER/LOC/ORG) är naturlig verifiering av EntityLayers recall. Eventuell evaluation-filtrering av `context.*`-fynd hör till separat issue. LOC-feldetektion av `9001010009` som plats-namn kan bli en not i avsnitt 14 (Kända begränsningar) om den kvarstår efter #45-47. Commit sker efter granskning (ingen commit i denna session).
+
+#### Session 2026-04-18 – Claude Sonnet 4.6 (claude-code)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Implementera Issue #43 (Fritext-analys-flik) och Issue #44 (Spårbarhet via tooltips).
+
+**Ändrade filer:**
+- `demo/layout.py` – Ny hjälpfunktion `freetext_tab_layout()` med `dcc.Textarea`, "Analysera"-knapp, `freetext-result`-div och `freetext-summary`-div.
+- `demo/callbacks.py` – Ny `_resolve_overlaps()` (klusteralgoritm för överlappande fynd), `build_highlighted_text()` (färgkodade `html.Span` med `title`-tooltip), `build_summary()` (sammanfattningspanel med känslighetsnivå + fynd per kategori/lager), samt `analyze_text`-callback. Stub-gren i `render_tab` ersatt med anrop till `freetext_tab_layout()`.
+
+**Gjort:**
+- Implementerat klusterbaserad överlappslösning: fynd grupperas i intervallkluster; per kluster väljs vinnaren med högst konfidens. Garanterar att ingen teckenposition dupliceras.
+- Färgkodning via `style`-attribut: `pattern.*` → `orange`, `entity.*` → `#add8e6` (lightblue).
+- Tooltip via `title`-attribut: `"Kategori: ..., Källa: ..., Konfidens: ..."`.
+- Sammanfattningspanel visar känslighetsnivå (färgkodad badge), fynd per GDPR-kategori och fynd per lager i tabellformat.
+- Återanvänder befintlig `build_pipeline()` (PatternLayer + EntityLayer + ContextLayer + Aggregator).
+- Commit ej gjord (väntar på instruktion).
+
+**Beslut fattade:** Överlappslösning via klustergruppa + max-confidence-vinnare (inte greedy cursor), eftersom det hanterar fall där ett sent fynd med hög konfidens ska vinna över ett tidigt fynd med låg konfidens inom samma kluster. Layoutkomponenter returnas från `layout.py` (separation of concerns); callbacks importerar `freetext_tab_layout` därifrån.
+**Öppet/Nästa steg:** Manuell verifiering i webbläsaren. Commit efter granskning.
