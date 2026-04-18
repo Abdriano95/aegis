@@ -232,6 +232,7 @@ class Recognizer(Protocol):
 
 **E-post** (`email.py`):
 - Matchar standardformat via regex.
+- Teckenklasser i lokal- och domändel accepterar svenska bokstäver (å, ä, ö) för att stödja IDN-domäner som `företaget.se`. Punycode/xn-- ligger utanför iteration 1.
 - `source`: `"pattern.regex_email"`
 - `confidence`: 1.0
 

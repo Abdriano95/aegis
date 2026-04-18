@@ -7,7 +7,7 @@ import re
 from gdpr_classifier.core import Category, Finding
 
 _PATTERN = re.compile(
-    r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
+    r"[a-zA-Z0-9._%+\-åäöÅÄÖ]+@[a-zA-Z0-9.\-åäöÅÄÖ]+\.[a-zA-Z]{2,}",
     re.IGNORECASE,
 )
 
