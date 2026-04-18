@@ -388,7 +388,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 ### Poster
 
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #37)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Lösa issue #37 - utöka email-regex för IDN-domäner med svenska tecken (å, ä, ö).
@@ -407,7 +407,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Behåller `[a-zA-Z]{2,}` i TLD-delen; punycode/xn-- och IDN-TLD ligger utanför iteration 1:s scope (SSOT 4.2).
 **Öppet/Nästa steg:** Kvarvarande FN/FP ligger i `article4.telefonnummer` (recall 90%, precision 81.82%) - hör till andra issues. Unit-tester för email-edge cases vid behov i senare issue. Commit sker efter granskning (ingen commit i denna session).
 
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #38)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Lösa issue #38 - utöka telefon-regex så att `+46`/`0046` får omges av balanserade parenteser (t.ex. `(+46)70 999 88 77`).
@@ -426,7 +426,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Parens-varianten omfattar endast `+46`/`0046`, inte domestikt `0` (FP-risk + inte i verkligt bruk). SSOT 4.2 uppdaterad i samma session.
 **Öppet/Nästa steg:** Kvarvarande 2 FP på telefon (IBAN-fragment som matchar telefon-regex) hör till issue #39. Commit sker efter granskning (ingen commit i denna session).
 
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #39)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Lösa issue #39 - dokumentera IBAN-telefon-FP som känd begränsning i SSOT.
@@ -467,27 +467,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Utvärderingen körs globalt en gång vid uppstart (inte per toggle-klick) för responsivt UI.
 **Öppet/Nästa steg:** Issue #43 (fritext-analys med markeringar).
 
-#### Session 2026-04-18 – Claude Sonnet 4.6 (claude-code)
-
-**Iteration:** 1 / v0.1.1
-**Mål:** Implementera Issue #43 (Fritext-analys-flik) och Issue #44 (Spårbarhet via tooltips).
-
-**Ändrade filer:**
-- `demo/layout.py` – Ny hjälpfunktion `freetext_tab_layout()` med `dcc.Textarea`, "Analysera"-knapp, `freetext-result`-div och `freetext-summary`-div.
-- `demo/callbacks.py` – Ny `_resolve_overlaps()` (klusteralgoritm för överlappande fynd), `build_highlighted_text()` (färgkodade `html.Span` med `title`-tooltip), `build_summary()` (sammanfattningspanel med känslighetsnivå + fynd per kategori/lager), samt `analyze_text`-callback. Stub-gren i `render_tab` ersatt med anrop till `freetext_tab_layout()`.
-
-**Gjort:**
-- Implementerat klusterbaserad överlappslösning: fynd grupperas i intervallkluster; per kluster väljs vinnaren med högst konfidens. Garanterar att ingen teckenposition dupliceras.
-- Färgkodning via `style`-attribut: `pattern.*` → `orange`, `entity.*` → `#add8e6` (lightblue).
-- Tooltip via `title`-attribut: `"Kategori: ..., Källa: ..., Konfidens: ..."`.
-- Sammanfattningspanel visar känslighetsnivå (färgkodad badge), fynd per GDPR-kategori och fynd per lager i tabellformat.
-- Återanvänder befintlig `build_pipeline()` (PatternLayer + EntityLayer + ContextLayer + Aggregator).
-- Commit ej gjord (väntar på instruktion).
-
-**Beslut fattade:** Överlappslösning via klustergruppa + max-confidence-vinnare (inte greedy cursor), eftersom det hanterar fall där ett sent fynd med hög konfidens ska vinna över ett tidigt fynd med låg konfidens inom samma kluster. Layoutkomponenter returnas från `layout.py` (separation of concerns); callbacks importerar `freetext_tab_layout` därifrån.
-**Öppet/Nästa steg:** Manuell verifiering i webbläsaren. Commit efter granskning.
-
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #40+#41 docs-merge)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Dokumentations-merge av issue #40+#41 och kategori-beslut C (ORG som `context.organisation`) i SSOT och demoforberedelse.md innan implementationsprompten.
@@ -507,3 +487,53 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** ORG mappas till `Category.ORGANISATION = "context.organisation"` (nytt `context.*`-prefix för kontextsignaler som inte i sig är art 4-data). Full motivering går till repots Loggbok i separat session; SSOT avsnitt 3.3, 5 och 12 och denna session räcker för implementationsprompten.
 **Öppet/Nästa steg:** Pre-existerande drift mellan `core/category.py` (`POSTORT`, `POSTNUMMER`) och SSOT avsnitt 3.3 rörs inte här - egen issue. Implementationsprompt för sammanslagna #40 skrivs mot denna synkade SSOT.
+
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #40 impl)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Implementera issue #40 (stänger #41) - SpaCy-baserad EntityLayer med PER/LOC/ORG-mappning och ny `Category.ORGANISATION = "context.organisation"`.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/category.py` - ny grupp `# Kontextsignaler: inte art 4-data i sig, bidrar till klassificering i kombination` med `ORGANISATION = "context.organisation"` insatt mellan art 9-blocket och `KONTEXTUELLT_KANSLIG`. Ingen befintlig medlem flyttad.
+- `gdpr_classifier/layers/entity/entity_layer.py` - stub ersatt med SpaCy-implementation: laddar `sv_core_news_lg` i `__init__`, `_label_map` mappar `PER→Category.NAMN/entity.spacy_PER`, `LOC→Category.ADRESS/entity.spacy_LOC`, `ORG→Category.ORGANISATION/entity.spacy_ORG`. `confidence=0.8` hårdkodad, `metadata={"ner_label": ent.label_}`. Okända labels hoppas över.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- Installerat spaCy 3.8.14 i `.venv` via `pip install -e .[nlp]`. `sv_core_news_lg` 3.8.0 var redan installerad i miljön - verifierat med `spacy.load('sv_core_news_lg')`. Ingen modell-download behövdes.
+- `pyproject.toml`-verifiering: `spacy>=3.7` fanns redan i `nlp` och `all` dependency-grupperna - ingen ändring behövdes.
+- `evaluation/dataset/loader.py`-verifiering: loadern använder `Category(finding_data["category"])` dynamiskt (rad 36), så Del 1 räcker och ingen hardkodad allow-list finns - ingen ändring behövdes.
+- Kört `.venv\Scripts\python.exe run_evaluation.py`.
+  - Totalt före (iteration 1-baseline, enbart pattern-lagret): `TP=44, FP=2, FN=0`, precision 95.65%, recall 100%, F1 97.78%.
+  - Totalt efter: `TP=44, FP=4, FN=0`, precision 91.67%, recall 100%, F1 95.65%. Recall oförändrad 100% för alla `article4.*`-kategorier.
+  - Per lager: `pattern: TP=44, FP=2` (oförändrat), `entity: TP=0, FP=2` (nytt lager aktiverat).
+  - Per kategori: `article4.adress` nu synlig med `TP=0, FP=2` (LOC-fynd mappade hit utan ground-truth); övriga art4-kategorier oförändrade.
+  - Totalt **2 NER-fynd** producerade mot nuvarande testdata, båda LOC:
+    - `[entity.spacy_LOC] "9001010009"` i `"Kunden (9001010009) ringde in."` - modellen flaggade personnummer-strängen som LOC (feldetektion som motiverar pattern-lagrets prioritet vid överlapp).
+    - `[entity.spacy_LOC] "Stockholm"` i `"Namn: Anna Andersson\nPersonnummer: 19801010-0009\nOrt: Stockholm"` - korrekt LOC-detektion.
+  - **0 PER-fynd** och **0 ORG-fynd** på nuvarande testdata trots att texterna innehåller namn (`Anna Andersson`, `Erik Eriksson`, `Maja Maj`, `Kalle`, `olof.olofsson`) och organisationen `Nordea`. Modellen plockade inte upp dem i de kontexter de förekommer (chattmeddelanden/mailfragment). Detta är utgångspunkten för Johannas #45-47 - testdata behöver entiteter i kontexter där modellen faktiskt triggar.
+- Kört `.venv\Scripts\python.exe -m pytest tests/integration/test_end_to_end.py -s`: 1 passed.
+- `ReadLints` på `core/category.py` och `layers/entity/entity_layer.py`: rent.
+- `git status` visar exakt tre förväntade ändrade filer: `gdpr_classifier/core/category.py`, `gdpr_classifier/layers/entity/entity_layer.py`, `docs/iteration_1_demoforberedelse.md`.
+
+**Beslut fattade:** DoD-raden "Total recall/precision ska inte regressera mot iteration 1-baseline" i originalprompten ersattes efter Plan Mode-granskning av två sanningsenliga krav: (a) recall för `article4.*`-kategorier ska inte regressera (uppfyllt, 100% per kategori), och (b) nya FP från NER-lagret rapporteras med antal och exempel (2 LOC-FP, se ovan). Totalprecision regresserade från 95.65% till 91.67% - förväntad arkitektonisk effekt av att NER-lagret aktiveras innan datasetet har NER-ground-truth. Effekten upphör när #45-47 levererar PER/LOC/ORG-labels. Kategoriplacering i `core/category.py` enligt Alternativ A: `ORGANISATION` och `KONTEXTUELLT_KANSLIG` behålls i två separata kommentargrupper (speglar SSOT och Plan Mode-beslutet att deras semantik är olika trots gemensamt `context.*`-prefix).
+**Öppet/Nästa steg:** Johannas #45-47 (NER-testdata med ground-truth PER/LOC/ORG) är naturlig verifiering av EntityLayers recall. Eventuell evaluation-filtrering av `context.*`-fynd hör till separat issue. LOC-feldetektion av `9001010009` som plats-namn kan bli en not i avsnitt 14 (Kända begränsningar) om den kvarstår efter #45-47. Commit sker efter granskning (ingen commit i denna session).
+
+#### Session 2026-04-18 – Claude Sonnet 4.6 (claude-code)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Implementera Issue #43 (Fritext-analys-flik) och Issue #44 (Spårbarhet via tooltips).
+
+**Ändrade filer:**
+- `demo/layout.py` – Ny hjälpfunktion `freetext_tab_layout()` med `dcc.Textarea`, "Analysera"-knapp, `freetext-result`-div och `freetext-summary`-div.
+- `demo/callbacks.py` – Ny `_resolve_overlaps()` (klusteralgoritm för överlappande fynd), `build_highlighted_text()` (färgkodade `html.Span` med `title`-tooltip), `build_summary()` (sammanfattningspanel med känslighetsnivå + fynd per kategori/lager), samt `analyze_text`-callback. Stub-gren i `render_tab` ersatt med anrop till `freetext_tab_layout()`.
+
+**Gjort:**
+- Implementerat klusterbaserad överlappslösning: fynd grupperas i intervallkluster; per kluster väljs vinnaren med högst konfidens. Garanterar att ingen teckenposition dupliceras.
+- Färgkodning via `style`-attribut: `pattern.*` → `orange`, `entity.*` → `#add8e6` (lightblue).
+- Tooltip via `title`-attribut: `"Kategori: ..., Källa: ..., Konfidens: ..."`.
+- Sammanfattningspanel visar känslighetsnivå (färgkodad badge), fynd per GDPR-kategori och fynd per lager i tabellformat.
+- Återanvänder befintlig `build_pipeline()` (PatternLayer + EntityLayer + ContextLayer + Aggregator).
+- Commit ej gjord (väntar på instruktion).
+
+**Beslut fattade:** Överlappslösning via klustergruppa + max-confidence-vinnare (inte greedy cursor), eftersom det hanterar fall där ett sent fynd med hög konfidens ska vinna över ett tidigt fynd med låg konfidens inom samma kluster. Layoutkomponenter returnas från `layout.py` (separation of concerns); callbacks importerar `freetext_tab_layout` därifrån.
+**Öppet/Nästa steg:** Manuell verifiering i webbläsaren. Commit efter granskning.
