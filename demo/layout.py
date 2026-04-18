@@ -10,6 +10,11 @@ def freetext_tab_layout() -> html.Div:
     return html.Div(
         [
             html.H2("Fritext-analys"),
+            html.Label(
+                "Text att analysera",
+                htmlFor="freetext-input",
+                style={"display": "block", "marginBottom": "6px"},
+            ),
             dcc.Textarea(
                 id="freetext-input",
                 placeholder="Skriv eller klistra in text här...",
