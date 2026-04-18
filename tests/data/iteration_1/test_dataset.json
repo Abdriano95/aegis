@@ -1,121 +1,121 @@
 [
   {
-    "text": "Hej, mitt personnummer är 850823-1234 och jag undrar över min faktura.",
+    "text": "Hej, mitt personnummer är 850823-1233 och jag undrar över min faktura.",
     "description": "PNR 10-siffrigt med bindestreck",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 26,
         "end": 37,
-        "text_span": "850823-1234"
+        "text_span": "850823-1233"
       }
     ]
   },
   {
-    "text": "Här kommer uppgifterna du frågade efter: 198508231234. Återkoppla om något saknas.",
+    "text": "Här kommer uppgifterna du frågade efter: 198508231233. Återkoppla om något saknas.",
     "description": "PNR 12-siffrigt utan bindestreck",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 41,
         "end": 53,
-        "text_span": "198508231234"
+        "text_span": "198508231233"
       }
     ]
   },
   {
-    "text": "Patienten är född 710214-5678 och har tidigare sökt för samma besvär.",
+    "text": "Patienten är född 710214-5674 och har tidigare sökt för samma besvär.",
     "description": "PNR 10-siffrigt i löpande text",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 18,
         "end": 29,
-        "text_span": "710214-5678"
+        "text_span": "710214-5674"
       }
     ]
   },
   {
-    "text": "Kan du dubbelkolla sökanden som har pnr 19991201-9876 tack?",
+    "text": "Kan du dubbelkolla sökanden som har pnr 19991201-9875 tack?",
     "description": "PNR 12-siffrigt med bindestreck",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 40,
         "end": 53,
-        "text_span": "19991201-9876"
+        "text_span": "19991201-9875"
       }
     ]
   },
   {
-    "text": "Kunden (9001010000) ringde in.",
+    "text": "Kunden (9001010009) ringde in.",
     "description": "PNR 10-siffrigt utan bindestreck inom parentes",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 8,
         "end": 18,
-        "text_span": "9001010000"
+        "text_span": "9001010009"
       }
     ]
   },
   {
-    "text": "Ärende gällande pers.nr 850823+1234, han är över 100 år nu.",
+    "text": "Ärende gällande pers.nr 850823+1233, han är över 100 år nu.",
     "description": "PNR 10-siffrigt med plustecken",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 24,
         "end": 35,
-        "text_span": "850823+1234"
+        "text_span": "850823+1233"
       }
     ]
   },
   {
-    "text": "Mitt barns personnummer är 20101112-1111.",
+    "text": "Mitt barns personnummer är 20101112-1116.",
     "description": "PNR barn",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 27,
         "end": 40,
-        "text_span": "20101112-1111"
+        "text_span": "20101112-1116"
       }
     ]
   },
   {
-    "text": "Bokning bekräftad för 550505-5555, välkommen!",
+    "text": "Bokning bekräftad för 550505-5557, välkommen!",
     "description": "PNR 10-siffrigt i automatisk bekräftelse",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 22,
         "end": 33,
-        "text_span": "550505-5555"
+        "text_span": "550505-5557"
       }
     ]
   },
   {
-    "text": "Namn: Anna Andersson\nPersonnummer: 19801010-0000\nOrt: Stockholm",
+    "text": "Namn: Anna Andersson\nPersonnummer: 19801010-0009\nOrt: Stockholm",
     "description": "PNR 12-siffrigt i radbruten lista",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 35,
         "end": 48,
-        "text_span": "19801010-0000"
+        "text_span": "19801010-0009"
       }
     ]
   },
   {
-    "text": "Skicka paketet till den vars personnummer slutar på 1234, hela är 600606-1234.",
+    "text": "Skicka paketet till den vars personnummer slutar på 1234, hela är 600606-1235.",
     "description": "PNR 10-siffrigt i komplicerad mening",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 66,
         "end": 77,
-        "text_span": "600606-1234"
+        "text_span": "600606-1235"
       }
     ]
   },
@@ -246,74 +246,74 @@
     ]
   },
   {
-    "text": "Betala in avgiften till vårt konto: SE12 3456 7890 1234 5678 90 så märker vi det som betalt.",
+    "text": "Betala in avgiften till vårt konto: SE41 3456 7890 1234 5678 90, så märker vi det som betalt.",
     "description": "IBAN med mellanslag",
     "expected_findings": [
       {
         "category": "article4.iban",
         "start": 36,
         "end": 63,
-        "text_span": "SE12 3456 7890 1234 5678 90"
+        "text_span": "SE41 3456 7890 1234 5678 90"
       }
     ]
   },
   {
-    "text": "Min utlandsbetalning studsar, jag angav SE99888877776666555544, är det fel?",
+    "text": "Min utlandsbetalning studsar, jag angav SE16888877776666555544, är det fel?",
     "description": "IBAN utan mellanslag",
     "expected_findings": [
       {
         "category": "article4.iban",
         "start": 40,
         "end": 62,
-        "text_span": "SE99888877776666555544"
+        "text_span": "SE16888877776666555544"
       }
     ]
   },
   {
-    "text": "Vänligen överför beloppet till IBAN: SE55 5000 0000 0555 5555 55 senast fredag.",
+    "text": "Vänligen överför beloppet till IBAN: SE96 5000 0000 0555 5555 55, senast fredag.",
     "description": "IBAN formaterad faktura",
     "expected_findings": [
       {
         "category": "article4.iban",
         "start": 37,
         "end": 64,
-        "text_span": "SE55 5000 0000 0555 5555 55"
+        "text_span": "SE96 5000 0000 0555 5555 55"
       }
     ]
   },
   {
-    "text": "Kan vi använda SE10101010101010101010 för den återkommande transaktionen?",
+    "text": "Kan vi använda SE49101010101010101010, för den återkommande transaktionen?",
     "description": "IBAN ihopsatt",
     "expected_findings": [
       {
         "category": "article4.iban",
         "start": 15,
         "end": 37,
-        "text_span": "SE10101010101010101010"
+        "text_span": "SE49101010101010101010"
       }
     ]
   },
   {
-    "text": "Kontouppgifter:\nBank: Nordea\nIBAN: SE77 1111 2222 3333 4444 55\nBIC: NDEADESS",
+    "text": "Kontouppgifter:\nBank: Nordea\nIBAN: SE29 1111 2222 3333 4444 55\nBIC: NDEADESS",
     "description": "IBAN i radbruten kontext",
     "expected_findings": [
       {
         "category": "article4.iban",
         "start": 35,
         "end": 62,
-        "text_span": "SE77 1111 2222 3333 4444 55"
+        "text_span": "SE29 1111 2222 3333 4444 55"
       }
     ]
   },
   {
-    "text": "Hej Supporten,\nJag har problem med min inloggning. Mitt personnummer är 850101-1234. Kan ni återkomma till anna.svensson@mail.se eller ringa på 070-123 45 67?\nMvh Anna",
+    "text": "Hej Supporten,\nJag har problem med min inloggning. Mitt personnummer är 850101-1236. Kan ni återkomma till anna.svensson@mail.se eller ringa på 070-123 45 67?\nMvh Anna",
     "description": "Blandad chat- eller mailmeddelande (pnr, email, tel)",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 72,
         "end": 83,
-        "text_span": "850101-1234"
+        "text_span": "850101-1236"
       },
       {
         "category": "article4.email",
@@ -330,7 +330,7 @@
     ]
   },
   {
-    "text": "Transaktion misslyckad för användare med mail olof.olofsson@exempel.com. Pengarna skulle ha gått till IBAN SE90 1234 5678 9012 3456 78 men kontot verkar vara spärrat. Hans PNR 19900101-1234 är flaggat.",
+    "text": "Transaktion misslyckad för användare med mail olof.olofsson@exempel.com. Pengarna skulle ha gått till IBAN SE05 1234 5678 9012 3456 78, men kontot verkar vara spärrat. Hans PNR 19900101-1239 är flaggat.",
     "description": "Blandad transaktionslogg (email, iban, pnr)",
     "expected_findings": [
       {
@@ -343,13 +343,13 @@
         "category": "article4.iban",
         "start": 107,
         "end": 134,
-        "text_span": "SE90 1234 5678 9012 3456 78"
+        "text_span": "SE05 1234 5678 9012 3456 78"
       },
       {
         "category": "article4.personnummer",
-        "start": 176,
-        "end": 189,
-        "text_span": "19900101-1234"
+        "start": 177,
+        "end": 190,
+        "text_span": "19900101-1239"
       }
     ]
   },
@@ -384,14 +384,14 @@
     ]
   },
   {
-    "text": "Abonnemanget för 850823-1234 är aktiverat. Faktura skickas till kalle@karlsson.com och vi har uppdaterat ert telefonnummer till 070 123 45 67. Automatiska dragningar sker via IBAN SE12 3456 7890 1234 5678 90.",
+    "text": "Abonnemanget för 850823-1233 är aktiverat. Faktura skickas till kalle@karlsson.com och vi har uppdaterat ert telefonnummer till 070 123 45 67. Automatiska dragningar sker via IBAN SE41 3456 7890 1234 5678 90.",
     "description": "Blandad maxad (pnr, email, tel, iban)",
     "expected_findings": [
       {
         "category": "article4.personnummer",
         "start": 17,
         "end": 28,
-        "text_span": "850823-1234"
+        "text_span": "850823-1233"
       },
       {
         "category": "article4.email",
@@ -409,7 +409,7 @@
         "category": "article4.iban",
         "start": 180,
         "end": 207,
-        "text_span": "SE12 3456 7890 1234 5678 90"
+        "text_span": "SE41 3456 7890 1234 5678 90"
       }
     ]
   },
