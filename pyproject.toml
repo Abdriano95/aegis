@@ -10,6 +10,9 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+demo = ["dash>=2.0"]
+nlp = ["spacy>=3.7"]
+all = ["dash>=2.0", "spacy>=3.7"]
 
 [tool.setuptools.packages.find]
 include = ["gdpr_classifier*", "evaluation*"]
