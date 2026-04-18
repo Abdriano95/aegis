@@ -2,7 +2,6 @@
 
 A layered Python pipeline for automatic GDPR text classification.
 
-
 ### Miljösetup
 
 ```bash
