@@ -54,12 +54,13 @@ def build_pipeline() -> Pipeline:
 
 
 _FREETEXT_PIPELINE: Pipeline | None = None
-
+_FREETEXT_PIPELINE_LOCK = threading.Lock()
 
 def _get_freetext_pipeline() -> Pipeline:
     global _FREETEXT_PIPELINE
-    if _FREETEXT_PIPELINE is None:
-        _FREETEXT_PIPELINE = build_pipeline()
+    with _FREETEXT_PIPELINE_LOCK:
+        if _FREETEXT_PIPELINE is None:
+            _FREETEXT_PIPELINE = build_pipeline()
     return _FREETEXT_PIPELINE
 
 
