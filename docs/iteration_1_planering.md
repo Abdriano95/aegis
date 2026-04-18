@@ -741,3 +741,41 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Öppet/Nästa steg:**
 - Klar med Issue #21!
 
+#### Session 2026-04-18 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), synkpunkt: integration pipeline + evaluation
+**Mål:** Koppla ihop pipeline-spåret och evaluation-spåret via ett körbart skript och ett pytest end-to-end-test, enligt "Synkpunkt: Integration" i iteration_1_planering.md.
+
+**Ändrade filer:**
+- `run_evaluation.py` - nytt körbart skript i repo-roten som instansierar `Pipeline([PatternLayer(), EntityLayer(), ContextLayer()], Aggregator())`, laddar `tests/data/iteration_1/test_dataset.json`, kör `run_evaluation` och skriver ut rapporten via `print_report`.
+- `tests/integration/test_end_to_end.py` - nytt pytest-test `test_end_to_end_pipeline_evaluation` som assertar att rapporten inte är `None` och att `report.total.recall > 0`, och skriver ut rapporten till stdout så att `pytest -s` visar den.
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Kompatibilitetsverifiering före implementation, utan att behöva ändra `gdpr_classifier/` eller `evaluation/`:
+  - `Pipeline(layers=..., aggregator=...).classify(text)` returnerar `Classification` (`gdpr_classifier/pipeline.py`), `run_evaluation` konsumerar `classification.findings` (`evaluation/runner.py`).
+  - `match(predicted: list[Finding], expected: list[LabeledFinding])` (`evaluation/matcher.py`) matchar `Classification.findings` respektive `LabeledText.expected_findings` (`evaluation/dataset/labeled_text.py`).
+  - `load_dataset(path)` returnerar `list[LabeledText]` (`evaluation/dataset/loader.py`).
+  - Default `PatternLayer()` registrerar `BetalkortRecognizer`; `Category.BETALKORT = "article4.betalkort"` matchar de `"article4.betalkort"`-etiketter som redan finns i testdatan.
+  - `EntityLayer` och `ContextLayer` har default-konstruktorer (`detect` returnerar `[]`), så de kan ingå i `active_layers=["pattern", "entity", "context"]` utan biverkningar.
+- Båda nya filer har `from __future__ import annotations` överst.
+- Importordningen i skriptet och testet följer spec-snippet ordagrant (`Aggregator, Pipeline` från topp-paketet; lagren från sina undermoduler; evaluation-hjälparna från `evaluation.*`).
+- `ReadLints` rena på båda nya filerna. Inga ändringar i `core/`, `gdpr_classifier/` eller `evaluation/`.
+- Körnings-verifiering:
+  - `python run_evaluation.py` från repo-roten skriver ut Total + per Category + per Layer (`pattern`), utan fel.
+  - `pytest tests/integration/test_end_to_end.py -s` passerar (1 passed). Rapporten visas i stdout.
+  - Testdatan i `tests/data/iteration_1/test_dataset.json` ger `TP=22, FP=1, FN=22` totalt, precision 95.65%, recall 50.00%. `report.total.recall > 0` håller med god marginal.
+
+**Beslut fattade:**
+- Sökvägen till testdatan hålls som relativ sträng `"tests/data/iteration_1/test_dataset.json"` exakt enligt spec-snippet - både skriptet och pytest förutsätter att de körs från repo-roten (standard med `pyproject.toml` där). Ingen `Path(__file__)`-resolution lades till för att inte avvika från specen.
+- Testet skriver ut rapporten via `print_report(report)` *efter* assertionerna. Om assertionen skulle falla bort vi utskriften; det är avsiktligt - assertfel är det primära signalerna, utskriften är komplementär diagnostik för `pytest -s`.
+- Ingen fixture eller parametrisering lades till - specen efterfrågar ett enda end-to-end-test, inte flera varianter. Framtida granularitet hör hemma i egna tester per komponent.
+
+**Observerat (inte en kompatibilitetsavvikelse, men värt att notera):**
+- Per-kategori-recall för `article4.personnummer` (0% över 13 expected) och `article4.iban` (0% över 7 expected) är noll i den nuvarande testdatan. Typkontrakten matchar helt; inga fel uppstår i pipelinen eller evaluationen. Det är ett *detektions-kvalitetsobservation* snarare än ett integrationsproblem - troligen en spans/format-drift mellan vad recognizers producerar och vad `matcher.match` kräver för `true positive` (t.ex. exakta `start/end` eller annat format). Värt ett eget issue under evaluation-spåret att dyka in i; ingår inte i denna synkpunkts scope.
+- `report.per_layer` innehåller bara `pattern` eftersom `EntityLayer`/`ContextLayer` är stubs. Rapport-utskriften skriver `Recall: N/A | F1: N/A` per lager, enligt befintlig `print_report`-mall.
+
+**Öppet/Nästa steg:**
+- Integration pipeline + evaluation klar. Definition of done uppfyllt: `run_evaluation.py` körbart utan fel, `pytest tests/integration/test_end_to_end.py` passerar, rapporten visar recall/precision per kategori, inga kompatibilitetsproblem, sessionslogg tillagd.
+- Följdfråga (eget issue): gräv i varför `article4.personnummer` och `article4.iban` ger recall 0% mot testdatan - är det spans, normalisering eller testdata-etiketter som behöver alignas?
+
