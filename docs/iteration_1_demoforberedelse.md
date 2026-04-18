@@ -388,7 +388,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 ### Poster
 
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #37)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Lösa issue #37 - utöka email-regex för IDN-domäner med svenska tecken (å, ä, ö).
@@ -407,7 +407,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Behåller `[a-zA-Z]{2,}` i TLD-delen; punycode/xn-- och IDN-TLD ligger utanför iteration 1:s scope (SSOT 4.2).
 **Öppet/Nästa steg:** Kvarvarande FN/FP ligger i `article4.telefonnummer` (recall 90%, precision 81.82%) - hör till andra issues. Unit-tester för email-edge cases vid behov i senare issue. Commit sker efter granskning (ingen commit i denna session).
 
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #38)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Lösa issue #38 - utöka telefon-regex så att `+46`/`0046` får omges av balanserade parenteser (t.ex. `(+46)70 999 88 77`).
@@ -426,7 +426,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Parens-varianten omfattar endast `+46`/`0046`, inte domestikt `0` (FP-risk + inte i verkligt bruk). SSOT 4.2 uppdaterad i samma session.
 **Öppet/Nästa steg:** Kvarvarande 2 FP på telefon (IBAN-fragment som matchar telefon-regex) hör till issue #39. Commit sker efter granskning (ingen commit i denna session).
 
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #39)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Lösa issue #39 - dokumentera IBAN-telefon-FP som känd begränsning i SSOT.
@@ -467,7 +467,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Utvärderingen körs globalt en gång vid uppstart (inte per toggle-klick) för responsivt UI.
 **Öppet/Nästa steg:** Issue #43 (fritext-analys med markeringar).
 
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #40+#41 docs-merge)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Dokumentations-merge av issue #40+#41 och kategori-beslut C (ORG som `context.organisation`) i SSOT och demoforberedelse.md innan implementationsprompten.
@@ -488,7 +488,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** ORG mappas till `Category.ORGANISATION = "context.organisation"` (nytt `context.*`-prefix för kontextsignaler som inte i sig är art 4-data). Full motivering går till repots Loggbok i separat session; SSOT avsnitt 3.3, 5 och 12 och denna session räcker för implementationsprompten.
 **Öppet/Nästa steg:** Pre-existerande drift mellan `core/category.py` (`POSTORT`, `POSTNUMMER`) och SSOT avsnitt 3.3 rörs inte här - egen issue. Implementationsprompt för sammanslagna #40 skrivs mot denna synkade SSOT.
 
-#### Session 2026-04-18 - Cursor-agent (Opus)
+#### Session 2026-04-18 - Cursor-agent (Opus) (issue #40 impl)
 
 **Iteration:** 1 / v0.1.1
 **Mål:** Implementera issue #40 (stänger #41) - SpaCy-baserad EntityLayer med PER/LOC/ORG-mappning och ny `Category.ORGANISATION = "context.organisation"`.
