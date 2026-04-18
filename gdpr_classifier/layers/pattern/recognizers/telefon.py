@@ -8,7 +8,7 @@ from gdpr_classifier.core import Category, Finding
 
 _PATTERN = re.compile(
     r"(?<![\d+])"
-    r"(?:\+46|0046|0)"
+    r"(?:\((?:\+46|0046)\)|\+46|0046|0)"
     r"[-\s]?[1-9]"
     r"(?:[-\s]?\d){6,8}"
     r"(?!\d)"

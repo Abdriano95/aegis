@@ -232,11 +232,13 @@ class Recognizer(Protocol):
 
 **E-post** (`email.py`):
 - Matchar standardformat via regex.
+- Teckenklasser i lokal- och domändel accepterar svenska bokstäver (å, ä, ö) för att stödja IDN-domäner som `företaget.se`. Punycode/xn-- ligger utanför iteration 1.
 - `source`: `"pattern.regex_email"`
 - `confidence`: 1.0
 
 **Telefonnummer** (`telefon.py`):
 - Matchar svenska telefonnummer (07X-XXX XX XX, +46-XXX-XXX XX XX, varianter).
+- Stödjer valfria balanserade parenteser runt landskoden (t.ex. `(+46)70 999 88 77`, `(0046)...`); domestikt prefix `0` omfattas inte av parentes-varianten.
 - `source`: `"pattern.regex_telefon"`
 - `confidence`: 0.9 (telefonnummer-regex ger fler falska positiva än Luhn-validerade personnummer).
 

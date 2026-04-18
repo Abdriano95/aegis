@@ -413,3 +413,41 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Utvärderingen körs globalt en gång vid uppstart (inte per toggle-klick) för responsivt UI.
 **Öppet/Nästa steg:** Issue #43 (fritext-analys med markeringar).
+
+#### Session 2026-04-18 - Cursor-agent (Opus)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Lösa issue #37 - utöka email-regex för IDN-domäner med svenska tecken (å, ä, ö).
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/pattern/recognizers/email.py` - teckenklasser i lokal- och domändel utökade med `åäöÅÄÖ`; `-` explicit escapad (`\-`).
+- `docs/arkitektur.md` - avsnitt 4.2, E-post-bullet: rad om IDN-stöd för svenska tecken tillagd.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- Bytt `_PATTERN` i `email.py` enligt issue-spec; struktur, `source`, `confidence` och `IGNORECASE` oförändrade.
+- Kört `.venv\Scripts\python.exe run_evaluation.py`: `article4.email` TP=10, FP=0, FN=0 → recall 100% (upp från 9/10). Total: TP=43, FP=2, FN=1, precision 95.56%, recall 97.73%, F1 96.63%. `info@företaget.se` ej längre i FN-sektionen.
+- Kört `.venv\Scripts\python.exe -m pytest tests/integration/test_end_to_end.py -s`: 1 passed.
+- `ReadLints` på `email.py`: rent.
+
+**Beslut fattade:** Behåller `[a-zA-Z]{2,}` i TLD-delen; punycode/xn-- och IDN-TLD ligger utanför iteration 1:s scope (SSOT 4.2).
+**Öppet/Nästa steg:** Kvarvarande FN/FP ligger i `article4.telefonnummer` (recall 90%, precision 81.82%) - hör till andra issues. Unit-tester för email-edge cases vid behov i senare issue. Commit sker efter granskning (ingen commit i denna session).
+
+#### Session 2026-04-18 - Cursor-agent (Opus)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Lösa issue #38 - utöka telefon-regex så att `+46`/`0046` får omges av balanserade parenteser (t.ex. `(+46)70 999 88 77`).
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/pattern/recognizers/telefon.py` - prefix-alternationen utökad med `\((?:\+46|0046)\)` som första gren; `source`, `confidence`, lookbehind `(?<![\d+])`, separators och boundaries oförändrade.
+- `docs/arkitektur.md` - avsnitt 4.2, Telefonnummer-bullet: rad om stöd för valfria balanserade parenteser runt landskoden tillagd.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- Bytt `_PATTERN` i `telefon.py` enligt issue-spec; parens-grenen placerad först i alternationen så motorn försöker den före bar-varianten.
+- Kört `.venv\Scripts\python.exe run_evaluation.py`: `article4.telefonnummer` TP=10, FP=2, FN=0 → recall 100% (upp från 90%), precision 83.33%. Total: TP=44, FP=2, FN=0, precision 95.65%, recall 100%, F1 97.78%. `(+46)70 999 88 77` ej längre i FN-sektionen; inga nya FP utöver de 2 befintliga IBAN-överlapps-FP:erna (#39).
+- Kört `.venv\Scripts\python.exe -m pytest tests/integration/test_end_to_end.py -s`: 1 passed.
+- `ReadLints` på `telefon.py`: rent.
+
+**Beslut fattade:** Parens-varianten omfattar endast `+46`/`0046`, inte domestikt `0` (FP-risk + inte i verkligt bruk). SSOT 4.2 uppdaterad i samma session.
+**Öppet/Nästa steg:** Kvarvarande 2 FP på telefon (IBAN-fragment som matchar telefon-regex) hör till issue #39. Commit sker efter granskning (ingen commit i denna session).
