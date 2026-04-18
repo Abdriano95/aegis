@@ -123,9 +123,14 @@ class Category(Enum):
     BIOMETRISK_DATA       = "article9.biometrisk_data"
     SEXUELL_LAGGNING      = "article9.sexuell_laggning"
 
+    # Kontextsignaler: inte art 4-data i sig, bidrar till klassificering i kombination
+    ORGANISATION          = "context.organisation"
+
     # Kontextuellt känslig (identifierbar indirekt, iteration 3)
-    KONTEXTUELLT_KÄNSLIG  = "context.identifierbar"
+    KONTEXTUELLT_KÄNSLIG  = "kontextuellt_kanslig"
 ```
+
+Prefix-konventionen i `Category`-värdet kodar GDPR-status för kategorin. `article4.*` markerar direkta personuppgifter enligt artikel 4 (kategorier som i sig identifierar en fysisk person). `article9.*` markerar särskilda kategorier enligt artikel 9 (känsliga uppgifter som kräver rättslig grund enligt art 9.2). `context.*` markerar kontextsignaler som inte i sig är art 4-data men som bidrar till sensitivity-bedömningen i kombination med andra fynd (pusselbitseffekten; se `SensitivityLevel` nedan och avsnitt 8 för hur sensitivity bestäms). Aggregatorn kan diskriminera på prefix utan att känna till enskilda kategorinamn.
 
 #### Finding (värdeobjekt)
 
@@ -254,17 +259,21 @@ class Recognizer(Protocol):
 - `confidence`: 1.0 vid lyckad Luhn-validering.
 
 
-## 5. Lager 2: Entitetsigenkänning (NER) - Iteration 2
+## 5. Lager 2: Entitetsigenkänning (NER)
 
-Stub i iteration 1. Returnerar tom lista.
+Implementeras i iteration 1 med SpaCy-modellen `sv_core_news_lg` för svenska NER. Lagret är aktivt i pipelinen från och med v0.1.1.
 
-Planerad implementation:
-- SpaCy (`sv_core_news_lg`) eller KB-BERT för svenska NER.
-- Identifierar entitetstyperna PER (person), LOC (plats), ORG (organisation).
-- `source`: `"entity.spacy_person"`, `"entity.spacy_location"`, etc.
-- `confidence`: modellens rapporterade säkerhet per entitet.
+**Entitetsmappning:**
 
-Designvalet mellan SpaCy och KB-BERT fattas baserat på iteration 1:s resultat och intressentfeedback.
+- `PER` → `Category.NAMN`, `source="entity.spacy_PER"`
+- `LOC` → `Category.ADRESS`, `source="entity.spacy_LOC"`
+- `ORG` → `Category.ORGANISATION`, `source="entity.spacy_ORG"`
+
+ORG mappas medvetet till `Category.ORGANISATION` med prefixet `context.*`, inte till en `article4.*`-kategori. Organisationer är inte personuppgifter enligt GDPR artikel 4. De fungerar däremot som pusselbitar i sensitivity-bedömningen: ett företagsnamn tillsammans med en roll eller en ort kan göra en enskild individ identifierbar även när inga direkta identifierare förekommer (pusselbitseffekten, avsnitt 3.3). Att hålla ORG separat från `article4.namn` gör dessutom att utvärderingsmetriker per kategori blir meningsfulla - PER-prestanda blandas inte med ORG-prestanda.
+
+**Konfidens:** SpaCy exponerar inte per-entitets-konfidens via ett enkelt API i `sv_core_news_lg`. I iteration 1 sätts `Finding.confidence = 0.8` som fast värde för alla NER-fynd. Detta är ett medvetet iteration-1-val och kan revideras i iteration 2 om kalibreringsmetriker motiverar det (t.ex. via per-token-sannolikheter eller byte till KB-BERT).
+
+**Källformat:** `source`-fältet är `"entity.spacy_{LABEL}"` där `{LABEL}` är SpaCys råetikett (`PER`/`LOC`/`ORG`). Detta bevarar lager-prefix-konventionen (`entity.*`) och gör det möjligt att filtrera utvärderingsrapporten per NER-etikett utan att inspektera `metadata`.
 
 
 ## 6. Lager 3: Kontextuell analys - Iteration 3
@@ -343,6 +352,8 @@ class Aggregator:
 ```
 
 I iteration 1 tilldelas endast `NONE`, `LOW` och `HIGH`. `MEDIUM` är definierad i `SensitivityLevel` men används först när kontextuella indirekt-identifierare (pusselbitseffekten) införs i iteration 3 (`ContextLayer`).
+
+`context.*`-fynd triggar inte ensamma någon höjning av sensitivity i iteration 1:s aggregator; de räknas som spårbara men icke-klassificerande signaler. Kombinationslogiken där `context.*` + `article4.*` eller `context.*` + `article9.*` höjer sensitivity till `MEDIUM` planeras för iteration 2 (se avsnitt 11).
 
 
 ## 9. Utvärdering
@@ -556,6 +567,7 @@ Följande designbeslut ska dokumenteras löpande, som råmaterial för designpri
 - Presidios roll: inspiration (se avsnitt 13)
 - Val av matchningsnivå i utvärderingen (span vs dokument)
 - Teknikval inom varje lager och motivering
+- Beslut om `context.*`-prefix och ORG-kategorisering (full motivering i repots Loggbok)
 
 Dokumentationsformatet ska följa mönstret: *beslut, alternativ som övervägdes, motivering, koppling till GDPR-krav eller empiriskt stöd.*
 

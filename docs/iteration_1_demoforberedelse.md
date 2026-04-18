@@ -81,8 +81,9 @@ Installera allt: `pip install -e ".[all,dev]"`
 
 | # | Story |
 |---|-------|
-| 40 | *As a developer I want EntityLayer to use SpaCy sv_core_news_lg for Swedish NER so that person names, locations and organizations are detected without relying on regex patterns.* |
-| 41 | *As a developer I want NER findings to carry source="entity.spacy_PER/LOC/ORG" so that the evaluation report can show metrics per entity type and per layer.* |
+| 40 | *As a developer I want EntityLayer to use SpaCy sv_core_news_lg for Swedish NER so that person names, locations and organizations are detected with source tags `entity.spacy_PER/LOC/ORG` and organizations mapped to the new `context.organisation` category.* |
+
+*Issue #41 är sammanslagen i #40: source-fältets format är en specifikation inom #40:s implementation, inte en separat kodförändring.*
 
 ### Demo-gränssnitt
 
@@ -119,8 +120,7 @@ Bygg i den här ordningen:
 | 1 | #37 | `layers/pattern/recognizers/email.py` | Utöka regex för IDN-domäner |
 | 2 | #38 | `layers/pattern/recognizers/telefon.py` | Valfria parenteser i prefix |
 | 3 | #39 | `docs/arkitektur.md` | Dokumentera IBAN-telefon-FP |
-| 4 | #40 | `layers/entity/entity_layer.py` | SpaCy NER-implementation |
-| 5 | #41 | `layers/entity/entity_layer.py` | Source-taggar per entitetstyp |
+| 4 | #40 | `layers/entity/entity_layer.py`, `gdpr_classifier/core/category.py` | SpaCy NER-implementation med source-taggar och ORG-mappning till `context.organisation` |
 
 ### Johanna: Demo + testdata
 
@@ -183,9 +183,9 @@ class EntityLayer:
     def __init__(self, model_name: str = "sv_core_news_lg"):
         self._nlp = spacy.load(model_name)
         self._label_map = {
-            "PER": (Category.NAMN, "entity.spacy_person"),
-            "LOC": (Category.ADRESS, "entity.spacy_location"),
-            "ORG": (Category.NAMN, "entity.spacy_organization"),
+            "PER": (Category.NAMN, "entity.spacy_PER"),
+            "LOC": (Category.ADRESS, "entity.spacy_LOC"),
+            "ORG": (Category.ORGANISATION, "entity.spacy_ORG"),
         }
 
     @property
@@ -204,21 +204,16 @@ class EntityLayer:
                 start=ent.start_char,
                 end=ent.end_char,
                 text_span=ent.text,
-                confidence=round(ent.kb_id_ or 0.8, 2),
+                confidence=0.8,
                 source=source,
                 metadata={"ner_label": ent.label_},
             ))
         return findings
 ```
 
-Notera: SpaCys `sv_core_news_lg` ger inte per-entitets-konfidens
-via ett enkelt API-anrop. Undersök `doc.cats` eller sätt en fast
-konfidens (t.ex. 0.8) som default i iteration 1. Dokumentera valet.
+`confidence` är fast 0.8 i iteration 1; SpaCys `sv_core_news_lg` exponerar inte per-entitets-konfidens via ett enkelt API. Motiveringen och planen att revidera i iteration 2 är dokumenterad i SSOT avsnitt 5.
 
-ORG mappas till Category.NAMN med `source="entity.spacy_organization"`
-och `metadata={"ner_label": "ORG"}`. Om ni vill ha en separat
-Category.ORGANISATION, lägg till den i core/category.py (meddela
-Johanna först).
+`Category.ORGANISATION = "context.organisation"` läggs till i `gdpr_classifier/core/category.py` som del av #40. Motiveringen (kontextsignal, inte art 4-data) är dokumenterad i SSOT avsnitt 3.3 och som bullet i avsnitt 12. Full beslutsprosa förs in i repots Loggbok i separat session.
 
 ### Johanna: Demo-gränssnitt (#42-44)
 
@@ -305,6 +300,7 @@ Tillgängliga category-värden:
 - `article4.betalkort`
 - `article4.namn` (ny, NER)
 - `article4.adress` (ny, NER)
+- `context.organisation` (ny, NER - kontextsignal, inte art 4)
 
 ---
 
@@ -327,7 +323,8 @@ Semistrukturerade frågor för den naturalistiska utvärderingen:
 - [ ] Email-recognizer hanterar svenska tecken i domännamn.
 - [ ] Telefon-recognizer hanterar parenteser runt landskod.
 - [ ] IBAN-telefon-FP dokumenterad som känd begränsning.
-- [ ] EntityLayer implementerad med SpaCy NER.
+- [ ] EntityLayer implementerad med SpaCy NER och source-taggar `entity.spacy_PER/LOC/ORG`; ORG mappad till `context.organisation`.
+- [ ] `gdpr_classifier/core/category.py` utökad med `Category.ORGANISATION = "context.organisation"`.
 - [ ] Nya testdata med namn, platser, organisationer.
 - [ ] Demo-gränssnitt med två vyer (rapport + fritext).
 - [ ] Fritext-vyn visar markeringar med spårbarhet.
@@ -351,6 +348,7 @@ Saker att dokumentera i denna fas:
 - Hur konfidens hanteras för NER-findings
 - Designval i demo-gränssnittet som stöder spårbarhet
 - Varför NER inkluderas före första utvärderingen (litteraturmotivering)
+- Beslut om `context.*`-prefix och ORG-kategorisering (kommer att föras in som numrerat beslut i Loggboken i separat session)
 
 ---
 
@@ -468,3 +466,24 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Utvärderingen körs globalt en gång vid uppstart (inte per toggle-klick) för responsivt UI.
 **Öppet/Nästa steg:** Issue #43 (fritext-analys med markeringar).
+
+#### Session 2026-04-18 - Cursor-agent (Opus)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Dokumentations-merge av issue #40+#41 och kategori-beslut C (ORG som `context.organisation`) i SSOT och demoforberedelse.md innan implementationsprompten.
+
+**Ändrade filer:**
+- `docs/arkitektur.md` - `Category`-enum utökad med `ORGANISATION = "context.organisation"`, prefix-konvention i prosa efter enum, avsnitt 5 omskrivet (rubrik utan "Iteration 2", entitetsmappning PER/LOC/ORG, ORG-motivering, konfidens-not, källformat), mening om `context.*` i avsnitt 8, ny bullet i avsnitt 12.
+- `docs/iteration_1_demoforberedelse.md` - #40+#41 sammanslagna i user stories-tabellen, Abdulla-arbetsfördelning reducerad till 1-4 steg, `_label_map`-skissen uppdaterad med nya source-taggarna och `Category.ORGANISATION`, prosa under kodskissen omskriven, testdata-kategorilistan utökad med `context.organisation`, DoD-rader uppdaterade (NER + ny rad för `core/category.py`), Loggbok-bullet tillagd, denna sessionspost.
+
+**Gjort:**
+- Enum-ordning (BETALKORT sist) och `class Category(Enum)` (inte `str, Enum`) bevarade i SSOT efter granskning i Plan Mode; minsta möjliga diff.
+- `KONTEXTUELLT_KÄNSLIG = "kontextuellt_kanslig"` bevarad verbatim - värdet har inte flyttats till `context.*`-paraplyet. Beslut från granskningen: `ORGANISATION` är en kontextsignal som kompletterar art 4-fynd, medan `KONTEXTUELLT_KÄNSLIG` är en iteration 3-signal med annan semantik; att ge dem samma prefix antyder likhet som inte finns.
+- Rubriken på avsnitt 5 ändrad från "Lager 2: Entitetsigenkänning (NER) - Iteration 2" till "Lager 2: Entitetsigenkänning (NER)" eftersom lagret byggs i iteration 1.
+- `context.*`-prefix-konventionen förklarad i prosa efter enum-blocket; ORG-motivering kopplad till pusselbitseffekten (avsnitt 3.3).
+- Aggregator-not i avsnitt 8: `context.*`-fynd triggar inte ensamma någon sensitivity-höjning i iteration 1; kombinationslogik planerad iteration 2.
+- Avsnitt 12 fick en bullet om `context.*`-beslutet; full Beslut N-prosa placeras i repots Loggbok i separat session (avsnitt 12 är ämneslista, inte beslutsregister).
+- `git status` visar exakt två ändrade filer: `docs/arkitektur.md`, `docs/iteration_1_demoforberedelse.md`.
+
+**Beslut fattade:** ORG mappas till `Category.ORGANISATION = "context.organisation"` (nytt `context.*`-prefix för kontextsignaler som inte i sig är art 4-data). Full motivering går till repots Loggbok i separat session; SSOT avsnitt 3.3, 5 och 12 och denna session räcker för implementationsprompten.
+**Öppet/Nästa steg:** Pre-existerande drift mellan `core/category.py` (`POSTORT`, `POSTNUMMER`) och SSOT avsnitt 3.3 rörs inte här - egen issue. Implementationsprompt för sammanslagna #40 skrivs mot denna synkade SSOT.
