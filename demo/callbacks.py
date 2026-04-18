@@ -53,6 +53,16 @@ def build_pipeline() -> Pipeline:
     )
 
 
+_FREETEXT_PIPELINE: Pipeline | None = None
+
+
+def _get_freetext_pipeline() -> Pipeline:
+    global _FREETEXT_PIPELINE
+    if _FREETEXT_PIPELINE is None:
+        _FREETEXT_PIPELINE = build_pipeline()
+    return _FREETEXT_PIPELINE
+
+
 @dataclass(frozen=True)
 class EvaluationResult:
     """Container for demo evaluation output."""
@@ -566,8 +576,15 @@ def analyze_text(n_clicks: int, text: str | None) -> tuple:
     """Run the pipeline on free text and render highlighted results with summary."""
     if not text:
         return [], []
-    pipeline = build_pipeline()
-    classification = pipeline.classify(text)
+    try:
+        classification = _get_freetext_pipeline().classify(text)
+    except Exception:
+        _LOG.exception("Pipeline failed during freetext analysis")
+        error_msg = html.Div(
+            "Analysen misslyckades – kontrollera serverloggen för detaljer.",
+            style={"color": "red"},
+        )
+        return [], error_msg
     return (
         build_highlighted_text(text, classification.findings),
         build_summary(classification),
