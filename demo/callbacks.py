@@ -62,7 +62,7 @@ def evaluate_demo(data_path: Optional[str] = None) -> Optional[EvaluationResult]
     path = Path(data_path) if data_path else _DEFAULT_DATA_PATH
     try:
         dataset = load_dataset(str(path))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError, ValueError):
         _LOG.exception("Failed to load dataset (data_path=%s)", path)
         return None
     pipeline = build_pipeline()
