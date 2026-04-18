@@ -1,0 +1,392 @@
+# Iteration 1: Demoförberedelse
+
+**Projekt:** gdpr-classifier  
+**Version:** 0.1.1  
+**Period:** v17 (18-22 april)  
+**Metodik:** Scrumban (kanban-board i GitHub Projects)  
+**Syfte:** Förbereda artefakten för den första naturalistiska utvärderingen (demo + intervju) genom att implementera lager 2 (NER), åtgärda kända edge cases, och bygga ett demo-gränssnitt.
+
+---
+
+## Kontext och ADR-motivering
+
+Iteration 1:s pipeline och evaluation är integrerade och körda.
+Kvantitativa resultat: 95.45% recall, 95.45% precision totalt.
+Identifierade begränsningar: 2 FP (telefon-regex matchar delar av IBAN),
+2 FN (IDN-epost, telefonnummer med parenteser).
+
+Det höga recall-värdet speglar att testdatan består av "enkla" fall
+med explicita mönster. Litteraturen (Mishra et al., 2025; Zhou et al.,
+2025; Karras et al., 2025) visar konsekvent att regex utan semantisk
+komplettering misslyckas med obekanta format och kontextuell data.
+Att presentera enbart regex-systemet för intressenterna vore att
+utvärdera en artefakt vi redan vet är otillräcklig.
+
+Detta är fortfarande BIE-cykel 1 (Build, Intervene, Evaluate).
+Build-fasen utökas med lager 2 (NER) innan Intervene-steget (demo).
+Beslutet att inkludera NER motiveras av justificatory knowledge
+från litteraturen, inte av stakeholder-feedback (som ännu inte skett):
+
+- Mishra et al. (2025): "Rule-based and regex systems fail in
+  unfamiliar formats and produce many false positives."
+- Zhou et al. (2025): mönstermatchning som första steg kräver
+  semantisk analys som komplement.
+- Karras et al. (2025): rekommenderar hybridpipelines där regler
+  förfiltrerar och ML hanterar residualen.
+
+Feedbacken från demon styr sedan iteration 2, där kontextlagret
+(lager 3) implementeras.
+
+**Iterationsstruktur efter omplanering:**
+- Iteration 1 (BIE-cykel 1): Lager 1 (regex) + Lager 2 (NER) + demo + utvärdering
+- Iteration 2 (BIE-cykel 2): Lager 3 (kontext) + förbättringar baserat på feedback
+- Iteration 3 (BIE-cykel 3): Förfining + slutgiltig utvärdering
+
+---
+
+## Repo och miljö
+
+- **Repo:** https://github.com/Abdriano95/gdpr-classifier
+- **Branch-strategi:** Jobba direkt på `main`. Committa ofta, korta meddelanden.
+- **Stäng issues:** Använd `fixes #N` i commit-meddelanden.
+- **WIP-gräns:** Max 2 kort i "In progress" per person.
+
+### Nya beroenden
+
+```toml
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+demo = ["dash>=2.0"]
+nlp = ["spacy>=3.7"]
+all = ["dash>=2.0", "spacy>=3.7"]
+```
+
+Installera NER-modell: `python -m spacy download sv_core_news_lg`
+
+Installera allt: `pip install -e ".[all,dev]"`
+
+---
+
+## User stories
+
+### Edge case-fixar
+
+| # | Story |
+|---|-------|
+| 37 | *As a system I want to identify email addresses with Swedish characters in the domain (å, ä, ö) so that IDN addresses like info@företaget.se are flagged as Article 4.* |
+| 38 | *As a system I want to identify phone numbers with parentheses around the country code so that formats like (+46)70 999 88 77 are flagged as Article 4.* |
+| 39 | *As a developer I want the IBAN-phone overlap false positive documented as a known limitation so that it can be addressed in iteration 2.* |
+
+### Lager 2: NER
+
+| # | Story |
+|---|-------|
+| 40 | *As a developer I want EntityLayer to use SpaCy sv_core_news_lg for Swedish NER so that person names, locations and organizations are detected without relying on regex patterns.* |
+| 41 | *As a developer I want NER findings to carry source="entity.spacy_PER/LOC/ORG" so that the evaluation report can show metrics per entity type and per layer.* |
+
+### Demo-gränssnitt
+
+| # | Story |
+|---|-------|
+| 42 | *As an evaluator I want a Dash web interface with an evaluation report view so that I can show stakeholders the quantitative results in a readable format with verbose toggle.* |
+| 43 | *As an evaluator I want a free-text input view where stakeholders can type or paste text and see detected findings highlighted in the original text with category, source and confidence so that traceability is visible and testable live.* |
+| 44 | *As an evaluator I want each highlighted finding to show which layer and rule produced it so that stakeholders can assess the system's traceability (design principle 3).* |
+
+### Testdata
+
+| # | Story |
+|---|-------|
+| 45 | *As an evaluator I want at least 10 texts containing person names without other patterns so that the NER layer can be evaluated independently.* |
+| 46 | *As an evaluator I want at least 5 texts each with location names and organization names so that all NER entity types have test coverage.* |
+| 47 | *As an evaluator I want mixed texts combining NER entities with regex patterns so that cross-layer interaction is tested.* |
+
+### Demo och utvärdering
+
+| # | Story |
+|---|-------|
+| 48 | *As an evaluator I want a demo script with prepared texts and interview questions so that the naturalistic evaluation session is structured and reproducible.* |
+
+---
+
+## Arbetsfördelning
+
+### Abdulla: Edge cases + NER
+
+Bygg i den här ordningen:
+
+| Steg | Issue | Fil | Vad |
+|------|-------|-----|-----|
+| 1 | #37 | `layers/pattern/recognizers/email.py` | Utöka regex för IDN-domäner |
+| 2 | #38 | `layers/pattern/recognizers/telefon.py` | Valfria parenteser i prefix |
+| 3 | #39 | `docs/arkitektur.md` | Dokumentera IBAN-telefon-FP |
+| 4 | #40 | `layers/entity/entity_layer.py` | SpaCy NER-implementation |
+| 5 | #41 | `layers/entity/entity_layer.py` | Source-taggar per entitetstyp |
+
+### Johanna: Demo + testdata
+
+Bygg parallellt med Abdulla:
+
+| Steg | Issue | Fil | Vad |
+|------|-------|-----|-----|
+| 1 | #42 | `demo/app.py`, `demo/layout.py`, `demo/callbacks.py` | Dash-app med rapport-vy |
+| 2 | #43 | `demo/callbacks.py`, `demo/layout.py` | Fritext-vy med markeringar |
+| 3 | #44 | `demo/callbacks.py` | Spårbarhetsinformation per markering |
+| 4 | #45 | `tests/data/iteration_1/test_dataset.json` | NER-testdata: personnamn |
+| 5 | #46 | `tests/data/iteration_1/test_dataset.json` | NER-testdata: platser, organisationer |
+| 6 | #47 | `tests/data/iteration_1/test_dataset.json` | Blandade texter |
+
+### Tillsammans
+
+| Steg | Issue | Vad |
+|------|-------|-----|
+| Synk | - | Integrera NER + demo, kör evaluation |
+| Sist | #48 | Demomanus och intervjufrågor |
+
+---
+
+## Beroendekarta
+
+```
+       Abdulla                          Johanna
+          │                                │
+  #37 Email IDN-fix (0.5h)       #42 Rapport-vy (0.5 dag)
+          │                                │
+  #38 Telefon parentes-fix (0.5h)  #43 Fritext-vy (0.5 dag)
+          │                                │
+  #39 Dokumentera FP (0.5h)       #44 Spårbarhet i UI (2h)
+          │                                │
+  #40-41 NER EntityLayer (1-2 dag)  #45-47 NER-testdata (0.5 dag)
+          │                                │
+          └────────────┬───────────────────┘
+                       ▼
+            Integrera NER + demo (tillsammans, 1h)
+                       ▼
+            Kör evaluation med NER-data
+                       ▼
+            #48 Demomanus + intervjufrågor (tillsammans, 1-2h)
+                       ▼
+            Demo + intervju med intressenter
+                       ▼
+            Sammanställ feedback -> styr iteration 2
+```
+
+---
+
+## Detaljerade instruktioner
+
+### Abdulla: NER-implementation (#40-41)
+
+Ersätt stubben i `layers/entity/entity_layer.py` med:
+
+```python
+class EntityLayer:
+    def __init__(self, model_name: str = "sv_core_news_lg"):
+        self._nlp = spacy.load(model_name)
+        self._label_map = {
+            "PER": (Category.NAMN, "entity.spacy_person"),
+            "LOC": (Category.ADRESS, "entity.spacy_location"),
+            "ORG": (Category.NAMN, "entity.spacy_organization"),
+        }
+
+    @property
+    def name(self) -> str:
+        return "entity"
+
+    def detect(self, text: str) -> list[Finding]:
+        findings = []
+        doc = self._nlp(text)
+        for ent in doc.ents:
+            if ent.label_ not in self._label_map:
+                continue
+            category, source = self._label_map[ent.label_]
+            findings.append(Finding(
+                category=category,
+                start=ent.start_char,
+                end=ent.end_char,
+                text_span=ent.text,
+                confidence=round(ent.kb_id_ or 0.8, 2),
+                source=source,
+                metadata={"ner_label": ent.label_},
+            ))
+        return findings
+```
+
+Notera: SpaCys `sv_core_news_lg` ger inte per-entitets-konfidens
+via ett enkelt API-anrop. Undersök `doc.cats` eller sätt en fast
+konfidens (t.ex. 0.8) som default i iteration 1. Dokumentera valet.
+
+ORG mappas till Category.NAMN med `source="entity.spacy_organization"`
+och `metadata={"ner_label": "ORG"}`. Om ni vill ha en separat
+Category.ORGANISATION, lägg till den i core/category.py (meddela
+Johanna först).
+
+### Johanna: Demo-gränssnitt (#42-44)
+
+**Filstruktur:**
+```
+demo/
+    app.py              # Dash-applikation, entry point
+    callbacks.py        # Pipeline-anrop och resultatformatering
+    layout.py           # UI-layout (två tabs)
+```
+
+**Vy 2 - Textmarkeringar:**
+Bygg markeringarna genom att iterera `classification.findings`
+sorterade på `start`-position och infoga HTML-spans med bakgrundsfärg:
+
+```python
+def build_highlighted_text(text: str, findings: list[Finding]):
+    # Sortera findings på start-position
+    sorted_findings = sorted(findings, key=lambda f: f.start)
+    # Bygg HTML med spans runt varje finding
+    # Färgkoda per lager: pattern=orange, entity=blå
+    ...
+```
+
+Varje markering ska ha en tooltip eller inline-info med:
+- Kategori (t.ex. "article4.personnummer")
+- Källa (t.ex. "pattern.luhn_personnummer")
+- Konfidens (t.ex. "1.0")
+
+Under texten: sammanfattningspanel med känslighetsnivå,
+antal fynd per kategori och per lager.
+
+Pipeline-instansiering i callback:
+```python
+from gdpr_classifier import Pipeline, Aggregator
+from gdpr_classifier.layers.pattern import PatternLayer
+from gdpr_classifier.layers.entity import EntityLayer
+from gdpr_classifier.layers.context import ContextLayer
+
+pipeline = Pipeline(
+    layers=[PatternLayer(), EntityLayer(), ContextLayer()],
+    aggregator=Aggregator(),
+)
+```
+
+### Johanna: NER-testdata (#45-47)
+
+Utöka `tests/data/iteration_1/test_dataset.json` med:
+
+Nya kategorivärden:
+- `article4.namn`
+- `article4.adress`
+
+Exempelformat:
+```json
+{
+  "text": "Hej Anna Svensson, tack för ditt mejl.",
+  "description": "Text med personnamn",
+  "expected_findings": [
+    {
+      "category": "article4.namn",
+      "start": 4,
+      "end": 18,
+      "text_span": "Anna Svensson"
+    }
+  ]
+}
+```
+
+Tänk på: SpaCy:s NER kan ge andra span-gränser än vad ni
+förväntar er. Kör `EntityLayer().detect(text)` på varje
+testtext och justera expected_findings efter faktisk output
+innan ni committar. Lär av personnummer-buggen.
+
+---
+
+## Testdata: JSON-format (uppdaterat)
+
+Tillgängliga category-värden:
+- `article4.personnummer`
+- `article4.email`
+- `article4.telefonnummer`
+- `article4.iban`
+- `article4.betalkort`
+- `article4.namn` (ny, NER)
+- `article4.adress` (ny, NER)
+
+---
+
+## Intervjufrågor (utkast)
+
+Semistrukturerade frågor för den naturalistiska utvärderingen:
+
+1. Hur bedömer ni systemets förmåga att identifiera personuppgifter i de texter vi visade?
+2. Vilka typer av känslig data ser ni som mest kritiska att fånga i er verksamhet?
+3. Finns det texttyper eller format som ni hanterar dagligen som ni tror att systemet skulle missa?
+4. Hur värderar ni balansen mellan falska positiva och falska negativa?
+5. Om systemet hade funnits i er verksamhet idag, var i arbetsflödet skulle det passa in?
+6. Vad skulle behöva förbättras för att ni skulle överväga att använda ett sådant system?
+7. Ser ni ett värde i att systemet visar vilket lager och vilken regel som gjorde detektionen (spårbarhet)?
+
+---
+
+## Definition of done
+
+- [ ] Email-recognizer hanterar svenska tecken i domännamn.
+- [ ] Telefon-recognizer hanterar parenteser runt landskod.
+- [ ] IBAN-telefon-FP dokumenterad som känd begränsning.
+- [ ] EntityLayer implementerad med SpaCy NER.
+- [ ] Nya testdata med namn, platser, organisationer.
+- [ ] Demo-gränssnitt med två vyer (rapport + fritext).
+- [ ] Fritext-vyn visar markeringar med spårbarhet.
+- [ ] Demomanus och intervjufrågor förberedda.
+- [ ] Evaluation körd med NER aktivt, metriker rapporterade.
+- [ ] Arkitektur.md uppdaterad (avsnitt 5).
+- [ ] Sessionslogg uppdaterad.
+- [ ] `git tag v0.1.1`
+
+---
+
+## Loggbok
+
+Dokumentera löpande, i formatet: beslut, alternativ som övervägdes,
+motivering, koppling till GDPR-krav eller empiriskt stöd.
+
+Saker att dokumentera i denna fas:
+- Teknikval NER: SpaCy vs KB-BERT, motivering
+- Mappning av NER-entitetstyper till GDPR-kategorier
+- SpaCy-modellval (sv_core_news_lg vs alternativ)
+- Hur konfidens hanteras för NER-findings
+- Designval i demo-gränssnittet som stöder spårbarhet
+- Varför NER inkluderas före första utvärderingen (litteraturmotivering)
+
+---
+
+## Agent-sessionslogg
+
+### Regel
+
+**Varje agent (AI eller människa) som arbetar i en session ska logga sin session här efter avslutat arbete.** Loggen är komplement till Loggboken ovan: Loggboken dokumenterar *beslut och motiveringar*, medan sessionsloggen dokumenterar *vad som faktiskt gjordes, i vilken ordning, och av vem*. Syftet är spårbarhet och att nästa agent (eller granskare) snabbt ska kunna förstå repots historik utan att läsa hela git-loggen.
+
+### Format
+
+Lägg till en ny post längst ner. Använd följande mall:
+
+```markdown
+#### Session YYYY-MM-DD - [Agent/Person]
+
+**Iteration:** [t.ex. 1 / v0.1.1]
+**Mål:** [en mening om vad sessionen skulle åstadkomma]
+
+**Ändrade filer:**
+- `path/till/fil.py` - [kort beskrivning]
+
+**Gjort:**
+- [punkt per konkret åtgärd]
+
+**Beslut fattade:** [kort; länka till Loggboken om längre motivering behövs]
+**Öppet/Nästa steg:** [vad som återstår eller blockerar]
+```
+
+### Regler för loggning
+
+1. Logga **efter varje sammanhållen arbetssession**.
+2. En post per session, inte per commit.
+3. Håll det kort: punktlistor, inga resonemang (de hör hemma i Loggboken).
+4. Ändra aldrig tidigare poster. Lägg till en ny post om något behöver korrigeras.
+5. Om sessionen genererade arkitekturbeslut ska dessa även föras in i Loggboken med full motivering.
+
+### Poster
+
