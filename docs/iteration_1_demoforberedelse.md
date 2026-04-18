@@ -467,6 +467,26 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Utvärderingen körs globalt en gång vid uppstart (inte per toggle-klick) för responsivt UI.
 **Öppet/Nästa steg:** Issue #43 (fritext-analys med markeringar).
 
+#### Session 2026-04-18 – Claude Sonnet 4.6 (claude-code)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Implementera Issue #43 (Fritext-analys-flik) och Issue #44 (Spårbarhet via tooltips).
+
+**Ändrade filer:**
+- `demo/layout.py` – Ny hjälpfunktion `freetext_tab_layout()` med `dcc.Textarea`, "Analysera"-knapp, `freetext-result`-div och `freetext-summary`-div.
+- `demo/callbacks.py` – Ny `_resolve_overlaps()` (klusteralgoritm för överlappande fynd), `build_highlighted_text()` (färgkodade `html.Span` med `title`-tooltip), `build_summary()` (sammanfattningspanel med känslighetsnivå + fynd per kategori/lager), samt `analyze_text`-callback. Stub-gren i `render_tab` ersatt med anrop till `freetext_tab_layout()`.
+
+**Gjort:**
+- Implementerat klusterbaserad överlappslösning: fynd grupperas i intervallkluster; per kluster väljs vinnaren med högst konfidens. Garanterar att ingen teckenposition dupliceras.
+- Färgkodning via `style`-attribut: `pattern.*` → `orange`, `entity.*` → `#add8e6` (lightblue).
+- Tooltip via `title`-attribut: `"Kategori: ..., Källa: ..., Konfidens: ..."`.
+- Sammanfattningspanel visar känslighetsnivå (färgkodad badge), fynd per GDPR-kategori och fynd per lager i tabellformat.
+- Återanvänder befintlig `build_pipeline()` (PatternLayer + EntityLayer + ContextLayer + Aggregator).
+- Commit ej gjord (väntar på instruktion).
+
+**Beslut fattade:** Överlappslösning via klustergruppa + max-confidence-vinnare (inte greedy cursor), eftersom det hanterar fall där ett sent fynd med hög konfidens ska vinna över ett tidigt fynd med låg konfidens inom samma kluster. Layoutkomponenter returnas från `layout.py` (separation of concerns); callbacks importerar `freetext_tab_layout` därifrån.
+**Öppet/Nästa steg:** Manuell verifiering i webbläsaren. Commit efter granskning.
+
 #### Session 2026-04-18 - Cursor-agent (Opus)
 
 **Iteration:** 1 / v0.1.1

@@ -9,15 +9,20 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from dash import Input, Output, callback, dash_table, dcc, html
+from collections import defaultdict
+
+from dash import Input, Output, State, callback, dash_table, dcc, html
 
 from evaluation.dataset.loader import load_dataset
 from evaluation.report import Report
 from evaluation.runner import run_evaluation
 from gdpr_classifier import Aggregator, Pipeline
+from gdpr_classifier.core.classification import Classification
+from gdpr_classifier.core.finding import Finding
 from gdpr_classifier.layers.context import ContextLayer
 from gdpr_classifier.layers.entity import EntityLayer
 from gdpr_classifier.layers.pattern import PatternLayer
+from demo.layout import freetext_tab_layout
 
 _LOG = logging.getLogger(__name__)
 
@@ -281,6 +286,187 @@ def _evaluation_unavailable() -> html.Div:
 
 
 # ---------------------------------------------------------------------------
+# Freetext helpers (Issue #43 / #44)
+# ---------------------------------------------------------------------------
+
+_SOURCE_COLORS: dict[str, str] = {
+    "pattern": "orange",
+    "entity": "#add8e6",
+}
+
+
+def _resolve_overlaps(findings: list[Finding]) -> list[Finding]:
+    """Return a non-overlapping subset of findings, preferring highest confidence."""
+    if not findings:
+        return []
+    sorted_findings = sorted(findings, key=lambda f: (f.start, -f.confidence))
+    clusters: list[list[Finding]] = []
+    current_cluster: list[Finding] = [sorted_findings[0]]
+    cluster_end = sorted_findings[0].end
+    for f in sorted_findings[1:]:
+        if f.start < cluster_end:
+            current_cluster.append(f)
+            cluster_end = max(cluster_end, f.end)
+        else:
+            clusters.append(current_cluster)
+            current_cluster = [f]
+            cluster_end = f.end
+    clusters.append(current_cluster)
+    return [max(cluster, key=lambda f: (f.confidence, -f.start)) for cluster in clusters]
+
+
+def build_highlighted_text(text: str, findings: list[Finding]) -> list:
+    """Build a list of html.Span components with colour-coded, annotated findings."""
+    winners = _resolve_overlaps(findings)
+    winners.sort(key=lambda f: f.start)
+    spans: list = []
+    cursor = 0
+    for f in winners:
+        if cursor < f.start:
+            spans.append(html.Span(text[cursor : f.start]))
+        layer = f.source.split(".")[0]
+        bg = _SOURCE_COLORS.get(layer, "#e0e0e0")
+        tooltip = (
+            f"Kategori: {f.category.value}, "
+            f"Källa: {f.source}, "
+            f"Konfidens: {f.confidence:.0%}"
+        )
+        spans.append(
+            html.Span(
+                text[f.start : f.end],
+                title=tooltip,
+                style={
+                    "backgroundColor": bg,
+                    "borderRadius": "3px",
+                    "padding": "1px 2px",
+                    "cursor": "help",
+                },
+            )
+        )
+        cursor = f.end
+    if cursor < len(text):
+        spans.append(html.Span(text[cursor:]))
+    return spans
+
+
+def build_summary(classification: Classification) -> html.Div:
+    """Build a summary panel from a Classification result."""
+    level = classification.sensitivity.value.upper()
+    level_colors = {
+        "NONE": "#27ae60",
+        "LOW": "#f39c12",
+        "MEDIUM": "#e67e22",
+        "HIGH": "#e74c3c",
+    }
+    level_bg = level_colors.get(level, "#95a5a6")
+
+    per_category: dict[str, int] = defaultdict(int)
+    per_layer: dict[str, int] = defaultdict(int)
+    for f in classification.findings:
+        per_category[f.category.value] += 1
+        per_layer[f.source.split(".")[0]] += 1
+
+    category_rows = [
+        html.Tr([html.Td(cat), html.Td(str(count))])
+        for cat, count in sorted(per_category.items())
+    ]
+    layer_rows = [
+        html.Tr([html.Td(layer), html.Td(str(count))])
+        for layer, count in sorted(per_layer.items())
+    ]
+    table_style = {"borderCollapse": "collapse", "marginTop": "8px", "width": "auto"}
+    cell_style = {"border": "1px solid #ccc", "padding": "4px 12px"}
+
+    return html.Div(
+        [
+            html.Hr(),
+            html.H3("Sammanfattning", style={"marginBottom": "8px"}),
+            html.Div(
+                f"Känslighetsnivå: {level}",
+                style={
+                    "display": "inline-block",
+                    "backgroundColor": level_bg,
+                    "color": "white",
+                    "fontWeight": "bold",
+                    "padding": "4px 14px",
+                    "borderRadius": "4px",
+                    "marginBottom": "16px",
+                },
+            ),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Strong("Fynd per GDPR-kategori"),
+                            html.Table(
+                                [
+                                    html.Thead(
+                                        html.Tr(
+                                            [
+                                                html.Th("Kategori", style=cell_style),
+                                                html.Th("Antal", style=cell_style),
+                                            ]
+                                        )
+                                    ),
+                                    html.Tbody(
+                                        [
+                                            html.Tr(
+                                                [
+                                                    html.Td(cat, style=cell_style),
+                                                    html.Td(str(cnt), style=cell_style),
+                                                ]
+                                            )
+                                            for cat, cnt in sorted(per_category.items())
+                                        ]
+                                    ),
+                                ],
+                                style=table_style,
+                            )
+                            if category_rows
+                            else html.P("Inga fynd."),
+                        ],
+                        style={"marginRight": "40px", "display": "inline-block", "verticalAlign": "top"},
+                    ),
+                    html.Div(
+                        [
+                            html.Strong("Fynd per lager"),
+                            html.Table(
+                                [
+                                    html.Thead(
+                                        html.Tr(
+                                            [
+                                                html.Th("Lager", style=cell_style),
+                                                html.Th("Antal", style=cell_style),
+                                            ]
+                                        )
+                                    ),
+                                    html.Tbody(
+                                        [
+                                            html.Tr(
+                                                [
+                                                    html.Td(layer, style=cell_style),
+                                                    html.Td(str(cnt), style=cell_style),
+                                                ]
+                                            )
+                                            for layer, cnt in sorted(per_layer.items())
+                                        ]
+                                    ),
+                                ],
+                                style=table_style,
+                            )
+                            if layer_rows
+                            else html.P("Inga fynd."),
+                        ],
+                        style={"display": "inline-block", "verticalAlign": "top"},
+                    ),
+                ]
+            ),
+        ],
+        style={"marginTop": "16px"},
+    )
+
+
+# ---------------------------------------------------------------------------
 # Callbacks
 # ---------------------------------------------------------------------------
 
@@ -319,13 +505,9 @@ def render_tab(tab: str) -> html.Div:
                 _make_table("testdata-table", _TESTDATA_COLUMNS, rows),
             ],
         )
-    # Stub for issue #43
-    return html.Div(
-        [
-            html.H2("Fritext-analys"),
-            html.P("Denna vy implementeras i Issue #43."),
-        ],
-    )
+    if tab == "tab-freetext":
+        return freetext_tab_layout()
+    return html.Div()
 
 
 @callback(
@@ -371,3 +553,22 @@ def update_report(verbose_values: list[str]) -> list:
         )
 
     return children
+
+
+@callback(
+    Output("freetext-result", "children"),
+    Output("freetext-summary", "children"),
+    Input("analyze-button", "n_clicks"),
+    State("freetext-input", "value"),
+    prevent_initial_call=True,
+)
+def analyze_text(n_clicks: int, text: str | None) -> tuple:
+    """Run the pipeline on free text and render highlighted results with summary."""
+    if not text:
+        return [], []
+    pipeline = build_pipeline()
+    classification = pipeline.classify(text)
+    return (
+        build_highlighted_text(text, classification.findings),
+        build_summary(classification),
+    )
