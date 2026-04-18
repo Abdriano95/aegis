@@ -11,7 +11,7 @@ from evaluation.confusion_matrix import ConfusionMatrix
 from evaluation.dataset.labeled_text import LabeledText
 from evaluation.matcher import match
 from evaluation.metrics import f1, precision, recall
-from evaluation.report import Report, RunMetrics
+from evaluation.report import Report, RunMetrics, SampleResult
 from gdpr_classifier.core.category import Category
 
 
@@ -29,11 +29,19 @@ def _calc_metrics(tp: int, fp: int, fn: int) -> RunMetrics:
 def run_evaluation(pipeline: Any, dataset: list[LabeledText]) -> Report:
     """Runs the full evaluation flow over the dataset."""
     cm = ConfusionMatrix()
+    samples: list[SampleResult] = []
 
     for item in dataset:
         classification = pipeline.classify(item.text)
         match_result = match(classification.findings, item.expected_findings)
         cm.add_match_result(match_result)
+        samples.append(
+            SampleResult(
+                text=item.text,
+                false_positives=list(match_result.false_positives),
+                false_negatives=list(match_result.false_negatives),
+            )
+        )
 
     # Compute Total Metrics
     t_tp, t_fp, t_fn = cm.get_total_stats()
@@ -57,4 +65,5 @@ def run_evaluation(pipeline: Any, dataset: list[LabeledText]) -> Report:
         total=total_metrics,
         per_category=per_category,
         per_layer=per_layer,
+        samples=samples,
     )

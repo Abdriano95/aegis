@@ -20,6 +20,12 @@ På Windows / PowerShell aktiveras venv istället med:
 .venv\Scripts\Activate.ps1
 ```
 
+På Windows / CMD aktiveras venv istället med:
+
+```cmd
+.venv\Scripts\activate.bat
+```
+
 Alla kommandon nedan antar att venv är aktiverat (`python` pekar på `.venv`). Om du inte vill aktivera miljön kan du alltid köra via `.venv/bin/python` (Linux/macOS) eller `.venv\Scripts\python.exe` (Windows).
 
 ---

@@ -25,6 +25,18 @@ pip install -e ".[dev]"
 pytest --co -q
 ```
 
+På Windows / PowerShell aktiveras venv istället med:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+På Windows / CMD aktiveras venv istället med:
+
+```cmd
+.venv\Scripts\activate.bat
+```
+
 ---
 
 ## Arbetsfördelning
@@ -872,4 +884,32 @@ Downstream start/end-justering för entry 26:
 - **Greedy IBAN-regex**: ett riktigt fix skulle vara att göra regexens trailing-grupp icke-greedy/backtracka eller validera flera möjliga längder inom samma match-start. Det är en recognizer-förändring och ligger utanför denna tasks scope (regeln säger uttryckligen "Do NOT change the recognizers"). Värt ett eget issue under iteration 2.
 - **Telefonnummer FP: 1 → 2**: efter insertion av `,` i entry 26:s text fångar `TelefonRecognizer` numera troligen en extra subsekvens. Inte en regression i denna task - FP-talet är oförändrat mätt som per-category-recall (9/10 → 9/10). Värt ett separat spår om telefon-recognizern ska tightnas.
 - **Ingen commit** enligt regel.
+
+#### Session 2026-04-18 - Cursor agent (Opus 4.7)
+
+**Iteration:** 1 (v0.1.0), enhancement: verbose evaluation report
+**Mål:** Lägga till ett opt-in `verbose`-läge i `print_report` som listar varje FP/FN med källa/kategori, span och ett textutdrag (±20 tecken), utan att ändra default-outputen.
+
+**Ändrade filer:**
+- `evaluation/report.py` - ny `SampleResult`-dataclass, nytt `samples: list[SampleResult]`-fält på `Report` (default tom), ny `_context_snippet`-hjälpare, `print_report` tar nu `verbose: bool = False` och renderar FP/FN-sektioner endast när `verbose=True`.
+- `evaluation/runner.py` - bygger upp `samples` parallellt med `ConfusionMatrix` (kopierar `match_result.false_positives`/`false_negatives` tillsammans med `item.text`) och skickar med dem till `Report(...)`.
+- `run_evaluation.py` - anropar nu `print_report(report, verbose=True)`.
+- `docs/iteration_1_planering.md` - denna sessionslogg.
+
+**Gjort:**
+- Datamodell: `SampleResult(text, false_positives, false_negatives)` (fryst). `Report.samples` fick `default_factory=list` så existerande konstruktion (utan `samples=...`) förblir giltig och utskriftssektionen kan hoppas över för tomma listor.
+- `_context_snippet(text, start, end, window=20)`: klampar till `[0, len(text)]` och lägger på `"..."` endast när fönstret faktiskt trunkerar i respektive ände (inte när det stannar vid textens början/slut).
+- Verbose-blocket plattar ut `report.samples` till `(text, finding)`-par och skriver `--- False Positives (N) ---` / `--- False Negatives (N) ---` inklusive när `N=0` (symmetriska rubriker). FP taggas med `finding.source`, FN med `labeled.category.value`, matchande specexemplet.
+- `matcher.py` och `confusion_matrix.py` orörda per regel.
+- Default `print_report(report)` utan `verbose` exekverar ingen ny kod - dagens output är byte-för-byte-identisk.
+- `ReadLints` rena på alla tre ändrade moduler.
+
+**Beslut fattade:**
+- Valde per-sample-gruppering (`SampleResult`) framför två flata listor (`list[tuple[str, Finding]]`/`list[tuple[str, LabeledFinding]]`) på `Report`. Motiv: text hör logiskt ihop med sitt sample, och strukturen är lätt att utöka (t.ex. lägga till `true_positives` senare) utan att ändra fältnamn.
+- `SampleResult` frusen precis som `Report`/`RunMetrics` för konsekvens; listorna inuti är muterbara men ingen muterar dem efter konstruktion.
+- FN:s tagg använder `labeled.category.value` (t.ex. `article4.email`) eftersom `LabeledFinding` saknar `source`; matchar specexemplet exakt.
+- Behöll rubrikerna även vid `N=0` bara när `verbose=True`, så att det är entydigt att "verbose kördes men inga FP/FN hittades" jämfört med default-läget.
+
+**Öppet/Nästa steg:**
+- Enhancement klar. Ingen commit enligt regel.
 

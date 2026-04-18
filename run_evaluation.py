@@ -18,7 +18,7 @@ def main() -> None:
     )
     dataset = load_dataset("tests/data/iteration_1/test_dataset.json")
     report = run_evaluation(pipeline, dataset)
-    print_report(report)
+    print_report(report, verbose=True)
 
 
 if __name__ == "__main__":
