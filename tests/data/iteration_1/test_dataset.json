@@ -520,5 +520,149 @@
         "text_span": "4111111111111111"
       }
     ]
+  },
+  {
+    "text": "Hej Anna Svensson, tack för att du hörde av dig angående ärendet.",
+    "description": "NER: enkelt förnamn + efternamn i hälsningsfras",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 4,
+        "end": 17,
+        "text_span": "Anna Svensson"
+      }
+    ]
+  },
+  {
+    "text": "Mötet den 14 mars leddes av Lars-Göran Berg och protokollfördes av Maria Lindqvist.",
+    "description": "NER: två namn i mötesanteckning, bindestreck i förnamn",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 28,
+        "end": 43,
+        "text_span": "Lars-Göran Berg"
+      },
+      {
+        "category": "article4.namn",
+        "start": 67,
+        "end": 82,
+        "text_span": "Maria Lindqvist"
+      }
+    ]
+  },
+  {
+    "text": "Vi har tagit emot en förfrågan från Erik Johansson gällande tjänsten.",
+    "description": "NER: namn i kundtjänstnotat",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 36,
+        "end": 50,
+        "text_span": "Erik Johansson"
+      }
+    ]
+  },
+  {
+    "text": "Enligt överenskommelse med Karin Holm ska leveransen ske nästa vecka.",
+    "description": "NER: namn i affärskorrespondens",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 27,
+        "end": 37,
+        "text_span": "Karin Holm"
+      }
+    ]
+  },
+  {
+    "text": "Björn Petersson och Cecilia Norström deltog i workshopen om hållbarhet.",
+    "description": "NER: två namn i verksamhetstext",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 0,
+        "end": 15,
+        "text_span": "Björn Petersson"
+      },
+      {
+        "category": "article4.namn",
+        "start": 20,
+        "end": 36,
+        "text_span": "Cecilia Norström"
+      }
+    ]
+  },
+  {
+    "text": "Projektledare: Gunnar Strand. Ansvarig tekniker: Sofia Lund.",
+    "description": "NER: namn i strukturerad projektbeskrivning",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 15,
+        "end": 28,
+        "text_span": "Gunnar Strand"
+      },
+      {
+        "category": "article4.namn",
+        "start": 49,
+        "end": 59,
+        "text_span": "Sofia Lund"
+      }
+    ]
+  },
+  {
+    "text": "Chattlogg: Hej, jag heter Maja Hellström och undrar om ni kan hjälpa mig.",
+    "description": "NER: namn i chattmeddelande, självpresentation",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 26,
+        "end": 40,
+        "text_span": "Maja Hellström"
+      }
+    ]
+  },
+  {
+    "text": "HR-notat: Anställd Per-Olof Lindberg påbörjar sin tjänst den första i månaden.",
+    "description": "NER: namn i HR-dokument, bindestreck i förnamn",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 19,
+        "end": 36,
+        "text_span": "Per-Olof Lindberg"
+      }
+    ]
+  },
+  {
+    "text": "Undertecknad Therese Magnusson intygar att uppgifterna är korrekta.",
+    "description": "NER: namn i intyg",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 13,
+        "end": 30,
+        "text_span": "Therese Magnusson"
+      }
+    ]
+  },
+  {
+    "text": "Enligt protokollet framförde Ingrid Karlsson synpunkter, vilket Fredrik Ek noterade.",
+    "description": "NER: två namn i formellt protokoll",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 29,
+        "end": 44,
+        "text_span": "Ingrid Karlsson"
+      },
+      {
+        "category": "article4.namn",
+        "start": 64,
+        "end": 74,
+        "text_span": "Fredrik Ek"
+      }
+    ]
   }
 ]
