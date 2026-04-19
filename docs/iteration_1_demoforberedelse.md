@@ -537,3 +537,22 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Överlappslösning via klustergruppa + max-confidence-vinnare (inte greedy cursor), eftersom det hanterar fall där ett sent fynd med hög konfidens ska vinna över ett tidigt fynd med låg konfidens inom samma kluster. Layoutkomponenter returnas från `layout.py` (separation of concerns); callbacks importerar `freetext_tab_layout` därifrån.
 **Öppet/Nästa steg:** Manuell verifiering i webbläsaren. Commit efter granskning.
+
+#### Session 2026-04-19 – Claude Sonnet 4.6 (claude-code) (issue #45)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Utöka testdatasetet med 10 nya texter för NER-detektion av personnamn (`article4.namn`), isolerade från övriga GDPR-mönster.
+
+**Ändrade filer:**
+- `tests/data/iteration_1/test_dataset.json` - 10 nya testfall med enbart `article4.namn`-fynd tillagda (totalt 55 entries).
+- `scripts/build_namn_testdata.py` - nytt temporärt valideringsskript som beräknar och assert-verifierar alla `(start, end, text_span)`-index programmatiskt.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- Skrivit `scripts/build_namn_testdata.py`: definierar varje testfall som `(text, [namn-spans])`, beräknar index via `text.find()`, assertar `text[start:end] == span` för varje fynd innan serialisering. Noll AssertionErrors vid körning.
+- Lagt till 10 nya JSON-objekt i `test_dataset.json`: hälsningsfras, mötesanteckning, kundtjänstnotat, affärskorrespondens, verksamhetstext, projektbeskrivning, chattmeddelande, HR-dokument, intyg och formellt protokoll. Totalt 14 namnfynd (6 texter med ett namn, 4 texter med två namn). Bindestreck i förnamn (`Lars-Göran Berg`, `Per-Olof Lindberg`) ingår.
+- Verifierat att `load_dataset()` laddar alla 55 entries utan ValueError.
+- Kört `pytest tests/` (23 passed, inga regressioner).
+
+**Beslut fattade:** Index beräknas maskinellt (inte hand-räknade) via `find()`-strategi med `search_from`-offset för att hantera upprepade namn - samma metod som användes i issue #18-20.
+**Öppet/Nästa steg:** Commit efter granskning. EntityLayer-recall mot dessa 10 texter utvärderas när `run_evaluation.py` körs i demoläge.
