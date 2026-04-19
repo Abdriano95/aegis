@@ -556,3 +556,23 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Index beräknas maskinellt (inte hand-räknade) via `find()`-strategi med `search_from`-offset för att hantera upprepade namn - samma metod som användes i issue #18-20.
 **Öppet/Nästa steg:** Commit efter granskning. EntityLayer-recall mot dessa 10 texter utvärderas när `run_evaluation.py` körs i demoläge.
+
+#### Session 2026-04-19 – Claude Sonnet 4.6 (claude-code) (issues #46 & #47)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Utöka testdatasetet med platser (`article4.adress`), organisationer (`context.organisation`) och blandade cross-layer-texter (NER + regex).
+
+**Ändrade filer:**
+- `tests/data/iteration_1/test_dataset.json` - 15 nya testfall tillagda (totalt 70 entries).
+- `scripts/build_locations_orgs_mixed_testdata.py` - nytt valideringsskript med generaliserad `build_findings(text, span_category_pairs)`.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- Skrivit `scripts/build_locations_orgs_mixed_testdata.py` med tre RAW-listor: 5 platstexter, 5 organisationstexter, 5 blandade texter. Generaliserad `build_findings` tar `(span, category)`-par istället för en global konstant.
+- Lagt till 5 `article4.adress`-testfall: Stockholm, Sveavägen 44, Göteborg, Malmö C, Örebro.
+- Lagt till 5 `context.organisation`-testfall: Volvo AB, Skatteverket, Acme Corp, Nordea Bank, Region Skåne.
+- Lagt till 5 blandade testfall (cross-layer): namn+email, namn+personnummer+plats, organisation+IBAN, namn+telefon+plats, organisation+namn+email.
+- Verifierat noll AssertionErrors. Verifierat att `load_dataset()` laddar alla 70 entries utan ValueError. Kört `pytest tests/` utan regressioner.
+
+**Beslut fattade:** Samma `find()`-strategi med `search_from`-offset för indexberäkning. Blandade entries ordnar span_category_pairs i textordning (vänster → höger) för att `search_from` ska fungera korrekt.
+**Öppet/Nästa steg:** Commit efter granskning. `run_evaluation.py` bör nu visa recall > 0 för `article4.adress` och `context.organisation`.
