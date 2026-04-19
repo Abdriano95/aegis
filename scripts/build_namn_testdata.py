@@ -76,10 +76,15 @@ def build_findings(text: str, spans: list[str]) -> list[dict]:
     return findings
 
 
-entries = []
-for text, spans, description in RAW:
-    findings = build_findings(text, spans)
-    entries.append({"text": text, "description": description, "expected_findings": findings})
+def main() -> None:
+    entries = []
+    for text, spans, description in RAW:
+        findings = build_findings(text, spans)
+        entries.append({"text": text, "description": description, "expected_findings": findings})
 
-print(json.dumps(entries, ensure_ascii=False, indent=2))
-print(f"\n# {len(entries)} entries validated OK", flush=True)
+    print(json.dumps(entries, ensure_ascii=False, indent=2))
+    print(f"\n# {len(entries)} entries validated OK", flush=True)
+
+
+if __name__ == "__main__":
+    main()
