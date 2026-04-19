@@ -664,5 +664,233 @@
         "text_span": "Fredrik Ek"
       }
     ]
+  },
+  {
+    "text": "Mötet hölls i Stockholm den tredje mars.",
+    "description": "NER LOC: stadsnamn i möteskontext",
+    "expected_findings": [
+      {
+        "category": "article4.adress",
+        "start": 14,
+        "end": 23,
+        "text_span": "Stockholm"
+      }
+    ]
+  },
+  {
+    "text": "Paketet levereras till Sveavägen 44 på fredag.",
+    "description": "NER LOC: gatuadress i leveransnotis",
+    "expected_findings": [
+      {
+        "category": "article4.adress",
+        "start": 23,
+        "end": 35,
+        "text_span": "Sveavägen 44"
+      }
+    ]
+  },
+  {
+    "text": "Kundbesöket är inbokat i Göteborg nästa vecka.",
+    "description": "NER LOC: stad i kalenderpost",
+    "expected_findings": [
+      {
+        "category": "article4.adress",
+        "start": 25,
+        "end": 33,
+        "text_span": "Göteborg"
+      }
+    ]
+  },
+  {
+    "text": "Tåget avgår från Malmö C kl. 08:15.",
+    "description": "NER LOC: stationsnamn i resebokning",
+    "expected_findings": [
+      {
+        "category": "article4.adress",
+        "start": 17,
+        "end": 24,
+        "text_span": "Malmö C"
+      }
+    ]
+  },
+  {
+    "text": "Lagret finns i Örebro och hanterar norra regionen.",
+    "description": "NER LOC: stad i verksamhetsbeskrivning",
+    "expected_findings": [
+      {
+        "category": "article4.adress",
+        "start": 15,
+        "end": 21,
+        "text_span": "Örebro"
+      }
+    ]
+  },
+  {
+    "text": "Avtalet skrevs under av Volvo AB.",
+    "description": "NER ORG: bolagsnamn i avtalstext",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 24,
+        "end": 32,
+        "text_span": "Volvo AB"
+      }
+    ]
+  },
+  {
+    "text": "Skatteverket har begärt in kompletterande uppgifter.",
+    "description": "NER ORG: myndighet i formell notis",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 0,
+        "end": 12,
+        "text_span": "Skatteverket"
+      }
+    ]
+  },
+  {
+    "text": "Vi samarbetar med Acme Corp sedan 2018.",
+    "description": "NER ORG: bolagsnamn i samarbetstext",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 18,
+        "end": 27,
+        "text_span": "Acme Corp"
+      }
+    ]
+  },
+  {
+    "text": "Fakturan gäller tjänster utförda åt Nordea Bank.",
+    "description": "NER ORG: banknamn i fakturareferens",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 36,
+        "end": 47,
+        "text_span": "Nordea Bank"
+      }
+    ]
+  },
+  {
+    "text": "Kontraktet löper ut och Region Skåne har inte förlängt.",
+    "description": "NER ORG: regionnamn i kontraktstext",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 24,
+        "end": 36,
+        "text_span": "Region Skåne"
+      }
+    ]
+  },
+  {
+    "text": "Kontakta Anna Svensson på anna.svensson@foretag.se angående ärendet.",
+    "description": "Blandad: NER namn + regex e-post",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 9,
+        "end": 22,
+        "text_span": "Anna Svensson"
+      },
+      {
+        "category": "article4.email",
+        "start": 26,
+        "end": 50,
+        "text_span": "anna.svensson@foretag.se"
+      }
+    ]
+  },
+  {
+    "text": "Erik Johansson, 820415-3421, är bosatt i Göteborg.",
+    "description": "Blandad: NER namn + regex personnummer + NER plats",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 0,
+        "end": 14,
+        "text_span": "Erik Johansson"
+      },
+      {
+        "category": "article4.personnummer",
+        "start": 16,
+        "end": 27,
+        "text_span": "820415-3421"
+      },
+      {
+        "category": "article4.adress",
+        "start": 41,
+        "end": 49,
+        "text_span": "Göteborg"
+      }
+    ]
+  },
+  {
+    "text": "Volvo AB har registrerat IBAN SE35 5000 0000 0549 1000 0003.",
+    "description": "Blandad: NER organisation + regex IBAN",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 0,
+        "end": 8,
+        "text_span": "Volvo AB"
+      },
+      {
+        "category": "article4.iban",
+        "start": 30,
+        "end": 59,
+        "text_span": "SE35 5000 0000 0549 1000 0003"
+      }
+    ]
+  },
+  {
+    "text": "Ring Karin Holm på 070-123 45 67 för mer info om projektet i Malmö.",
+    "description": "Blandad: NER namn + regex telefon + NER plats",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 5,
+        "end": 15,
+        "text_span": "Karin Holm"
+      },
+      {
+        "category": "article4.telefonnummer",
+        "start": 19,
+        "end": 32,
+        "text_span": "070-123 45 67"
+      },
+      {
+        "category": "article4.adress",
+        "start": 61,
+        "end": 66,
+        "text_span": "Malmö"
+      }
+    ]
+  },
+  {
+    "text": "Skatteverket kontaktade Lars Berg (lars.berg@privat.se) gällande deklarationen.",
+    "description": "Blandad: NER organisation + NER namn + regex e-post",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 0,
+        "end": 12,
+        "text_span": "Skatteverket"
+      },
+      {
+        "category": "article4.namn",
+        "start": 24,
+        "end": 33,
+        "text_span": "Lars Berg"
+      },
+      {
+        "category": "article4.email",
+        "start": 35,
+        "end": 54,
+        "text_span": "lars.berg@privat.se"
+      }
+    ]
   }
 ]
