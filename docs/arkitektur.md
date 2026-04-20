@@ -265,15 +265,17 @@ Implementeras i iteration 1 med SpaCy-modellen `sv_core_news_lg` för svenska NE
 
 **Entitetsmappning:**
 
-- `PER` → `Category.NAMN`, `source="entity.spacy_PER"`
+- `PRS` → `Category.NAMN`, `source="entity.spacy_PRS"`
 - `LOC` → `Category.ADRESS`, `source="entity.spacy_LOC"`
 - `ORG` → `Category.ORGANISATION`, `source="entity.spacy_ORG"`
 
-ORG mappas medvetet till `Category.ORGANISATION` med prefixet `context.*`, inte till en `article4.*`-kategori. Organisationer är inte personuppgifter enligt GDPR artikel 4. De fungerar däremot som pusselbitar i sensitivity-bedömningen: ett företagsnamn tillsammans med en roll eller en ort kan göra en enskild individ identifierbar även när inga direkta identifierare förekommer (pusselbitseffekten, avsnitt 3.3). Att hålla ORG separat från `article4.namn` gör dessutom att utvärderingsmetriker per kategori blir meningsfulla - PER-prestanda blandas inte med ORG-prestanda.
+ORG mappas medvetet till `Category.ORGANISATION` med prefixet `context.*`, inte till en `article4.*`-kategori. Organisationer är inte personuppgifter enligt GDPR artikel 4. De fungerar däremot som pusselbitar i sensitivity-bedömningen: ett företagsnamn tillsammans med en roll eller en ort kan göra en enskild individ identifierbar även när inga direkta identifierare förekommer (pusselbitseffekten, avsnitt 3.3). Att hålla ORG separat från `article4.namn` gör dessutom att utvärderingsmetriker per kategori blir meningsfulla - person-prestanda blandas inte med ORG-prestanda.
 
 **Konfidens:** SpaCy exponerar inte per-entitets-konfidens via ett enkelt API i `sv_core_news_lg`. I iteration 1 sätts `Finding.confidence = 0.8` som fast värde för alla NER-fynd. Detta är ett medvetet iteration-1-val och kan revideras i iteration 2 om kalibreringsmetriker motiverar det (t.ex. via per-token-sannolikheter eller byte till KB-BERT).
 
-**Källformat:** `source`-fältet är `"entity.spacy_{LABEL}"` där `{LABEL}` är SpaCys råetikett (`PER`/`LOC`/`ORG`). Detta bevarar lager-prefix-konventionen (`entity.*`) och gör det möjligt att filtrera utvärderingsrapporten per NER-etikett utan att inspektera `metadata`.
+**Källformat:** `source`-fältet är `"entity.spacy_{LABEL}"` där `{LABEL}` är SpaCys råetikett (`PRS`/`LOC`/`ORG`). Detta bevarar lager-prefix-konventionen (`entity.*`) och gör det möjligt att filtrera utvärderingsrapporten per NER-etikett utan att inspektera `metadata`.
+
+Modellen `sv_core_news_lg` använder SUC3-taggsetet; person-entiteter labellas `PRS`, inte `PER` (CoNLL). Mappningen och source-taggen speglar detta.
 
 
 ## 6. Lager 3: Kontextuell analys - Iteration 3
@@ -568,6 +570,7 @@ Följande designbeslut ska dokumenteras löpande, som råmaterial för designpri
 - Val av matchningsnivå i utvärderingen (span vs dokument)
 - Teknikval inom varje lager och motivering
 - Beslut om `context.*`-prefix och ORG-kategorisering (full motivering i repots Loggbok)
+- Upptäckt av SUC3 vs CoNLL-tagg-konvention i `sv_core_news_lg` (iteration 1, demoförberedelse)
 
 Dokumentationsformatet ska följa mönstret: *beslut, alternativ som övervägdes, motivering, koppling till GDPR-krav eller empiriskt stöd.*
 
