@@ -1,6 +1,6 @@
 """EntityLayer implementation.
 
-SpaCy-baserad NER-detektion som mappar PER -> Category.NAMN,
+SpaCy-baserad NER-detektion som mappar PRS -> Category.NAMN,
 LOC -> Category.ADRESS och ORG -> Category.ORGANISATION. Se
 ``docs/arkitektur.md`` avsnitt 5 för kategori-mapping och
 source-taggar. Modellen ``sv_core_news_lg`` laddas vid konstruktion.
@@ -17,7 +17,7 @@ class EntityLayer:
     def __init__(self, model_name: str = "sv_core_news_lg"):
         self._nlp = spacy.load(model_name)
         self._label_map = {
-            "PER": (Category.NAMN, "entity.spacy_PER"),
+            "PRS": (Category.NAMN, "entity.spacy_PRS"),
             "LOC": (Category.ADRESS, "entity.spacy_LOC"),
             "ORG": (Category.ORGANISATION, "entity.spacy_ORG"),
         }

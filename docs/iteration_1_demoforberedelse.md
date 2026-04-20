@@ -576,3 +576,25 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Samma `find()`-strategi med `search_from`-offset för indexberäkning. Blandade entries ordnar span_category_pairs i textordning (vänster → höger) för att `search_from` ska fungera korrekt.
 **Öppet/Nästa steg:** Commit efter granskning. `run_evaluation.py` bör nu visa recall > 0 för `article4.adress` och `context.organisation`.
+
+#### Session 2026-04-20 - Cursor-agent (Opus) (issue #60)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Lösa issue #56 - byta SpaCy-label-nyckeln i `EntityLayer._label_map` från `PER` (CoNLL) till `PRS` (SUC3, vilket `sv_core_news_lg` faktiskt producerar) så att `article4.namn` detekteras.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/entity/entity_layer.py` - `_label_map`-nyckeln ändrad från `"PER"` till `"PRS"`; source-taggen från `"entity.spacy_PER"` till `"entity.spacy_PRS"`; modul-docstringens mappnings-exempel (`PER -> Category.NAMN`) uppdaterat till `PRS`. LOC/ORG, `confidence=0.8`, `metadata={"ner_label": ent.label_}` och övrig struktur oförändrade.
+- `docs/arkitektur.md` - avsnitt 5: mappningsraden (`PRS` → `Category.NAMN`, `source="entity.spacy_PRS"`), källformat-exemplet (`PRS`/`LOC`/`ORG`), ny mening om SUC3 vs CoNLL, samt neutral omskrivning av ORG-motiveringen (`PER-prestanda` → `person-prestanda`). Avsnitt 12: ny bullet om upptäckten av SUC3 vs CoNLL-tagg-konvention.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- **Diagnos (före fix):** `.venv\Scripts\python.exe run_evaluation.py` visade `article4.namn` recall 0/18, entity-lager TP=11, FP=4. Inga NAMN-findings alls från EntityLayer trots att testdatan innehöll 18 namnspan.
+- **Verifiering av rotorsak:** `.venv\Scripts\python.exe test.py` gav `'Anna Svensson' → PRS`, vilket bekräftar att `sv_core_news_lg` använder SUC3:s `PRS` för person-entiteter - inte CoNLL:s `PER`. Det tidigare `_label_map` med `"PER"` som nyckel filtrerade därför bort alla namn i `if ent.label_ not in self._label_map: continue`.
+- **Ändrat `_label_map` och source-tag** till `PRS` / `entity.spacy_PRS`. Docstring synkad.
+- **Uppdaterat `arkitektur.md`** avsnitt 5 (mapping, källformat, SUC3-not, neutral ORG-prosa) och avsnitt 12 (SUC3/CoNLL-bullet).
+- **Evaluation efter fix:** Total TP=77, FP=13, FN=4, Precision 85.56%, Recall 95.06%, F1 90.06%. `article4.namn` TP=18, FP=6, FN=0 → **recall 100% (18/18, upp från 0/18)**, precision 75.00%, F1 85.71%. `article4.personnummer` TP=13, FP=0, FN=1 (oförändrad, 92.86% recall; kvarvarande FN `820415-3421` är separat testdata-bugg utanför scope). Per-lager: entity TP=29, FP=10 (upp från TP=11, FP=4 - de nya TP är de 18 namnen, nya FP är bl.a. PRS-feldetektion av `2222`/`070`/`Anna` samt ORG-feldetektion av e-postadresser).
+- **`.venv\Scripts\python.exe -m pytest tests/integration/test_end_to_end.py -s`:** 1 passed.
+- **`ReadLints` på `entity_layer.py`:** rent.
+
+**Beslut fattade:** Source-taggen följer SpaCys råetikett (`entity.spacy_PRS`), konsekvent med SSOT 5:s formatregel `entity.spacy_{LABEL}`. Historiska sessionsposter som refererar till `PER` lämnas orörda per mall-regel 4 ("Ändra aldrig tidigare poster"). Docstring-uppdatering och neutral omskrivning av ORG-motiveringen i avsnitt 5 beslutade i Plan Mode som följdändringar.
+**Öppet/Nästa steg:** Kvarvarande FN på personnummer `820415-3421` är separat testdata-bugg (eget issue). Nya NER-FP från PRS (`2222`, `070`, `Anna` utan efternamn) och ORG (e-postadresser) är förväntad arkitektonisk kompromiss i iteration 1 - kan bli input till kända begränsningar (avsnitt 14) eller senare tuning. Commit sker efter granskning (ingen commit i denna session).
