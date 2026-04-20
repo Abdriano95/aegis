@@ -8,6 +8,39 @@
 
 ---
 
+## Status (uppdaterad 2026-04-20)
+
+Sammanställning av iteration 1:s demoförberedelse-issues per 2026-04-20. Detaljerade sessionsposter för varje issue finns under Agent-sessionslogg längre ner i dokumentet.
+
+| # | Issue | Ansvarig | Status | Sessionspost |
+|---|-------|----------|--------|--------------|
+| 37 | Email IDN-fix | Abdulla | Klar | 2026-04-18 |
+| 38 | Telefon parentes-stöd | Abdulla | Klar | 2026-04-18 |
+| 39 | IBAN-telefon-FP dokumenterad | Abdulla | Klar | 2026-04-18 |
+| 40 | EntityLayer med SpaCy NER (inkl. #41) | Abdulla | Klar | 2026-04-18 |
+| 42 | Dash-app: rapport-vy | Johanna | Klar | 2026-04-18 |
+| 43 | Dash-app: fritext-vy med markeringar | Johanna | Klar | - |
+| 44 | Dash-app: spårbarhet per markering | Johanna | Pågår | - |
+| 45 | NER-testdata: personnamn | Johanna | Klar | - |
+| 46 | NER-testdata: platser + organisationer | Johanna | Klar | - |
+| 47 | NER-testdata: blandade texter | Johanna | Klar | - |
+| 48 | Demomanus + intervjufrågor | Gemensamt | Ej påbörjad | - |
+| 54 | SSOT-drift (POSTORT/POSTNUMMER + diakriter) | Backlog | Ej påbörjad | - |
+| 55 | Beslut N i Loggboken (context.*-prefix) | Backlog | Ej påbörjad | - |
+| 60 | PRS-fix (SpaCy SUC3-taggset) | Abdulla | Klar | 2026-04-20 |
+| 62 | Avsnitt 14: NER-FPs + grundorsaks-struktur | Abdulla | Klar | 2026-04-20 |
+| - | Testdata-fix 820415-3421 → 820415-3426 | Abdulla | Klar | 2026-04-20 |
+
+Total evaluation efter alla dagens fixar: TP=78, FP=13, FN=3, precision 85.71%, recall 96.30%, F1 90.70%. Kvarvarande FP och FN dokumenterade som kända begränsningar i SSOT avsnitt 14.
+
+Anmärkningar:
+- "Klar" = implementation + sessionspost + commit (där sessionspost finns) eller verifierad som klar i testdatat/UI:t (där sessionspost saknas).
+- Issues utan sessionspost (#43, #45, #46, #47) är verifierade klara via senaste evaluation-körningen (18 namn detekteras, 7 platser, 7 org-exempel i testdatan) och Dash-appens fritext-vy.
+- "-" i Sessionspost-kolumnen betyder att ingen separat post finns; spårbarhet via git-historik.
+- Issue #41 är sammanslagen i #40 och har ingen egen rad.
+
+---
+
 ## Kontext och ADR-motivering
 
 Iteration 1:s pipeline och evaluation är integrerade och körda.
@@ -320,18 +353,18 @@ Semistrukturerade frågor för den naturalistiska utvärderingen:
 
 ## Definition of done
 
-- [ ] Email-recognizer hanterar svenska tecken i domännamn.
-- [ ] Telefon-recognizer hanterar parenteser runt landskod.
-- [ ] IBAN-telefon-FP dokumenterad som känd begränsning.
-- [ ] EntityLayer implementerad med SpaCy NER och source-taggar `entity.spacy_PER/LOC/ORG`; ORG mappad till `context.organisation`.
-- [ ] `gdpr_classifier/core/category.py` utökad med `Category.ORGANISATION = "context.organisation"`.
-- [ ] Nya testdata med namn, platser, organisationer.
-- [ ] Demo-gränssnitt med två vyer (rapport + fritext).
+- [x] Email-recognizer hanterar svenska tecken i domännamn.
+- [x] Telefon-recognizer hanterar parenteser runt landskod.
+- [x] IBAN-telefon-FP dokumenterad som känd begränsning.
+- [x] EntityLayer implementerad med SpaCy NER och source-taggar `entity.spacy_PRS/LOC/ORG`; ORG mappad till `context.organisation`.
+- [x] `gdpr_classifier/core/category.py` utökad med `Category.ORGANISATION = "context.organisation"`.
+- [x] Nya testdata med namn, platser, organisationer.
+- [x] Demo-gränssnitt med två vyer (rapport + fritext).
 - [ ] Fritext-vyn visar markeringar med spårbarhet.
 - [ ] Demomanus och intervjufrågor förberedda.
-- [ ] Evaluation körd med NER aktivt, metriker rapporterade.
-- [ ] Arkitektur.md uppdaterad (avsnitt 5).
-- [ ] Sessionslogg uppdaterad.
+- [x] Evaluation körd med NER aktivt, metriker rapporterade.
+- [x] Arkitektur.md uppdaterad (avsnitt 5).
+- [x] Sessionslogg uppdaterad.
 - [ ] `git tag v0.1.1`
 
 ---
@@ -634,3 +667,20 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Struktur: ingress + två grundorsaksblock (14.1/14.2) valdes framför att lägga till NER-FPs som ytterligare en flödande paragraf - per-grundorsak-gruppering matchar behovet att särskilja cross-recognizer-överlapp från modell-feldetekteringar inför demon. Alternativ B i Plan Mode-granskningen: "Åtgärden planeras för iteration 2:s Build-fas. Denna issue (#39) dokumenterar enbart begränsningen som underlag för framtida arbete." togs bort ur 14.1 - self-referensen till #39 var giltig när avsnittet enbart täckte IBAN-telefon men blir missvisande när avsnittet växer till strukturerat begränsningsregister och skulle annars bli stale när iteration 2 adresserar begränsningen; spårbarheten till #39 bevaras i git-historiken. "Åtta falska positiva" i 14.2:s första stycke speglar antalet NER-FPs efter PRS-fixen (#60) och testdata-fixen.
 **Öppet/Nästa steg:** Commit sker efter granskning (ingen commit i denna session). Iteration 2 fattar beslut om primär mekanism (containment vs pre-filtrering vs kombination) utifrån intressentfeedback under demon.
+
+#### Session 2026-04-20 - Cursor-agent (Opus) (docs-synk)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Lägga till statustabell och uppdatera DoD-checklistan i demoforberedelse.md så dokumentet speglar nuvarande läge efter dagens implementation.
+
+**Ändrade filer:**
+- `docs/iteration_1_demoforberedelse.md` - ny `## Status (uppdaterad 2026-04-20)`-sektion efter frontmatter med tabell över alla 16 issues + testdata-fix; DoD-checklistan uppdaterad med rätt `[x]` för uppfyllda punkter och PRS istället för PER; denna sessionspost.
+
+**Gjort:**
+- Statustabellen placerad före `## Kontext och ADR-motivering` så den är högt synlig.
+- Tabellen listar `#`, `Issue`, `Ansvarig`, `Status`, `Sessionspost` för 16 poster (15 issues + testdata-fix).
+- DoD-raden om EntityLayer uppdaterad från `spacy_PER/LOC/ORG` till `spacy_PRS/LOC/ORG` (synk med faktiska source-taggar efter #60).
+- Verifierat via git status att endast `docs/iteration_1_demoforberedelse.md` är ändrad.
+
+**Beslut fattade:** Tabellen placerad tidigt i dokumentet (efter frontmatter) snarare än som eget avsnitt längre ner - inför demon är dagsfärsk översikt det första intressenter/granskare vill se. Sessionspost-kolumnen refererar till datum (2026-04-18/2026-04-20) istället för issue-nummer för att undvika dubbel spårbarhet.
+**Öppet/Nästa steg:** Återstående issues: #44 (spårbarhet per markering), #48 (demomanus + intervjufrågor), #54 (SSOT-drift), #55 (Beslut N i Loggboken). Commit sker efter granskning.
