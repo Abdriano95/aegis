@@ -104,6 +104,18 @@
         "start": 35,
         "end": 48,
         "text_span": "19801010-0009"
+      },
+      {
+        "category": "article4.namn",
+        "start": 6,
+        "end": 20,
+        "text_span": "Anna Andersson"
+      },
+      {
+        "category": "article4.adress",
+        "start": 54,
+        "end": 63,
+        "text_span": "Stockholm"
       }
     ]
   },
@@ -380,6 +392,18 @@
         "start": 98,
         "end": 113,
         "text_span": "+4673 444 55 66"
+      },
+      {
+        "category": "article4.namn",
+        "start": 25,
+        "end": 38,
+        "text_span": "Erik Eriksson"
+      },
+      {
+        "category": "article4.namn",
+        "start": 70,
+        "end": 78,
+        "text_span": "Maja Maj"
       }
     ]
   },
