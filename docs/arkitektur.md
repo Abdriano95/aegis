@@ -592,7 +592,11 @@ Kan en textbit tillhöra flera GDPR-kategorier samtidigt? Exempelvis ett namn so
 
 ## 14. Kända begränsningar (iteration 1)
 
-Utvärderingen på testdatat i iteration 1 visar två återstående falska positiva som båda produceras av samma systeminteraktion. Telefon-recognizern (`pattern.regex_telefon`) matchar siffersekvenser som också ingår i fynd från IBAN-recognizern (`pattern.checksum_iban`), eftersom svenska telefonnummer och IBAN:ens BBAN-segment delar numerisk struktur (sifferblock separerade med mellanslag). Fenomenet är alltså inte en felaktighet i telefon-regexen i isolation, utan en konsekvens av att två recognizers arbetar oberoende på samma text.
+Utvärderingen på testdatat i iteration 1 identifierar ett antal falska positiva som inte är buggar i enskilda recognizers eller modeller, utan konsekvenser av hur lagren och deras komponenter interagerar. Begränsningarna grupperas nedan per grundorsak. Ingen av dem åtgärdas i iteration 1; varje block beskriver fenomenet, konkreta exempel från testdatat, rotorsak och planerad åtgärd.
+
+### 14.1 Cross-recognizer-överlapp
+
+Två falska positiva i iteration 1:s utvärdering härrör från cross-recognizer-överlapp. Telefon-recognizern (`pattern.regex_telefon`) matchar siffersekvenser som också ingår i fynd från IBAN-recognizern (`pattern.checksum_iban`), eftersom svenska telefonnummer och IBAN:ens BBAN-segment delar numerisk struktur (sifferblock separerade med mellanslag). Fenomenet är alltså inte en felaktighet i telefon-regexen i isolation, utan en konsekvens av att två recognizers arbetar oberoende på samma text.
 
 Konkret rör det följande två fall i testdatat: textspanet `"0555 5555 55"` matchas som telefonnummer inom IBAN-fyndet `SE96 5000 0000 0555 5555 55`, och textspanet `"05 1234 5678"` matchas som telefonnummer inom IBAN-fyndet `SE05 1234 5678 9012 3456 78`. Båda telefon-fynden ligger helt inneslutna i respektive IBAN-fynd.
 
@@ -600,7 +604,15 @@ Grundorsaken sitter på aggregator-nivå, inte på recognizer-nivå. Varje recog
 
 Begränsningen åtgärdas inte i iteration 1 eftersom en lösning kräver en aktiv reduktionsregel i aggregatorn, vilket är en arkitekturförändring som berör designprincip 3 (spårbarhet): ett filtrerat fynd får inte försvinna tyst utan måste fortfarande vara synligt i utvärderingen. En sådan förändring behöver dessutom diskuteras med intressenter under demon innan den implementeras, eftersom den påverkar vilken bild av artefaktens falska positiva som presenteras.
 
-Planerad åtgärd i iteration 2 (BIE-cykel 2): `Aggregator` utökas med en containment-regel som tar bort ett fynd från `findings` om det är helt inneslutet i ett fynd från en annan recognizer med strikt högre konfidens (till exempel 1.0 över 0.9). Det borttagna fyndet bevaras i `overlapping_findings` så spårbarheten mot designprincip 3 upprätthålls. Åtgärden planeras för iteration 2:s Build-fas. Denna issue (#39) dokumenterar enbart begränsningen som underlag för framtida arbete.
+Planerad åtgärd i iteration 2 (BIE-cykel 2): `Aggregator` utökas med en containment-regel som tar bort ett fynd från `findings` om det är helt inneslutet i ett fynd från en annan recognizer med strikt högre konfidens (till exempel 1.0 över 0.9). Det borttagna fyndet bevaras i `overlapping_findings` så spårbarheten mot designprincip 3 upprätthålls. Samma mekanism föreslås för 14.2:s NER-FPs, eventuellt kompletterad med pre-filtrering; beslut om kombinationen fattas i iteration 2:s planering.
+
+### 14.2 NER modell-feldetekteringar
+
+Entity-lagret (SpaCy `sv_core_news_lg`) producerar i iteration 1:s utvärdering åtta falska positiva som alla har samma grundorsak: modellen triggar på textpositioner där språkliga eller ortografiska signaler liknar det modellen är tränad att känna igen som entiteter, även när den faktiska semantiken inte är en entitet. Till skillnad från cross-recognizer-överlappet (avsnitt 14.1) handlar det inte om interaktion mellan komponenter utan om modellens egenskaper i isolation. Fenomenet är konsistent med Mishra et al. (2025) och Karras et al. (2025): statistiska NER-modeller utan domänspecifik finjustering producerar regelmässigt falska positiva i texttyper som avviker från träningsdistributionen.
+
+Tre underkategorier av feldetekteringar observeras i testdatat. För det första klassar modellen isolerade tokens utan semantisk kontext felaktigt som entiteter; exempel är `"2222"` och `"070"` som labellas som `PRS` (person), samt `"Anna"` utan efternamn som labellas som `PRS`. För det andra klassas domännamn i e-postadresser som organisationer; `anna.svensson@foretag.se` och `lars.berg@privat.se` resulterar i `ORG`-fynd på domändelen. För det tredje klassar modellen numeriska sekvenser som platser i vissa kontexter; `"9001010009"` (ett personnummer utan avgränsare) labellas som `LOC`.
+
+Rotorsaken är att entity-lagret kör oberoende av pattern-lagret (avsnitt 4.1, 5) och saknar pre-filtrering av text som redan har identifierats av strukturerade recognizers. En e-postadress som pattern-lagret har fångat med `confidence=1.0` ses av entity-lagret som fri text, vilket öppnar för feldetektering av domännamn som organisation. Samma arkitektoniska problem som i 14.1 men med omvänd riktning: där 14.1 handlar om att ett lågkonfidens-fynd ligger inuti ett högkonfidens-fynd, handlar 14.2 om att ett nytt lågkonfidens-fynd produceras ovanpå ett redan identifierat högkonfidens-fynd. Planerad åtgärd i iteration 2 är densamma containment-regel som föreslås i 14.1, kompletterad med en pre-filtreringsmekanism som döljer redan-identifierade spans innan entity-lagret analyserar texten. Beslutet om vilken av dessa mekanismer som är primär tas utifrån intressentfeedback under demon.
 
 
 ## 15. Referenser

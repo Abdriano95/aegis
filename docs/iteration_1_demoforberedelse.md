@@ -616,3 +616,21 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Ingen kodändring, ingen SSOT-synk - rent testdata-fix enligt Beslut 9. Samma typ av korrigering som de 13 som gjordes tidigare i iteration 1.
 **Öppet/Nästa steg:** Kvarvarande tre `context.organisation`-FN (Skatteverket, Volvo AB) beror på SpaCy-modellens taggning - separata issues. Commit sker efter granskning (ingen commit i denna session).
+
+#### Session 2026-04-20 - Cursor-agent (Opus) (issue #62)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Lösa issue #62 - utöka SSOT avsnitt 14 (Kända begränsningar) med ingress och omstrukturering till två grundorsaksblock (14.1 Cross-recognizer-överlapp, 14.2 NER modell-feldetekteringar) inför demon.
+
+**Ändrade filer:**
+- `docs/arkitektur.md` - avsnitt 14: ny ingress efter rubriken som signalerar per-grundorsak-gruppering; ny underrubrik `### 14.1 Cross-recognizer-överlapp` före befintlig IBAN-telefon-prosa; första meningen i 14.1 uppdaterad till cross-recognizer-formulering ("Två falska positiva i iteration 1:s utvärdering härrör från cross-recognizer-överlapp."); resten av 14.1:s prosa (konkret exempel, grundorsak på aggregator-nivå, motivering till att inte åtgärda) ordagrant oförändrad; avslutnings-meningarna "Åtgärden planeras för iteration 2:s Build-fas. Denna issue (#39) dokumenterar enbart begränsningen som underlag för framtida arbete." togs bort (stale self-referens till issue när avsnittet nu växer med fler grundorsaker - git-historiken bevarar spårbarheten till #39) och ersattes av hänvisnings-mening till 14.2 som avslutar 14.1; nytt block `### 14.2 NER modell-feldetekteringar` med tre stycken (fenomenet + litteraturförankring till Mishra et al. 2025 och Karras et al. 2025, tre konkreta underkategorier av feldetekteringar med exempel `"2222"`/`"070"`/`"Anna"`/`foretag.se`/`privat.se`/`"9001010009"`, rotorsak på lager-interaktion och planerad åtgärd).
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- Verifierat att sektionsnumrering inte förändrats: `## 14. Kända begränsningar (iteration 1)` kvar som 14, `## 15. Referenser` kvar som 15. `### 14.1` och `### 14.2` införda som nya nivåer (`###`), inte toppsektioner.
+- Verifierat via `Grep` i repot att inga andra ställen refererar till `14.1`/`14.2` på ett sätt som kolliderar med de nya underrubrikerna (tidigare sessionsposter refererar till "avsnitt 14" som helhet, vilket förblir korrekt).
+- Befintlig IBAN-telefon-prosa (konkret exempel med `"0555 5555 55"`/`"05 1234 5678"`, grundorsak på aggregator-nivå, motivering till att inte åtgärda i iteration 1, containment-regel som planerad åtgärd) flyttad ordagrant in under 14.1 - endast första meningen och avslutnings-meningarna i sista paragrafen ändrade.
+- `git status` visar exakt två ändrade filer: `docs/arkitektur.md`, `docs/iteration_1_demoforberedelse.md`. Ingen kodfil rörd, inga tester ändrade.
+
+**Beslut fattade:** Struktur: ingress + två grundorsaksblock (14.1/14.2) valdes framför att lägga till NER-FPs som ytterligare en flödande paragraf - per-grundorsak-gruppering matchar behovet att särskilja cross-recognizer-överlapp från modell-feldetekteringar inför demon. Alternativ B i Plan Mode-granskningen: "Åtgärden planeras för iteration 2:s Build-fas. Denna issue (#39) dokumenterar enbart begränsningen som underlag för framtida arbete." togs bort ur 14.1 - self-referensen till #39 var giltig när avsnittet enbart täckte IBAN-telefon men blir missvisande när avsnittet växer till strukturerat begränsningsregister och skulle annars bli stale när iteration 2 adresserar begränsningen; spårbarheten till #39 bevaras i git-historiken. "Åtta falska positiva" i 14.2:s första stycke speglar antalet NER-FPs efter PRS-fixen (#60) och testdata-fixen.
+**Öppet/Nästa steg:** Commit sker efter granskning (ingen commit i denna session). Iteration 2 fattar beslut om primär mekanism (containment vs pre-filtrering vs kombination) utifrån intressentfeedback under demon.
