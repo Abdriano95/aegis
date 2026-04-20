@@ -580,7 +580,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 #### Session 2026-04-20 - Cursor-agent (Opus) (issue #60)
 
 **Iteration:** 1 / v0.1.1
-**Mål:** Lösa issue #56 - byta SpaCy-label-nyckeln i `EntityLayer._label_map` från `PER` (CoNLL) till `PRS` (SUC3, vilket `sv_core_news_lg` faktiskt producerar) så att `article4.namn` detekteras.
+**Mål:** Lösa issue #60 - byta SpaCy-label-nyckeln i `EntityLayer._label_map` från `PER` (CoNLL) till `PRS` (SUC3, vilket `sv_core_news_lg` faktiskt producerar) så att `article4.namn` detekteras.
 
 **Ändrade filer:**
 - `gdpr_classifier/layers/entity/entity_layer.py` - `_label_map`-nyckeln ändrad från `"PER"` till `"PRS"`; source-taggen från `"entity.spacy_PER"` till `"entity.spacy_PRS"`; modul-docstringens mappnings-exempel (`PER -> Category.NAMN`) uppdaterat till `PRS`. LOC/ORG, `confidence=0.8`, `metadata={"ner_label": ent.label_}` och övrig struktur oförändrade.
