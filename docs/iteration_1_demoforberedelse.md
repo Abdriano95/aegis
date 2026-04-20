@@ -598,3 +598,21 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Source-taggen följer SpaCys råetikett (`entity.spacy_PRS`), konsekvent med SSOT 5:s formatregel `entity.spacy_{LABEL}`. Historiska sessionsposter som refererar till `PER` lämnas orörda per mall-regel 4 ("Ändra aldrig tidigare poster"). Docstring-uppdatering och neutral omskrivning av ORG-motiveringen i avsnitt 5 beslutade i Plan Mode som följdändringar.
 **Öppet/Nästa steg:** Kvarvarande FN på personnummer `820415-3421` är separat testdata-bugg (eget issue). Nya NER-FP från PRS (`2222`, `070`, `Anna` utan efternamn) och ORG (e-postadresser) är förväntad arkitektonisk kompromiss i iteration 1 - kan bli input till kända begränsningar (avsnitt 14) eller senare tuning. Commit sker efter granskning (ingen commit i denna session).
+
+#### Session 2026-04-20 - Cursor-agent (Opus) (testdata-fix personnummer)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Fixa testdata-bugg i `tests/data/iteration_1/test_dataset.json` - personnummer `820415-3421` fallerar Luhn-checksumma och avvisas korrekt av `PersonnummerRecognizer`. Byt till giltig variant enligt Beslut 9 i Loggboken (testdata med strukturerad data måste ha giltiga kontrollsiffror).
+
+**Ändrade filer:**
+- `tests/data/iteration_1/test_dataset.json` - `820415-3421` → `820415-3426` i både `text`-fältet och motsvarande `expected_findings[].text_span` för entryn "Erik Johansson, 820415-3421, är bosatt i Göteborg." Positionerna (`start=16, end=27`) oförändrade eftersom längden är densamma.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost.
+
+**Gjort:**
+- Manuellt räknat Luhn-kontrollsiffra för `820415-342X`: positionerna 0,2,4,6,8 dubblas (8→16→7, 0, 1→2, 3→6, 2→4), positionerna 1,3,5,7 (2, 4, 5, 4), summa utan kontrollsiffra = 34, kontrollsiffra = (10 - 34 mod 10) mod 10 = **6**.
+- Bytt båda förekomsterna via en enda textersättning (`replace_all`). Verifierat med `git status` att exakt en fil ändrades.
+- **Evaluation efter fix:** `article4.personnummer` TP=14, FP=0, FN=0 → **recall 100% (upp från 13/14 = 92.86%)**, F1 100%. Total: TP=78, FP=13, FN=3, Precision 85.71%, Recall 96.30%, F1 90.70% (total FN minskar med 1; övriga tre kvarvarande FN är `context.organisation`: `Volvo AB`, `Skatteverket` ×2).
+- `.venv\Scripts\python.exe -m pytest tests/integration/test_end_to_end.py -s`: 1 passed.
+
+**Beslut fattade:** Ingen kodändring, ingen SSOT-synk - rent testdata-fix enligt Beslut 9. Samma typ av korrigering som de 13 som gjordes tidigare i iteration 1.
+**Öppet/Nästa steg:** Kvarvarande tre `context.organisation`-FN (Skatteverket, Volvo AB) beror på SpaCy-modellens taggning - separata issues. Commit sker efter granskning (ingen commit i denna session).
