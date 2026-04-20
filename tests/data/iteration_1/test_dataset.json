@@ -804,7 +804,7 @@
     ]
   },
   {
-    "text": "Erik Johansson, 820415-3421, är bosatt i Göteborg.",
+    "text": "Erik Johansson, 820415-3426, är bosatt i Göteborg.",
     "description": "Blandad: NER namn + regex personnummer + NER plats",
     "expected_findings": [
       {
@@ -817,7 +817,7 @@
         "category": "article4.personnummer",
         "start": 16,
         "end": 27,
-        "text_span": "820415-3421"
+        "text_span": "820415-3426"
       },
       {
         "category": "article4.adress",
