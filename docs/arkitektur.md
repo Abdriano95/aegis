@@ -3,8 +3,8 @@
 **Projekt:** Examensarbete HT26 - Automatiserad klassificering av textinnehåll enligt GDPR  
 **Författare:** Abdulla Mehdi & Johanna Gull  
 **Handledare:** Johannes Sahlin, Högskolan i Borås  
-**Version:** 0.1.0 (Iteration 1)  
-**Senast uppdaterad:** 2026-04-17
+**Version:** 0.1.1 (Iteration 1)  
+**Senast uppdaterad:** 2026-04-20
 
 ---
 
@@ -112,13 +112,15 @@ class Category(Enum):
     IBAN            = "article4.iban"
     NAMN            = "article4.namn"
     ADRESS          = "article4.adress"
+    POSTORT         = "article4.postort"
+    POSTNUMMER      = "article4.postnummer"
     BETALKORT       = "article4.betalkort"
 
     # Artikel 9: Särskilda kategorier (iteration 2-3)
     HALSODATA             = "article9.halsodata"
     ETNISKT_URSPRUNG      = "article9.etniskt_ursprung"
     POLITISK_ASIKT        = "article9.politisk_asikt"
-    RELIGIÖS_ÖVERTYGELSE  = "article9.religios_overtygelse"
+    RELIGIOS_OVERTYGELSE  = "article9.religios_overtygelse"
     FACKMEDLEMSKAP        = "article9.fackmedlemskap"
     BIOMETRISK_DATA       = "article9.biometrisk_data"
     SEXUELL_LAGGNING      = "article9.sexuell_laggning"
@@ -127,7 +129,7 @@ class Category(Enum):
     ORGANISATION          = "context.organisation"
 
     # Kontextuellt känslig (identifierbar indirekt, iteration 3)
-    KONTEXTUELLT_KÄNSLIG  = "kontextuellt_kanslig"
+    KONTEXTUELLT_KANSLIG  = "context.identifierbar"
 ```
 
 Prefix-konventionen i `Category`-värdet kodar GDPR-status för kategorin. `article4.*` markerar direkta personuppgifter enligt artikel 4 (kategorier som i sig identifierar en fysisk person). `article9.*` markerar särskilda kategorier enligt artikel 9 (känsliga uppgifter som kräver rättslig grund enligt art 9.2). `context.*` markerar kontextsignaler som inte i sig är art 4-data men som bidrar till sensitivity-bedömningen i kombination med andra fynd (pusselbitseffekten; se `SensitivityLevel` nedan och avsnitt 8 för hur sensitivity bestäms). Aggregatorn kan diskriminera på prefix utan att känna till enskilda kategorinamn.
@@ -146,7 +148,7 @@ class Finding:
     end: int                  # slutposition i originaltexten
     text_span: str            # den exakta strängen som matchades
     confidence: float         # 0.0 - 1.0
-    source: str               # "pattern.luhn_personnummer", "entity.spacy_person", etc.
+    source: str               # "pattern.luhn_personnummer", "entity.spacy_PRS", etc.
     metadata: dict | None = None  # lagerspecifik extradata
 ```
 
@@ -477,9 +479,10 @@ gdpr_classifier/
                 email.py         # Regex
                 telefon.py       # Regex
                 iban.py          # Regex + mod97
+                betalkort.py     # Regex + Luhn (PAN 13-16 siffror)
         entity/
             __init__.py
-            entity_layer.py      # EntityLayer (stub iteration 1)
+            entity_layer.py      # EntityLayer (SpaCy sv_core_news_lg, aktiv från v0.1.1)
         context/
             __init__.py
             context_layer.py     # ContextLayer (stub iteration 1)
@@ -500,15 +503,15 @@ evaluation/
     report.py                    # Sammanställer rapport
 tests/
     unit/
-        test_personnummer.py
-        test_email.py
-        test_pattern_layer.py
-        test_aggregator.py
-        test_pipeline.py
+        test_betalkort.py
+        test_evaluation_flow.py
+        test_loader.py
         test_matcher.py
         test_metrics.py
     integration/
         test_end_to_end.py
+    dataset/
+        test_dataset_offsets.py
     data/
         iteration_1/
             test_dataset.json    # Johannas testdata
@@ -523,7 +526,7 @@ README.md
 
 **Bygger:**
 - `core/` komplett (Category, Finding, Classification, Layer-protokoll)
-- `layers/pattern/` med alla fyra recognizers
+- `layers/pattern/` med alla fem recognizers
 - `layers/entity/` och `layers/context/` som stubs
 - `pipeline.py` och `aggregator.py`
 - `evaluation/` komplett

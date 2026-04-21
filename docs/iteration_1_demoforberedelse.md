@@ -25,11 +25,12 @@ Sammanställning av iteration 1:s demoförberedelse-issues per 2026-04-20. Detal
 | 46 | NER-testdata: platser + organisationer | Johanna | Klar | - |
 | 47 | NER-testdata: blandade texter | Johanna | Klar | - |
 | 48 | Demomanus + intervjufrågor | Gemensamt | Ej påbörjad | - |
-| 54 | SSOT-drift (POSTORT/POSTNUMMER + diakriter) | Backlog | Ej påbörjad | - |
+| 54 | SSOT-drift (POSTORT/POSTNUMMER + diakriter) | Abdulla | Klar | 2026-04-20 |
 | 55 | Beslut N i Loggboken (context.*-prefix) | Backlog | Ej påbörjad | - |
 | 60 | PRS-fix (SpaCy SUC3-taggset) | Abdulla | Klar | 2026-04-20 |
 | 62 | Avsnitt 14: NER-FPs + grundorsaks-struktur | Abdulla | Klar | 2026-04-20 |
 | - | Testdata-fix 820415-3421 → 820415-3426 | Abdulla | Klar | 2026-04-20 |
+| - | SSOT docs-sync extra (D1-D7 exkl D5: filstruktur, fem recognizers, frontmatter, finding-exempel) | Abdulla | Klar | 2026-04-20 |
 
 Total evaluation efter alla dagens fixar: TP=78, FP=13, FN=3, precision 85.71%, recall 96.30%, F1 90.70%. Kvarvarande FP och FN dokumenterade som kända begränsningar i SSOT avsnitt 14.
 
@@ -684,3 +685,38 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Tabellen placerad tidigt i dokumentet (efter frontmatter) snarare än som eget avsnitt längre ner - inför demon är dagsfärsk översikt det första intressenter/granskare vill se. Sessionspost-kolumnen refererar till datum (2026-04-18/2026-04-20) istället för issue-nummer för att undvika dubbel spårbarhet.
 **Öppet/Nästa steg:** Återstående issues: #44 (spårbarhet per markering), #48 (demomanus + intervjufrågor), #54 (SSOT-drift), #55 (Beslut N i Loggboken). Commit sker efter granskning.
+
+#### Session 2026-04-20 - Cursor-agent (Opus) (issue #54)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Lösa issue #54 - synka Category-enumen i SSOT avsnitt 3.3 mot gdpr_classifier/core/category.py. Tre driftspunkter: POSTORT/POSTNUMMER saknas i SSOT, RELIGIÖS_ÖVERTYGELSE har diakriter i SSOT men inte i koden, KONTEXTUELLT_KÄNSLIG skiljer sig på både nyckel (diakrit) och värde (kontextuellt_kanslig vs context.identifierbar).
+
+**Ändrade filer:**
+- `docs/arkitektur.md` - avsnitt 3.3 Category-enum: lagt till POSTORT/POSTNUMMER under Artikel 4-gruppen efter ADRESS och före BETALKORT; bytt nyckelnamnet RELIGIÖS_ÖVERTYGELSE till RELIGIOS_OVERTYGELSE (värdet redan matchande); bytt både nyckel KONTEXTUELLT_KÄNSLIG till KONTEXTUELLT_KANSLIG och värde "kontextuellt_kanslig" till "context.identifierbar" så båda matchar koden; prosa-paragrafen om prefix-konventionen verifierad och oförändrad.
+- `docs/iteration_1_demoforberedelse.md` - denna sessionspost; statustabellens rad för #54 uppdaterad från "Ej påbörjad" till "Klar" med sessionspost-datum 2026-04-20.
+
+**Gjort:**
+- Verifierat att `gdpr_classifier/core/category.py` har POSTORT, POSTNUMMER, RELIGIOS_OVERTYGELSE utan diakriter, och KONTEXTUELLT_KANSLIG = "context.identifierbar".
+- Tre exakta diff-punkter implementerade i avsnitt 3.3. Ingen kodfil rörd.
+- `git status` visar exakt två modifierade filer.
+
+**Beslut fattade:** SSOT anpassas till koden (dokumentation-only fix), inte tvärtom. Kommentaren "Kontextuellt känslig (identifierbar indirekt, iteration 3)" över KONTEXTUELLT_KANSLIG-raden behåller diakriterna eftersom den är prosa, inte Python-identifierare.
+**Öppet/Nästa steg:** #55 (Beslut N i Loggboken) och #48 (demomanus + intervjufrågor) återstår av iteration 1:s backlog. Commit sker efter granskning.
+
+#### Session 2026-04-20 - Cursor-agent (Opus) (SSOT docs-sync extra)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Efter implementation av #54 genomfördes en bredare docs-sync-scan av `docs/arkitektur.md` mot faktisk kodbas för att fånga driftpunkter utöver Category-enumen. Sex driftpunkter (D1-D4, D6-D7) åtgärdades; en sjunde (D5) flaggades som substansdrift som kräver designbeslut och lämnades orörd.
+
+**Ändrade filer:**
+- `docs/arkitektur.md` - frontmatter uppdaterad till v0.1.1 och datum 2026-04-20 (D6); Finding-exemplets source-kommentar bytt från `entity.spacy_person` till `entity.spacy_PRS` (D7, synkar mot SUC3-taggset som används av `sv_core_news_lg`); avsnitt 10 filstruktur-blocket synkat: `betalkort.py` tillagd under recognizers/ (D1), "stub iteration 1"-kommentaren på `entity_layer.py` bytt till "SpaCy sv_core_news_lg, aktiv från v0.1.1" (D4), tests/-blocket synkat mot faktiska testfiler (D3) - listade tester som inte finns borttagna (`test_personnummer.py`, `test_email.py`, `test_pattern_layer.py`, `test_aggregator.py`, `test_pipeline.py`), faktiska tester tillagda (`test_betalkort.py`, `test_evaluation_flow.py`, `test_loader.py`), samt `tests/dataset/test_dataset_offsets.py` inlagd som egen underkatalog; avsnitt 11 Iteration 1 "alla fyra recognizers" uppdaterat till "alla fem recognizers" (D2).
+- `docs/iteration_1_demoforberedelse.md` - statustabell: ny `-`-rad för SSOT docs-sync extra; denna sessionspost.
+
+**Gjort:**
+- Systematisk korsreferens mellan SSOT avsnitt 3-11 och faktiska filer i `gdpr_classifier/`, `evaluation/`, `tests/`.
+- Sex drift-punkter åtgärdade i docs; ingen kodfil rörd.
+- D5 (aggregatorn elevear `context.*` till HIGH, vilket motsäger SSOT avsnitt 8 rad 360) dokumenterad separat och lämnad orörd: är substansdrift som kräver beslut om nuvarande kodbeteende är tänkt eller ska justeras. Hör sannolikt ihop med #55 (Beslut N: `context.*`-prefix och ORG-kategorisering). Inte en ren docs-fix.
+- `git status` visar exakt två modifierade filer (samma två som #54-posten ovan).
+
+**Beslut fattade:** Docs-sync följer samma SSOT-följer-kod-princip som #54. D5 separeras ut och hanteras som designbeslut, inte som tyst docs-sync, för att undvika att cementera ett potentiellt kod-bug (ORG-fynd från NER triggar HIGH) i dokumentationen utan granskning.
+**Öppet/Nästa steg:** D5 behöver adresseras, antingen som del av #55 eller i ny issue ("aggregatorns hantering av `context.*`-fynd: kod-fix vs SSOT-uppdatering"). #48 (demomanus) återstår av iteration 1:s backlog.
