@@ -729,3 +729,19 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** #48/#55 raderas från aktiva sektioner (statustabell, user stories, arbetsfördelning, beroendekarta, DoD) i stället för att markeras som "Klar" med sessionspost-datum, eftersom arbetet ägde rum utanför det här repot (Loggboken i Google Drive + existerande intervjufråge-sektion). Historisk spårbarhet bevaras via tidigare sessionsposters referenser och git-historiken. #44 markeras som "Klar" med sessionspost 2026-04-21 eftersom arbetet verifierats i repots kod (demo/callbacks.py), inte i extern artefakt.
 **Öppet/Nästa steg:** Iteration 1:s Build + demoförberedelse är stängda. Kvarvarande DoD-punkt är `git tag v0.1.1` - sätts efter att pågående PR mergas till main (release-handling, inte docs-synk). D5 (aggregatorns hantering av `context.*`-fynd) lyfts till iteration 2 som separat designbeslut.
+
+#### Session 2026-04-20 - Johanna Gull (issue #64 / PR #65, retroaktiv loggpost)
+
+**Iteration:** 1 / v0.1.1
+**Mål:** Komplettera testdatasetet med saknade `expected_findings` för namn och adress i två befintliga testfall där pipelinen redan detekterade entiteterna korrekt men ground-truth saknades. (Commit `b7acb8a`, mergad via PR #65.)
+
+**Ändrade filer:**
+- `tests/data/iteration_1/test_dataset.json` - 4 nya `expected_findings` tillagda i 2 befintliga entries (totalt 70 entries, 85 fynd).
+
+**Gjort:**
+- Lade till `article4.namn "Anna Andersson"` (start=6, end=20) och `article4.adress "Stockholm"` (start=54, end=63) i entry 8 ("PNR 12-siffrigt i radbruten lista").
+- Lade till `article4.namn "Erik Eriksson"` (start=25, end=38) och `article4.namn "Maja Maj"` (start=70, end=78) i entry 27 ("Blandad punktlista (2 email, 2 telefonnummer)").
+- **Evaluation efter ändring:** Totalt expected findings 81 → 85. De 4 nya labels matchade prediktioner som tidigare räknades som FP - dessa konverterades till TP. Total: TP=82, FP=9, FN=3, Precision 90.11%, Recall 96.47%, F1 93.18% (jämfört med TP=78, FP=13, FN=3 i föregående loggpost). Per kategori: `article4.namn` TP=21 (upp från 18), `article4.adress` TP=8 (upp från 7 inkl. ny label), `context.organisation` TP=4, FN=3 oförändrat (Volvo AB, Skatteverket ×2).
+
+**Beslut fattade:** Loggposten skrevs retroaktivt 2026-04-28 efter att diskrepansen (programmet visade 81 fynd men datasetet innehöll 85) identifierades under kodgranskning. Commiten följer samma kompletteringsprincip som övriga testdata-fixar: pipelines befintliga detektioner validerades och etiketterades i ground-truth snarare än att ny testdata konstruerades.
+**Öppet/Nästa steg:** Inga kvarvarande actions från denna commit. FN-trion (`context.organisation`) kvarstår som känd begränsning (avsnitt 14.2) och lyfts till iteration 2.
