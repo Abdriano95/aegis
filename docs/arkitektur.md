@@ -280,9 +280,9 @@ ORG mappas medvetet till `Category.ORGANISATION` med prefixet `context.*`, inte 
 Modellen `sv_core_news_lg` använder SUC3-taggsetet; person-entiteter labellas `PRS`, inte `PER` (CoNLL). Mappningen och source-taggen speglar detta.
 
 
-## 6. Lager 3: Kontextuell analys - Iteration 3
+## 6. Lager 3: Kontextuell analys - Iteration 2
 
-Stub i iteration 1 och 2. Returnerar tom lista.
+Stub i iteration 1. Returnerar tom lista.
 
 Planerad implementation:
 - Zero-shot-klassificering eller lokal LLM.
@@ -290,7 +290,7 @@ Planerad implementation:
 - `source`: `"context.zeroshot"` eller `"context.llm"`.
 - `confidence`: modellens rapporterade säkerhet.
 
-Teknikvalet (zero-shot vs lokal LLM) fattas baserat på iteration 2:s resultat. Lokal LLM (t.ex. via Ollama) introduceras bara om zero-shot-klassificering visar sig otillräcklig, för att undvika onödig teknisk skuld.
+Teknikvalet (zero-shot vs lokal LLM, modellstorlek, arkitektur, exekveringsmiljö) fastställs iterativt under designcykel 2 baserat på prestanda, resurskrav och intressentfeedback. Lokal LLM (t.ex. via Ollama) introduceras bara om zero-shot-klassificering visar sig otillräcklig, för att undvika onödig teknisk skuld.
 
 
 ## 7. Pipeline
@@ -355,9 +355,9 @@ class Aggregator:
         ...
 ```
 
-I iteration 1 tilldelas endast `NONE`, `LOW` och `HIGH`. `MEDIUM` är definierad i `SensitivityLevel` men används först när kontextuella indirekt-identifierare (pusselbitseffekten) införs i iteration 3 (`ContextLayer`).
+I iteration 1 tilldelas endast `NONE`, `LOW` och `HIGH`. `MEDIUM` är definierad i `SensitivityLevel` men används först när kontextuella indirekt-identifierare (pusselbitseffekten) införs i iteration 2 (`ContextLayer`).
 
-`context.*`-fynd triggar inte ensamma någon höjning av sensitivity i iteration 1:s aggregator; de räknas som spårbara men icke-klassificerande signaler. Kombinationslogiken där `context.*` + `article4.*` eller `context.*` + `article9.*` höjer sensitivity till `MEDIUM` planeras för iteration 2 (se avsnitt 11).
+`context.*`-fynd triggar inte ensamma någon höjning av sensitivity i iteration 1:s aggregator; de räknas som spårbara men icke-klassificerande signaler. Kombinationslogiken där `context.*` + `article4.*` eller `context.*` + `article9.*` höjer sensitivity till `MEDIUM` integreras med Lager 3-implementationen i designcykel 2 (se avsnitt 11).
 
 
 ## 9. Utvärdering
@@ -540,24 +540,25 @@ README.md
 - Låg precision (förväntat p.g.a. regex-mönstrens generella natur, bekräftat av Mishra et al.)
 - Inga fynd för Artikel 9 (kontextuell analys saknas)
 
-### Iteration 2 (v17-v19): Entitetsigenkänning
+### Iteration 2 (v17-v19): Kontextuell analys
 
 **Bygger:**
-- `layers/entity/` med SpaCy eller KB-BERT
-- Eventuellt nya Artikel 9-kategorier i Category
-
-**Utvärderar:**
-- Kvantitativt: Samma testdata plus utökat dataset med namn, adresser, organisationer
-- Kvalitativt: Demo och intervju
-
-### Iteration 3 (v19-v21): Kontextuell analys
-
-**Bygger:**
-- `layers/context/` med zero-shot eller lokal LLM
-- Artikel 9-kategorier
+- `layers/context/` med zero-shot eller lokal LLM (teknikval fastställs iterativt, se avsnitt 6)
+- Kombinationslogik i aggregatorn: `context.*` + `article4.*`/`article9.*` → `MEDIUM`
+- Förbättringar baserat på iteration 1-feedback (containment-regel, NER-FP-reducering)
 
 **Utvärderar:**
 - Kvantitativt: Fullt dataset inklusive kontextuellt känsliga texter
+- Kvalitativt: Demo och intervju med intressenter
+
+### Iteration 3 (v19-v21): Förfining och formalisering
+
+**Hanterar:**
+- Feedback från designcykel 2:s utvärdering
+- Formalisering av designprinciper (Generalized Outcomes)
+
+**Utvärderar:**
+- Kvantitativt: Komplett dataset med alla lager aktiva
 - Kvalitativt: Slutgiltig demo och intervju
 
 
@@ -574,6 +575,7 @@ Följande designbeslut ska dokumenteras löpande, som råmaterial för designpri
 - Teknikval inom varje lager och motivering
 - Beslut om `context.*`-prefix och ORG-kategorisering (full motivering i repots Loggbok)
 - Upptäckt av SUC3 vs CoNLL-tagg-konvention i `sv_core_news_lg` (iteration 1, demoförberedelse)
+- Beslut 16: Omdisponering av Lager 3 (kontextuell analys) från designcykel 3 till designcykel 2 (full motivering i repots Loggbok)
 
 Dokumentationsformatet ska följa mönstret: *beslut, alternativ som övervägdes, motivering, koppling till GDPR-krav eller empiriskt stöd.*
 

@@ -74,7 +74,7 @@ Feedbacken från demon styr sedan iteration 2, där kontextlagret
 **Iterationsstruktur efter omplanering:**
 - Iteration 1 (BIE-cykel 1): Lager 1 (regex) + Lager 2 (NER) + demo + utvärdering
 - Iteration 2 (BIE-cykel 2): Lager 3 (kontext) + förbättringar baserat på feedback
-- Iteration 3 (BIE-cykel 3): Förfining + slutgiltig utvärdering
+- Iteration 3 (BIE-cykel 3): Feedback från designcykel 2:s utvärdering + formalisering av designprinciper (Generalized Outcomes)
 
 ---
 
