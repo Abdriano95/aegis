@@ -4,7 +4,7 @@
 **Iteration:** 2 (BIE-cykel 2, naturalistisk formativ utvärdering)  
 **Version under demo:** v0.2.0 (preliminärt — justeras vid demotillfället)  
 **Datum:** [fylls i per session]  
-**Deltagare (organisation):** [Centiro / TechStn / Göteborg Stad / VGR]  
+**Deltagare (organisation):** Verksamhet 1,2,4
 **Deltagare (namn, roll):** [fylls i per session]  
 **Intervjuare:** Abdulla Mehdi och Johanna Gull
 
