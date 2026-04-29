@@ -55,7 +55,7 @@ Denna fil listar inga beslut. Alla arkitektoniska och metodologiska avgöranden 
 
 ## Arbetsflöde
 
-Iteration 2 följer samma åtta-stegs-loop som iteration 1, beskriven i [`docs/arbetsflode.md`](arbetsflode.md). Skillnaden mot iteration 1 är att Claude Code används som implementations-agent istället för Cursor: Claude Code tar emot issue-specifikationer, genererar plan i Plan Mode, och implementerar i Agent Mode efter användarens godkännande.
+Iteration 2 följer samma åtta-stegs-loop som iteration 1, beskriven i [`arbetsflode.md`](arbetsflode.md). Skillnaden mot iteration 1 är att Claude Code används som implementations-agent istället för Cursor: Claude Code tar emot issue-specifikationer, genererar plan i Plan Mode, och implementerar i Agent Mode efter användarens godkännande.
 
 ---
 

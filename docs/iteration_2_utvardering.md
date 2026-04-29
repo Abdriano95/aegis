@@ -84,7 +84,7 @@ Syfte: Bedöm om systemet upplevs leverera värde för intressentens kärnbehov 
 
 ### Tema 2: Efficacy (ca 5 min)
 
-Syfte: Bedöm om systemet faktiskt lyckas identifiera det det är avsett att identifiera, inklusive kontextuellt känsliga texter där ingen enskild uppgift är en personuppgift men kombinationen är det.
+Syfte: Bedöm om systemet faktiskt lyckas identifiera det som är avsett att identifiera, inklusive kontextuellt känsliga texter där ingen enskild uppgift är en personuppgift men kombinationen är det.
 
 **F4.** [FEDS: efficacy | Kvale: typ fastställs senare]
 
