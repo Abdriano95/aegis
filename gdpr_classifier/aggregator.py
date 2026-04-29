@@ -52,8 +52,8 @@ class Aggregator:
         HIGH: minst ett Artikel 9-fynd eller kontextuellt känsligt fynd.
 
         MEDIUM är definierad i ``SensitivityLevel`` men tilldelas aldrig i
-        iteration 1 - används först när kontextuella indirekt-identifierare
-        (pusselbitseffekten) införs i iteration 3.
+        iteration 1 - aktiveras i iteration 2 när kontextuella
+        indirekt-identifierare (pusselbitseffekten) införs via Lager 3.
         """
         if not findings:
             return SensitivityLevel.NONE
