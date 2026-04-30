@@ -128,9 +128,9 @@ Syfte: Bedöm om systemet och dess utdata passar in i intressentens befintliga a
 
 | Intressent | Fråga |
 |-----------|-------|
-| Centiro | [Fylls i baserat på iteration 1-feedback och iteration 2:s scope] |
-| TechStn | [Fylls i baserat på iteration 1-feedback och iteration 2:s scope] |
-| Göteborg Stad | [Fylls i baserat på iteration 1-feedback och iteration 2:s scope] |
+| V1 | [Fylls i baserat på iteration 1-feedback och iteration 2:s scope] |
+| V2 | [Fylls i baserat på iteration 1-feedback och iteration 2:s scope] |
+| V4 | [Fylls i baserat på iteration 1-feedback och iteration 2:s scope] |
 
 ---
 
@@ -197,7 +197,7 @@ Initiala koder hämtas från iteration 1:s tematiska analys. Nya koder — exemp
 - [ ] Transkribera
 - [ ] Tematisk kodning v1
 - [ ] Uppdatera Loggboken ("Loggbok - iteration 2"-fliken) och sessionslogg-post i `docs/iteration_2_implementation.md`
-- [ ] Kommunicera med Johanna
+- [ ] Kommunicera 
 
 ---
 

@@ -52,34 +52,34 @@ Följande designprinciper kodifieras av arkitekturen och formaliseras enligt Gre
 ```
 Indata (text)
       │
-      ├──────────────┬──────────────┐
-      ▼              ▼              ▼
-┌──────────┐  ┌──────────┐  ┌──────────┐
-│ Lager 1  │  │ Lager 2  │  │ Lager 3  │
-│ Mönster  │  │ Entiteter│  │ Kontext  │
-│ Regex,   │  │ NER      │  │ Semantisk│
-│ Luhn     │  │          │  │ bedömning│
-└────┬─────┘  └────┬─────┘  └────┬─────┘
-     │              │              │
-     │  list[Finding]│  list[Finding]│  list[Finding]
-     │              │              │
-     └──────────────┼──────────────┘
-                    ▼
-            ┌──────────────┐
-            │  Aggregator  │
-            │  Samlar fynd │
-            │  Hanterar    │
-            │  överlapp    │
-            └──────┬───────┘
+      ├──────────┬──────────┬──────────┐
+      ▼          ▼          ▼          ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│ Lager 1  │ │ Lager 2  │ │ Lager 3  │ │ Lager 4  │
+│ Mönster  │ │Entiteter │ │Article9  │ │Kombination│
+│ Regex,   │ │ NER      │ │ LLM      │ │ Pussel-  │
+│ Luhn     │ │          │ │          │ │  bitar   │
+└────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘
+     │             │             │             │
+     │       list[Finding] per lager           │
+     │             │             │             │
+     └─────────────┼─────────────┴─────────────┘
                    ▼
-          ┌────────────────┐
-          │ Classification │
-          │ Kategori, fynd │
-          │ spårning       │
-          └────────────────┘
+           ┌──────────────┐
+           │  Aggregator  │
+           │  Samlar fynd │
+           │  Hanterar    │
+           │  överlapp    │
+           └──────┬───────┘
+                  ▼
+         ┌────────────────┐
+         │ Classification │
+         │ Kategori, fynd │
+         │ spårning       │
+         └────────────────┘
 ```
 
-Alla tre lager får samma text som input, oberoende av varandra. Varje lager returnerar en `list[Finding]`. Aggregatorn samlar alla fynd och producerar en `Classification`.
+Alla fyra lager får samma text som input, oberoende av varandra. Varje lager returnerar en `list[Finding]`. Aggregatorn samlar alla fynd och producerar en `Classification`.
 
 
 ### 3.2 Komponentansvar
@@ -90,7 +90,9 @@ Alla tre lager får samma text som input, oberoende av varandra. Varje lager ret
 
 **Lager 2 (Entiteter)** identifierar namngivna entiteter (personer, platser, organisationer) via NER. Producerar fynd med varierande konfidens beroende på modellens säkerhet. Stub i iteration 1.
 
-**Lager 3 (Kontext)** bedömer om texten som helhet innehåller känslig information som inte fångas av enskilda entiteter eller mönster. Exempelvis: "Min chef på lagret i Eskilstuna trakasserar mig" innehåller inga explicita identifierare men är identifierbar indirekt. Stub i iteration 1.
+**Lager 3 (Article9Layer)** detekterar direkt uttryckta kategoriuppgifter enligt GDPR artikel 9 (hälsodata, religiös övertygelse, politisk åskådning, sexuell läggning, etniskt ursprung, biometriska data, fackföreningsmedlemskap) via en lokal LLM med utbytbar provider (Beslut 17, se avsnitt 6.1). Stub i iteration 1. Implementeras i iteration 2.
+
+**Lager 4 (CombinationLayer)** bedömer om kombinationer av kontextsignaler skapar indirekt identifierbarhet — pusselbitseffekten (GDPR skäl 26). Exempel: "Min chef på lagret i Eskilstuna trakasserar mig" innehåller inga direkta identifierare men kan vara indirekt identifierbar via kombination av roll, plats och organisation (se avsnitt 6.2). Stub i iteration 1. Implementeras i iteration 2.
 
 **Aggregator** samlar fynd från alla lager och producerar en klassificering. Hanterar överlappande fynd (se avsnitt 3.4). Bestämmer sammanfattande känslighetsnivå.
 
@@ -280,22 +282,49 @@ ORG mappas medvetet till `Category.ORGANISATION` med prefixet `context.*`, inte 
 Modellen `sv_core_news_lg` använder SUC3-taggsetet; person-entiteter labellas `PRS`, inte `PER` (CoNLL). Mappningen och source-taggen speglar detta.
 
 
-## 6. Lager 3: Kontextuell analys - Iteration 2
+## 6. Lager 3 och 4: Kontextuell analys (Iteration 2)
 
-Stub i iteration 1. Returnerar tom lista.
+Iteration 2 implementerar kontextuell analys i två separata lager med tydligt avgränsade ansvarsområden enligt Single Responsibility Principle (Beslut 18, Loggbok iteration 2).
 
-Planerad implementation:
-- Zero-shot-klassificering eller lokal LLM.
-- Bedömer om texten som helhet är känslig trots avsaknad av explicita identifierare.
-- `source`: `"context.zeroshot"` eller `"context.llm"`.
-- `confidence`: modellens rapporterade säkerhet.
+### 6.1 Lager 3: Article9Layer (Artikel 9-detektion)
 
-Teknikvalet (zero-shot vs lokal LLM, modellstorlek, arkitektur, exekveringsmiljö) fastställs iterativt under designcykel 2 baserat på prestanda, resurskrav och intressentfeedback. Lokal LLM (t.ex. via Ollama) introduceras bara om zero-shot-klassificering visar sig otillräcklig, för att undvika onödig teknisk skuld.
+Implementeras i iteration 2. Article9Layer detekterar direkt uttryckta kategoriuppgifter enligt GDPR artikel 9: hälsodata, religiös övertygelse, politisk åskådning, sexuell läggning, etniskt ursprung, biometriska data och fackföreningsmedlemskap.
+
+*Notering:* Genetiska data (GDPR artikel 9.1) saknas i nuvarande `Category`-enum (`gdpr_classifier/core/category.py`). Tillägg av `GENETISK_DATA` är en kodändring som hanteras i Issue #70 eller separat scope-item, inte i denna dokumentationsrevision.
+
+**Ansvar:** Att identifiera explicita förekomster av artikel 9-data i text. Lagret klassificerar vad som nämnts, inte om personen är identifierbar. Det är Article9Layer:s fynd som triggar `HIGH`-känslighetsnivå i aggregatorn (se avsnitt 8).
+
+**LLM-implementation:** Lagret använder en lokal LLM via en utbytbar `LLMProvider`-abstraktion (se avsnitt 10 för filstruktur). Lokal exekveringsmiljö är primär; molnprovider är sekundär och utbytbar utan ändringar i lagret. Beslut 17 (Loggbok iteration 2) motiverar detta val. Modellstorlek och arkitektur väljs baserat på prestanda mot artikel 9-kategorier i svenska texter och fastställs iterativt.
+
+**Output:**
+- `Finding.category` ∈ `{article9.halsodata, article9.religios_overtygelse, article9.politisk_asikt, article9.sexuell_laggning, article9.etniskt_ursprung, article9.biometrisk_data, article9.fackmedlemskap}`
+- `Finding.source`: `"article9.{kategori}"` (t.ex. `"article9.halsodata"`)
+- `Finding.confidence`: modellens rapporterade säkerhet, 0.0–1.0
+
+Beslut 18 (Loggbok iteration 2) motiverar varför artikel 9-detektion separeras från kombinationslogik i ett eget lager.
+
+### 6.2 Lager 4: CombinationLayer (Pusselbitsbedömning)
+
+Implementeras i iteration 2. CombinationLayer bedömer om kombinationer av kontextsignaler i texten skapar indirekt identifierbarhet — pusselbitseffekten (GDPR skäl 26). En enskild kontextsignal (t.ex. yrke, organisation eller ort) är inte en personuppgift. I kombination kan de göra en individ identifierbar även utan direkta identifierare.
+
+**Ansvar:** Att identifiera textavsnitt som i kombination ökar identifieringsrisken. Lagret producerar tre typer av utfall:
+
+1. **Individuella signaler** (`context.{signal}`): Varje kontextsignal som bidrar till kombinationen rapporteras som ett separat fynd (t.ex. `context.organisation`, `context.yrke`, `context.plats`). Dessa fynd möjliggör spårbarhet per signal.
+
+2. **Kombinationsfynd** (`context.kombination`): Om kombinationen bedöms tillräcklig emitterar lagret ett aggregerat fynd som täcker kombinationens samlade span. Det är detta fynd som aggregatorn evaluerar mot Mekanism 1 och Mekanism 3 (se avsnitt 8).
+
+3. **Inga fynd:** Om texten inte innehåller tillräckliga signaler returneras tom lista.
+
+**Source-format:**
+- Individuella signaler: `"context.{signal}"` (t.ex. `"context.organisation"`)
+- Aggregerat kombinationsfynd: `"context.kombination"`
+
+Beslut 18 och 19 (Loggbok iteration 2) motiverar att kombinationslogiken implementeras i ett eget lager (Lager 4) medan aggregatorn ansvarar för mekanisk validering av kombinationsfynden.
 
 
 ## 7. Pipeline
 
-Pipelinen tar en lista av aktiva lager, kör varje lager mot indatan, och skickar alla fynd till aggregatorn.
+Pipelinen tar en lista av aktiva lager, kör varje lager mot indatan, och skickar alla fynd till aggregatorn. I iteration 2 körs fyra lager parallellt mot samma input-text: Lager 1 (Mönster), Lager 2 (Entiteter), Lager 3 (Article9Layer) och Lager 4 (CombinationLayer). Inget lager ser ett annat lagers fynd — principen om ömsesidig lagerovetskap (avsnitt 2.2, princip 1) bevaras oförändrad.
 
 ```python
 class Pipeline:
@@ -314,13 +343,23 @@ class Pipeline:
         )
 ```
 
-Konfiguration av aktiva lager sker via `config.py`. I iteration 1 är bara lager 1 aktivt.
+Konfiguration av aktiva lager sker via `config.py`. I iteration 1 är Lager 1 och Lager 2 aktiva; i iteration 2 aktiveras Lager 3 och Lager 4.
 
 
 ## 8. Aggregator
 
 ```python
 class Aggregator:
+    def __init__(
+        self,
+        medium_threshold: float = 0.7,
+        high_confidence_bypass: float = 0.85,
+        min_evidence_count: int = 2
+    ):
+        self.medium_threshold = medium_threshold
+        self.high_confidence_bypass = high_confidence_bypass
+        self.min_evidence_count = min_evidence_count
+
     def aggregate(
         self,
         findings: list[Finding],
@@ -345,19 +384,65 @@ class Aggregator:
         self, findings: list[Finding]
     ) -> SensitivityLevel:
         """
-        NONE:   inga fynd
-        LOW:    enbart Artikel 4-fynd
-        MEDIUM: indirekta identifierare eller kombinationer som tillsammans
-                ökar identifieringsrisken drastiskt (pusselbitseffekten),
-                t.ex. postkod + ovanligt yrke
-        HIGH:   minst ett Artikel 9-fynd
+        HIGH:   minst ett article9.*-fynd (Lager 3, Article9Layer).
+        MEDIUM: context.kombination-fynd som passerar Mekanism 1 (span-validering)
+                och antingen Mekanism 3 (evidens >= min_evidence_count) eller
+                hög-konfidens-bypass (confidence >= high_confidence_bypass).
+        LOW:    article4.*-fynd utan HIGH- eller MEDIUM-triggar.
+        NONE:   inga fynd.
+
+        D5-korrigering: isolerade context.*-fynd utan ett matchande
+        context.kombination-fynd triggar inte sensitivity-höjning (Beslut 11,
+        Loggbok iteration 1; Beslut 19, Loggbok iteration 2).
+        """
+        # HIGH: direkt artikel 9-data hittad (Lager 3)
+        if any(f.category.value.startswith("article9.") for f in findings):
+            return SensitivityLevel.HIGH
+
+        # MEDIUM: kombinationsfynd som passerar validering
+        kombination_findings = [
+            f for f in findings
+            if f.source == "context.kombination"
+            and f.confidence >= self.medium_threshold
+        ]
+        for kf in kombination_findings:
+            # Hög-konfidens-bypass: Privacy by Design fail-safe (Beslut 21, GDPR art. 25)
+            if kf.confidence >= self.high_confidence_bypass:
+                return SensitivityLevel.MEDIUM
+            # Mekanism 3: minimum evidence
+            if self._passes_mechanism_3(kf, findings):
+                return SensitivityLevel.MEDIUM
+
+        # LOW: artikel 4-data hittad
+        if any(f.category.value.startswith("article4.") for f in findings):
+            return SensitivityLevel.LOW
+
+        return SensitivityLevel.NONE
+
+    def _passes_mechanism_3(
+        self, kombination: Finding, all_findings: list[Finding]
+    ) -> bool:
+        """
+        Mekanism 3: Minst min_evidence_count evidens-span korresponderar med
+        fynd från Lager 1/2 eller förekommer ordagrant i originaltexten.
+        Implementationsdetaljer fastställs i Issue #74.
         """
         ...
 ```
 
-I iteration 1 tilldelas endast `NONE`, `LOW` och `HIGH`. `MEDIUM` är definierad i `SensitivityLevel` men används först när kontextuella indirekt-identifierare (pusselbitseffekten) införs i iteration 2 (`ContextLayer`).
+**Konfigurerbara trösklar (Beslut 20, Loggbok iteration 2):**
 
-`context.*`-fynd triggar inte ensamma någon höjning av sensitivity i iteration 1:s aggregator; de räknas som spårbara men icke-klassificerande signaler. Kombinationslogiken där `context.*` + `article4.*` eller `context.*` + `article9.*` höjer sensitivity till `MEDIUM` integreras med Lager 3-implementationen i designcykel 2 (se avsnitt 11).
+- `medium_threshold` (default `0.7`): minimumkonfidens för att ett `context.kombination`-fynd evalueras mot Mekanism 3 eller bypass.
+- `high_confidence_bypass` (default `0.85`): konfidens som kringgår Mekanism 3. Privacy by Design som fail-safe-princip (Beslut 21, GDPR artikel 25): ett falskt negativt (missad identifierbar person) är allvarligare än ett falskt positivt. Kringgåendet är medvetet och spårbart via source-fältet.
+- `min_evidence_count` (default `2`): minimumanatal evidens-span som krävs för att Mekanism 3 ska passera.
+
+Slutgiltig kalibrering av trösklarna sker baserat på iteration 2:s kvantitativa utvärdering (Issue #75 / I-8).
+
+**Mekanism 1 (span-validering):** Delegeras till Lager 4 (CombinationLayer) som producerar `context.kombination`-fynd med valida span-positioner. Aggregatorn kan verifiera span-integriteten vid behov utan att re-implementera logiken.
+
+**D5-korrigering:** Isolerade `context.*`-fynd — alltså individuella signaler från Lager 4 utan ett matchande `context.kombination`-fynd — triggar inte sensitivity-höjning. Motivering: en enskild kontextsignal ökar inte identifieringsrisken utan kombination med andra signaler (Beslut 11, Loggbok iteration 1; Beslut 19, Loggbok iteration 2). Isolerade `context.*`-fynd bevaras i `Classification.findings` för spårbarhet men påverkar inte `sensitivity`.
+
+I iteration 1 tilldelas endast `NONE`, `LOW` och `HIGH`. `MEDIUM` används från och med iteration 2 när Lager 3 och Lager 4 är aktiva.
 
 
 ## 9. Utvärdering
@@ -483,9 +568,10 @@ gdpr_classifier/
         entity/
             __init__.py
             entity_layer.py      # EntityLayer (SpaCy sv_core_news_lg, aktiv från v0.1.1)
-        context/
-            __init__.py
-            context_layer.py     # ContextLayer (stub iteration 1)
+        context/                 # stub iteration 1, avskaffas i iteration 2
+        article9/                # Article9Layer (iteration 2)
+        combination/             # CombinationLayer (iteration 2)
+        llm/                     # LLMProvider-abstraktion (iteration 2)
     pipeline.py                  # Pipeline
     aggregator.py                # Aggregator
     config.py                    # Aktiva lager, trösklar
@@ -540,22 +626,27 @@ README.md
 - Låg precision (förväntat p.g.a. regex-mönstrens generella natur, bekräftat av Mishra et al.)
 - Inga fynd för Artikel 9 (kontextuell analys saknas)
 
-### Iteration 2 (v17-v19): Kontextuell analys
+### Iteration 2 (v17-v19): Kontextuell analys och kombinationslogik
 
 **Bygger:**
-- `layers/context/` med zero-shot eller lokal LLM (teknikval fastställs iterativt, se avsnitt 6)
-- Kombinationslogik i aggregatorn: `context.*` + `article4.*`/`article9.*` → `MEDIUM`
-- Förbättringar baserat på iteration 1-feedback (containment-regel, NER-FP-reducering)
+- `layers/article9/` med Article9Layer (direkt Artikel 9-detektion via lokal LLM)
+- `layers/combination/` med CombinationLayer (pusselbitsbedömning)
+- `layers/llm/` med LLMProvider-abstraktion (utbytbar lokal/moln-provider, Beslut 17)
+- `layers/context/` avskaffas; iteration 1-stubben ersätts av ovanstående lager
+- Aggregatorns kombinationslogik: Mekanism 1, Mekanism 3, hög-konfidens-bypass och D5-korrigering (Beslut 19, 20, 21)
+- Containment-regel i aggregatorn för cross-recognizer-överlapp (avsnitt 14.1)
+- Förbättringar baserat på iteration 1-feedback (Tema B: testdata-utökning med artikel 9-texter och pusselbitseffekt-texter)
 
 **Utvärderar:**
-- Kvantitativt: Fullt dataset inklusive kontextuellt känsliga texter
-- Kvalitativt: Demo och intervju med intressenter
+- Kvantitativt: Fullt dataset inklusive artikel 9-texter, pusselbitseffekt-texter och längre realistiska texter. Per-mekanism-rapport från utvärderingsmodulen (Mekanism 1, Mekanism 3, hög-konfidens-bypass-statistik per kategori).
+- Kvalitativt: Demo med Lager 3 och Lager 4 plus Mekanism-visualisering i demo-gränssnittet. Semistrukturerad intervju med intressenter (V1, V2, V4) enligt `docs/iteration_2_utvardering.md`.
 
 ### Iteration 3 (v19-v21): Förfining och formalisering
 
 **Hanterar:**
 - Feedback från designcykel 2:s utvärdering
 - Formalisering av designprinciper (Generalized Outcomes)
+- Empirisk kalibrering av trösklar (medium_threshold, high_confidence_bypass, min_evidence_count) baserat på iteration 2:s utvärderingsresultat
 
 **Utvärderar:**
 - Kvantitativt: Komplett dataset med alla lager aktiva
@@ -576,6 +667,11 @@ Följande designbeslut ska dokumenteras löpande, som råmaterial för designpri
 - Beslut om `context.*`-prefix och ORG-kategorisering (full motivering i repots Loggbok)
 - Upptäckt av SUC3 vs CoNLL-tagg-konvention i `sv_core_news_lg` (iteration 1, demoförberedelse)
 - Beslut 16: Omdisponering av Lager 3 (kontextuell analys) från designcykel 3 till designcykel 2 (full motivering i repots Loggbok)
+- Beslut 17 (Loggbok iteration 2): Lokal LLM som primär exekveringsmiljö med utbytbar molnprovider
+- Beslut 18 (Loggbok iteration 2): Lager 3 splittas i Article9Layer och CombinationLayer — Single Responsibility Principle
+- Beslut 19 (Loggbok iteration 2): Kombinationslogik i CombinationLayer, aggregatorn validerar mekaniskt via Mekanism 1 och Mekanism 3
+- Beslut 20 (Loggbok iteration 2): Konfigurerbara trösklar för aggregatorns kombinationslogik (medium_threshold, high_confidence_bypass, min_evidence_count)
+- Beslut 21 (Loggbok iteration 2): Privacy by Design som fail-safe-princip i valideringslogiken (GDPR artikel 25)
 
 Dokumentationsformatet ska följa mönstret: *beslut, alternativ som övervägdes, motivering, koppling till GDPR-krav eller empiriskt stöd.*
 

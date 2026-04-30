@@ -96,3 +96,22 @@ Lägg till en ny post längst ner. Använd följande mall:
 ### Poster
 
 <!-- Kommande sessionsposter läggs till här i kronologisk ordning. -->
+### Session 2026-04-30 - Claude Code (Sonnet 4.5)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #68 (I-1) — SSOT-revidering för iteration 2.
+
+**Ändrade filer:**
+- `docs/arkitektur.md` - 8 sektioner reviderade (3.1, 3.2, 6, 7, 8, 10, 11, 12)
+- `CLAUDE.md` - 4 sektioner reviderade (1, 5, 6, 7)
+- `docs/iteration_2_utvardering.md` - intressent-tabell anonymiserad
+
+**Gjort:**
+- Sektion 6 omstrukturerad till 6.1 (Article9Layer) och 6.2 (CombinationLayer)
+- Sektion 8 reviderad med ny pseudokod, tre konfigurerbara trösklar, D5-korrigering, Privacy by Design-motivering
+- Sektion 10 utökad med nya lagerkataloger (utanför ursprungligt scope, motiverat av konsistenskrav)
+- Beslut 17-21 tillagda i sektion 12
+- Notering om saknad GENETISK_DATA-enum-kategori (hanteras i Issue #70)
+
+**Beslut fattade:** Sektion 10 inkluderades utöver acceptanskriterier för att undvika drift mellan filstruktur-dokumentation och nya lagerkataloger.
+**Öppet/Nästa steg:** Commit efter granskning. GENETISK_DATA-tillägg till Category-enum hanteras i Issue #70 (alternativ a, b eller c att bestämma vid issue-öppning).
