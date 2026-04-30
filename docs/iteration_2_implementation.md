@@ -71,7 +71,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
 | #68 (I-1) | SSOT-revidering för iteration 2 | ✅ Klar | - | 2026-04-30 |
-| #69 (I-2) | LLMProvider-abstraktion | ⬜ Ej startad | #68 | - |
+| #69 (I-2) | LLMProvider-abstraktion | ✅ Klar | #68 | 2026-04-30 |
 | #78 (I-11) | Prompt-konstruktion enligt etablerad metod | ⬜ Ej startad | #68 | - |
 
 ### Kluster 2: Article9Layer
@@ -181,3 +181,30 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Sektion 10 inkluderades utöver acceptanskriterier för att undvika drift mellan filstruktur-dokumentation och nya lagerkataloger.
 **Öppet/Nästa steg:** Commit efter granskning. GENETISK_DATA-tillägg till Category-enum hanteras i Issue #70 (alternativ a, b eller c att bestämma vid issue-öppning).
+
+### Session 2026-04-30 - Claude Code (Sonnet 4.6)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #69 (I-2) — LLMProvider-abstraktion: skapa utbytbar provider-abstraktion för Ollama och Gemini.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/llm/__init__.py` - ny fil, re-exporterar LLMProvider, LLMProviderError, OllamaProvider, GeminiProvider
+- `gdpr_classifier/layers/llm/provider.py` - ny fil, LLMProvider Protocol (@runtime_checkable) + LLMProviderError
+- `gdpr_classifier/layers/llm/ollama_provider.py` - ny fil, OllamaProvider via /api/generate
+- `gdpr_classifier/layers/llm/gemini_provider.py` - ny fil, GeminiProvider via google-genai SDK (icke-produktion)
+- `gdpr_classifier/config.py` - utökad med get_llm_provider() (LLM_PROVIDER env-var, default ollama)
+- `pyproject.toml` - llm-beroenden tillagda (requests>=2.31, google-genai>=1.0) i ny [llm]-grupp och i [all]
+- `tests/unit/test_ollama_provider.py` - ny fil, 12 enhetstester med unittest.mock
+- `tests/unit/test_gemini_provider.py` - ny fil, 12 enhetstester med sys.modules-patchning
+- `docs/iteration_2_implementation.md` - status #69 uppdaterad
+
+**Gjort:**
+- LLMProvider definierad som typing.Protocol med @runtime_checkable, konsistent med Layer- och Recognizer-protokollen
+- OllamaProvider: requests mot /api/generate, format="json", temperature=0.0 default, system-parameter valfri
+- GeminiProvider: google-genai v1.x SDK, response_mime_type="application/json", GDPR-varning vid instansiering, API-nyckel från GEMINI_API_KEY
+- LLMProviderError: enkel basklass utan subklasser (konsumerande lager hanterar alla fel uniformt per Beslut 21)
+- get_llm_provider() i config.py läser LLM_PROVIDER env-var, default "ollama"
+- 48/48 tester gröna, inga regressioner
+
+**Beslut fattade:** Valde typing.Protocol (inte ABC) för konsistens med befintliga Layer/Recognizer-protokoll. Valde google-genai v1.x (inte legacy google-generativeai). Valde unittest.mock (stdlib) för testpatchning. llm-beroenden inkluderades även i [all]-gruppen (användarbeslut). Se Loggboken för full motivering (Beslut 17, 18).
+**Öppet/Nästa steg:** #70 (Article9Layer) och #72 (CombinationLayer) är avblockerade. #78 (Prompt-konstruktion) ingår i Kluster 1 och kan köras parallellt.
