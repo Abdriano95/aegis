@@ -29,7 +29,30 @@ Detta avsnitt revideras när arkitekturplaneringen för Lager 3 är genomförd.
 
 Beroendekartan visar vilka issues som beror på varandra och i vilken ordning de bör implementeras, inklusive parallella spår och konvergenspunkter.
 
-> **[Fylls i efter arkitekturplanering]** Beroendekartan specificeras när issue-listan för iteration 2 är fastställd. Förväntat innehåll: ASCII-diagram med issue-nummer, beroendepiler och parallella spår (t.ex. Lager 3-implementation och aggregator-uppdatering som separata men sammankopplade spår).
+```
+Kluster 1
+               #68 → #69, #78
+                   │
+    ┌──────────────┼──────────────┐
+    │              │              │
+    ▼              ▼              ▼
+Kluster 5      Kluster 2      Kluster 3
+#76, #77       #70, #71       #72, #73
+    │              │              │
+    │              └──────┬───────┘
+    │                     │
+    │                     ▼
+    │                 Kluster 4
+    │                  #74, #75
+    │                     │
+    └─────────────────────┤
+                          │
+                          ▼
+                      Kluster 6
+                      #79, #80
+```
+
+Kluster 1 är blockerande för Kluster 2, 3 och 5. Kluster 4 beror på Kluster 2 och 3. Kluster 6 är slutskede efter Kluster 4. Detaljerade beroenden per issue dokumenteras i issuesarna själva (GitHub) samt i Issue-specifikationer-tabellen nedan.
 
 ---
 
@@ -41,7 +64,50 @@ Förväntade resultat — kvantitativa mätvärden och kvalitativa mål för des
 
 ## Issue-specifikationer
 
-Issues för iteration 2 specificeras tillsammans med arkitekt-agenten under iterationens första fas, efter att arkitekturplaneringen för Lager 3 är genomförd. Varje issue tilldelas fil, beskrivning och beroenden enligt samma format som iteration 1.
+Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
+
+### Kluster 1: Infrastruktur & SSOT
+
+| Issue | Titel | Status | Blockeras av | Sessionspost |
+|---|---|---|---|---|
+| #68 (I-1) | SSOT-revidering för iteration 2 | ✅ Klar | - | 2026-04-30 |
+| #69 (I-2) | LLMProvider-abstraktion | ⬜ Ej startad | #68 | - |
+| #78 (I-11) | Prompt-konstruktion enligt etablerad metod | ⬜ Ej startad | #68 | - |
+
+### Kluster 2: Article9Layer
+
+| Issue | Titel | Status | Blockeras av | Sessionspost |
+|---|---|---|---|---|
+| #70 (I-3) | Article9Layer | ⬜ Ej startad | #69, #78 | - |
+| #71 (I-4) | Testdataset, artikel 9-texter | ⬜ Ej startad | - | - |
+
+### Kluster 3: CombinationLayer
+
+| Issue | Titel | Status | Blockeras av | Sessionspost |
+|---|---|---|---|---|
+| #72 (I-5) | CombinationLayer | ⬜ Ej startad | #69, #78 | - |
+| #73 (I-6) | Testdataset, pusselbitseffekt-texter | ⬜ Ej startad | - | - |
+
+### Kluster 4: Aggregator & Evaluation
+
+| Issue | Titel | Status | Blockeras av | Sessionspost |
+|---|---|---|---|---|
+| #74 (I-7) | Aggregator med kombinationslogik och D5-korrigering | ⬜ Ej startad | #70, #72 | - |
+| #75 (I-8) | Utvärderingsmodul-utökning för Lager 3 och 4 | ⬜ Ej startad | #74 | - |
+
+### Kluster 5: Edge cases & Testdata
+
+| Issue | Titel | Status | Blockeras av | Sessionspost |
+|---|---|---|---|---|
+| #76 (I-9) | Containment-regel för IBAN-telefon-överlapp | ⬜ Ej startad | #68 | - |
+| #77 (I-10) | Testdataset-utökning, längre texter med pattern och NER | ⬜ Ej startad | - | - |
+
+### Kluster 6: Utbytbarhet & Demo
+
+| Issue | Titel | Status | Blockeras av | Sessionspost |
+|---|---|---|---|---|
+| #79 (I-12) | Layer-protokollets utbytbarhet med stub-Layer | ⬜ Ej startad | #72 | - |
+| #80 (I-13) | Demo-uppdatering för Lager 3 och 4 | ⬜ Ej startad | #70, #72, #74 | - |
 
 ---
 
