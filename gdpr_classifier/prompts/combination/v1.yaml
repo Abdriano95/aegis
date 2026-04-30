@@ -1,0 +1,48 @@
+# gdpr_classifier/prompts/combination/v1.yaml
+# Placeholder prompt for CombinationLayer. Actual content filled in by Issue #72.
+
+metadata:
+  version: "v1"
+  created: "2026-04-30"
+  author: "team"
+  layer: "combination"
+  source_citations:
+    - "Reynolds & McDonell (2021)"
+    - "Brown et al. (2020)"
+    - "Wei et al. (2022)"
+    - "Karras et al. (2025)"
+  notes: "Initial placeholder. Faktisk prompt fylls i vid Issue #72 (CombinationLayer)."
+
+system_prompt: |
+  PLACEHOLDER: Roll-instruktion enligt Reynolds & McDonell (2021).
+  Definierar LLM:ens roll som bedömare av indirekt identifierbarhet
+  via pusselbitseffekten (GDPR skäl 26).
+
+task_instruction: |
+  PLACEHOLDER: Uppgiftsinstruktion. Beskriv vad CombinationLayer ska
+  bedöma: om kombinationer av kontextsignaler (yrke, organisation,
+  plats etc.) skapar indirekt identifierbarhet.
+
+context: |
+  PLACEHOLDER: Bakgrund och regelverk. Pusselbitseffekten enligt
+  GDPR skäl 26 — en person kan vara identifierbar genom kombination
+  av uppgifter som var för sig inte är personuppgifter.
+
+reasoning_instructions: |
+  PLACEHOLDER: Chain-of-thought-instruktioner enligt Wei et al. (2022).
+  CombinationLayer kräver explicit resonemangsstruktur för att
+  motivera varför en viss kombination av signaler bedöms som
+  identifierbar. Steg-för-steg-resonemang specificeras vid Issue #72.
+
+examples:
+  - input: "PLACEHOLDER: exempel-text 1 med indirekt identifierbarhet"
+    output: "PLACEHOLDER: förväntat JSON-svar 1"
+    rationale: "PLACEHOLDER: motivering för val av exempel 1."
+  - input: "PLACEHOLDER: exempel-text 2 utan identifierbarhet (negativt exempel)"
+    output: "PLACEHOLDER: förväntat JSON-svar 2"
+    rationale: "PLACEHOLDER: motivering för val av exempel 2."
+
+output_format: |
+  PLACEHOLDER: JSON-schema-beskrivning av förväntat svar från
+  CombinationLayer. Måste vara konsistent med vad lagret förväntar
+  sig. Format specificeras vid Issue #72.

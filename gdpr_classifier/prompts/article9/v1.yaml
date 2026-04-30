@@ -1,0 +1,48 @@
+# gdpr_classifier/prompts/article9/v1.yaml
+# Placeholder prompt for Article9Layer. Actual content filled in by Issue #70.
+
+metadata:
+  version: "v1"
+  created: "2026-04-30"
+  author: "team"
+  layer: "article9"
+  source_citations:
+    - "Reynolds & McDonell (2021)"
+    - "Brown et al. (2020)"
+    - "Karras et al. (2025)"
+  notes: "Initial placeholder. Faktisk prompt fylls i vid Issue #70 (Article9Layer)."
+
+system_prompt: |
+  PLACEHOLDER: Roll-instruktion enligt Reynolds & McDonell (2021).
+  Definierar LLM:ens roll som GDPR-klassificerare med fokus på
+  artikel 9-kategorier (särskilda kategorier av personuppgifter).
+
+task_instruction: |
+  PLACEHOLDER: Uppgiftsinstruktion. Beskriv vad Article9Layer ska
+  detektera: hälsodata, etniskt ursprung, politiska åsikter,
+  religiös övertygelse, fackmedlemskap, biometrisk data, sexuell
+  läggning — direkt uttryckta i texten.
+
+context: |
+  PLACEHOLDER: Bakgrund och regelverk. Artikel 9-kategorier enligt
+  GDPR med definitioner och avgränsningar. Kontextuell information
+  som hjälper modellen att skilja mellan direkt uttryckta och
+  indirekta uppgifter.
+
+reasoning_instructions: |
+  PLACEHOLDER: Chain-of-thought-instruktioner enligt Wei et al. (2022).
+  Valfritt fält — Article9Layer kanske inte behöver explicit
+  resonemangsstruktur. Beslutas vid Issue #70.
+
+examples:
+  - input: "PLACEHOLDER: exempel-text 1 med artikel 9-data"
+    output: "PLACEHOLDER: förväntat JSON-svar 1"
+    rationale: "PLACEHOLDER: motivering för val av exempel 1."
+  - input: "PLACEHOLDER: exempel-text 2 utan artikel 9-data (negativt exempel)"
+    output: "PLACEHOLDER: förväntat JSON-svar 2"
+    rationale: "PLACEHOLDER: motivering för val av exempel 2."
+
+output_format: |
+  PLACEHOLDER: JSON-schema-beskrivning av förväntat svar från
+  Article9Layer. Måste vara konsistent med vad lagret förväntar sig.
+  Format specificeras vid Issue #70.
