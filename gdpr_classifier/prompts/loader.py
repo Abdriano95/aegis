@@ -246,6 +246,12 @@ def _validate(data: dict, path: Path) -> None:
                 raise PromptValidationError(
                     f"Example {i} is missing keys {missing_keys} in {path}"
                 )
+            for key in _EXAMPLE_KEYS:
+                if not isinstance(example[key], str):
+                    raise PromptValidationError(
+                        f"Example {i} key '{key}' must be a string in {path}, "
+                        f"got {type(example[key]).__name__}"
+                    )
 
 
 def _assemble(data: dict) -> str:
