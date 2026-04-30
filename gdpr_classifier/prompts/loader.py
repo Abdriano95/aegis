@@ -153,13 +153,15 @@ def _resolve_version(layer_dir: Path, version: str, prompts_root: Path) -> Path:
         for entry in layer_dir.iterdir():
             match = _VERSION_PATTERN.match(entry.name)
             if match:
-                candidates.append((int(match.group(1)), entry))
+                resolved_entry = entry.resolve()
+                if resolved_entry.is_relative_to(prompts_root):
+                    candidates.append((int(match.group(1)), resolved_entry))
         if not candidates:
             raise PromptLoadError(
-                f"No versioned prompt files (vN.yaml) found in {layer_dir}"
+                f"No valid versioned prompt files (vN.yaml) found in {layer_dir}"
             )
         candidates.sort(key=lambda x: x[0])
-        return candidates[-1][1].resolve()
+        return candidates[-1][1]
 
     # Explicit version
     path = (layer_dir / f"{version}.yaml").resolve()
