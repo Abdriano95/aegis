@@ -72,7 +72,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 |---|---|---|---|---|
 | #68 (I-1) | SSOT-revidering för iteration 2 | ✅ Klar | - | 2026-04-30 |
 | #69 (I-2) | LLMProvider-abstraktion | ✅ Klar | #68 | 2026-04-30 |
-| #78 (I-11) | Prompt-konstruktion enligt etablerad metod | ⬜ Ej startad | #68 | - |
+| #78 (I-11) | Prompt-konstruktion enligt etablerad metod | ✅ Klar | #68 | 2026-04-30 |
 
 ### Kluster 2: Article9Layer
 
@@ -208,3 +208,29 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Valde typing.Protocol (inte ABC) för konsistens med befintliga Layer/Recognizer-protokoll. Valde google-genai v1.x (inte legacy google-generativeai). Valde unittest.mock (stdlib) för testpatchning. llm-beroenden inkluderades även i [all]-gruppen (användarbeslut). Se Loggboken för full motivering (Beslut 17, 18).
 **Öppet/Nästa steg:** #70 (Article9Layer) och #72 (CombinationLayer) är avblockerade. #78 (Prompt-konstruktion) ingår i Kluster 1 och kan köras parallellt.
+
+### Session 2026-04-30 - Antigravity (Claude Opus 4.6)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #78 (I-11) — Prompt-konstruktion enligt etablerad metod: YAML-schema, loader-modul, validering och placeholder-prompts.
+
+**Ändrade filer:**
+- `gdpr_classifier/prompts/__init__.py` - ny fil, re-exporterar Prompt, load_prompt, PromptError, PromptLoadError, PromptValidationError. Docstring dokumenterar YAML-schema, assembly-ordning och forskningsreferenser.
+- `gdpr_classifier/prompts/loader.py` - ny fil, Prompt dataclass (frozen), load_prompt() med base_dir DI-parameter, PromptError/PromptLoadError/PromptValidationError exception-hierarki, YAML-validering, versionsresolution, deterministisk assembly.
+- `gdpr_classifier/prompts/article9/v1.yaml` - ny fil, placeholder-prompt för Article9Layer med alla obligatoriska och valfria fält.
+- `gdpr_classifier/prompts/combination/v1.yaml` - ny fil, placeholder-prompt för CombinationLayer, inkluderar Wei et al. (2022) i source_citations.
+- `pyproject.toml` - pyyaml>=6.0 tillagd i [llm]-gruppen.
+- `tests/unit/test_prompt_loader.py` - ny fil, 17 testfall (5 kärnfall + 12 ytterligare) med tmp_path-fixtures och base_dir dependency injection.
+- `docs/iteration_2_implementation.md` - status #78 uppdaterad.
+
+**Gjort:**
+- Sammansättningsordning: task_instruction → context → reasoning_instructions → examples → output_format, motiverat av Reynolds & McDonell (2021). system_prompt hålls separat.
+- Examples renderas i Brown et al. (2020)-format med Input/Output/Rationale och avgränsare.
+- Exception-hierarki: PromptError (bas) → PromptLoadError + PromptValidationError.
+- Versionsresolution: regex ^v(\d+)\.yaml$, numerisk sortering (v10 > v9).
+- load_prompt() tar base_dir: Path | None = None för testbar dependency injection.
+- yaml.safe_load används exklusivt, dokumenterat i docstring.
+- 66/66 enhetstester gröna, inga regressioner.
+
+**Beslut fattade:** base_dir-parameter istället för monkeypatch av _PROMPTS_DIR (dependency injection). pyyaml enbart i [llm]-grupp, inte [all]. Se Loggboken för full motivering.
+**Öppet/Nästa steg:** Kluster 1 är komplett (#68 ✅, #69 ✅, #78 ✅). #70 (Article9Layer) och #72 (CombinationLayer) är fullt avblockerade. arkitektur.md sektion 10 behöver uppdateras med prompts/-katalogen (görs separat efter verifiering).
