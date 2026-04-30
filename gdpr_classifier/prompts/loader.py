@@ -154,7 +154,7 @@ def _resolve_version(layer_dir: Path, version: str, prompts_root: Path) -> Path:
             match = _VERSION_PATTERN.match(entry.name)
             if match:
                 resolved_entry = entry.resolve()
-                if resolved_entry.is_relative_to(prompts_root):
+                if resolved_entry.is_relative_to(prompts_root) and resolved_entry.is_file():
                     candidates.append((int(match.group(1)), resolved_entry))
         if not candidates:
             raise PromptLoadError(
@@ -169,7 +169,7 @@ def _resolve_version(layer_dir: Path, version: str, prompts_root: Path) -> Path:
     if not path.is_relative_to(prompts_root):
         raise PromptLoadError(f"Path traversal detected for version: {version}")
 
-    if not path.exists():
+    if not path.is_file():
         raise PromptLoadError(f"Prompt file not found: {path}")
     return path
 
