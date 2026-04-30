@@ -69,7 +69,8 @@ class OllamaProvider:
             body = response.json()
         except ValueError as exc:
             raise LLMProviderError(
-                f"Ollama returned non-JSON HTTP body: {response.text!r}"
+                f"Ollama returned non-JSON HTTP body "
+                f"(status={response.status_code}, body length={len(response.text)} chars)."
             ) from exc
 
         raw = body.get("response", "")
@@ -77,8 +78,15 @@ class OllamaProvider:
             raise LLMProviderError("Ollama returned an empty 'response' field.")
 
         try:
-            return json.loads(raw)
+            result = json.loads(raw)
         except json.JSONDecodeError as exc:
             raise LLMProviderError(
-                f"Ollama 'response' field is not valid JSON: {raw!r}"
+                f"Ollama 'response' field is not valid JSON "
+                f"(length={len(raw)} chars)."
             ) from exc
+
+        if not isinstance(result, dict):
+            raise LLMProviderError(
+                f"generate_json expected a dict but Ollama returned {type(result).__name__}."
+            )
+        return result

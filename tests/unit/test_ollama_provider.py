@@ -132,3 +132,23 @@ class TestOllamaProviderGenerateJson:
 
         url = mock_post.call_args.args[0]
         assert url == "http://myhost:11434/api/generate"
+
+    def test_http_body_json_parse_failure_raises(self):
+        # response.json() itself raises ValueError (Ollama returns a non-JSON HTTP body)
+        mock = MagicMock()
+        mock.status_code = 200
+        mock.text = "not json at all"
+        mock.raise_for_status = MagicMock()
+        mock.json.side_effect = ValueError("no JSON")
+        with patch("requests.post", return_value=mock):
+            provider = OllamaProvider(model_name="llama3")
+            with pytest.raises(LLMProviderError, match="non-JSON HTTP body"):
+                provider.generate_json("prompt")
+
+    def test_non_dict_json_response_raises(self):
+        # Ollama returns valid JSON but not a dict (e.g. a list)
+        payload = {"response": json.dumps([1, 2, 3])}
+        with patch("requests.post", return_value=_mock_response(payload)):
+            provider = OllamaProvider(model_name="llama3")
+            with pytest.raises(LLMProviderError, match="expected a dict"):
+                provider.generate_json("prompt")

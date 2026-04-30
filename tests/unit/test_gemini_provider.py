@@ -170,3 +170,13 @@ class TestGeminiProviderGenerateJson:
 
         config_kwargs = mock_types.GenerateContentConfig.call_args.kwargs
         assert config_kwargs.get("response_mime_type") == "application/json"
+
+    def test_non_object_json_raises(self):
+        # Gemini returns valid JSON but not a dict (e.g. a list)
+        patch_dict, _, _ = _build_sys_modules_patch(response_text=json.dumps([1, 2, 3]))
+        with patch.dict(sys.modules, patch_dict):
+            from gdpr_classifier.layers.llm.gemini_provider import GeminiProvider
+
+            provider = GeminiProvider(model_name="gemini-1.5-flash")
+            with pytest.raises(LLMProviderError, match="expected a dict"):
+                provider.generate_json("prompt")

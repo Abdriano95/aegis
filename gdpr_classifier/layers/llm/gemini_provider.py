@@ -103,8 +103,14 @@ class GeminiProvider:
             raise LLMProviderError("Gemini returned an empty response.")
 
         try:
-            return json.loads(raw)
+            result = json.loads(raw)
         except json.JSONDecodeError as exc:
             raise LLMProviderError(
-                f"Gemini response is not valid JSON: {raw!r}"
+                f"Gemini response is not valid JSON (length={len(raw)} chars)."
             ) from exc
+
+        if not isinstance(result, dict):
+            raise LLMProviderError(
+                f"generate_json expected a dict but Gemini returned {type(result).__name__}."
+            )
+        return result

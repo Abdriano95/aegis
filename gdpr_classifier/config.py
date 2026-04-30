@@ -26,4 +26,9 @@ def get_llm_provider(model_name: str):
     provider = os.environ.get("LLM_PROVIDER", "ollama").lower()
     if provider == "gemini":
         return GeminiProvider(model_name=model_name)
-    return OllamaProvider(model_name=model_name)
+    if provider == "ollama":
+        return OllamaProvider(model_name=model_name)
+    raise ValueError(
+        f"Unknown LLM_PROVIDER value {provider!r}. "
+        "Allowed values: 'ollama', 'gemini'."
+    )
