@@ -111,12 +111,20 @@ def load_prompt(
             wrong types, or examples have invalid structure.
     """
     prompts_dir = base_dir if base_dir is not None else _PROMPTS_DIR
-    layer_dir = prompts_dir / layer
+    resolved_prompts_dir = prompts_dir.resolve()
+
+    if "/" in layer or "\\" in layer or ".." in layer or Path(layer).is_absolute():
+        raise PromptLoadError(f"Invalid layer: {layer}")
+
+    layer_dir = (prompts_dir / layer).resolve()
+
+    if not layer_dir.is_relative_to(resolved_prompts_dir):
+        raise PromptLoadError(f"Path traversal detected for layer: {layer}")
 
     if not layer_dir.is_dir():
         raise PromptLoadError(f"Layer directory not found: {layer_dir}")
 
-    yaml_path = _resolve_version(layer_dir, version)
+    yaml_path = _resolve_version(layer_dir, version, resolved_prompts_dir)
     raw = _load_yaml(yaml_path)
     _validate(raw, yaml_path)
 
@@ -130,13 +138,16 @@ def load_prompt(
 # --- Internal helpers ---
 
 
-def _resolve_version(layer_dir: Path, version: str) -> Path:
+def _resolve_version(layer_dir: Path, version: str, prompts_root: Path) -> Path:
     """Resolve version string to a YAML file path.
 
     For ``"latest"``: scan directory for files matching ``vN.yaml``,
     extract N as integer, return file with the highest N.
     For explicit version (e.g. ``"v1"``): return ``layer_dir / "v1.yaml"``.
     """
+    if "/" in version or "\\" in version or ".." in version or Path(version).is_absolute():
+        raise PromptLoadError(f"Invalid version: {version}")
+
     if version == "latest":
         candidates: list[tuple[int, Path]] = []
         for entry in layer_dir.iterdir():
@@ -148,10 +159,14 @@ def _resolve_version(layer_dir: Path, version: str) -> Path:
                 f"No versioned prompt files (vN.yaml) found in {layer_dir}"
             )
         candidates.sort(key=lambda x: x[0])
-        return candidates[-1][1]
+        return candidates[-1][1].resolve()
 
     # Explicit version
-    path = layer_dir / f"{version}.yaml"
+    path = (layer_dir / f"{version}.yaml").resolve()
+
+    if not path.is_relative_to(prompts_root):
+        raise PromptLoadError(f"Path traversal detected for version: {version}")
+
     if not path.exists():
         raise PromptLoadError(f"Prompt file not found: {path}")
     return path
