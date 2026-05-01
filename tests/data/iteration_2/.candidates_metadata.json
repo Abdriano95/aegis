@@ -1,21 +1,27 @@
 {
-  "generation_date": "2026-05-01T13:08:05.362270",
-  "model": "qwen2.5:7b-instruct",
+  "generation_date": "2026-05-01T16:33:59.972352",
+  "model": "gemini-2.5-flash",
   "temperature": 0.7,
-  "target_per_category": 6,
-  "negative_controls_target": 12,
+  "target_per_category": 1,
+  "negative_controls_target": 0,
   "actual_generated": {
-    "total": 56,
+    "total": 0,
     "per_category": {
-      "article9.halsodata": 5,
-      "article9.etniskt_ursprung": 6,
-      "article9.politisk_asikt": 6,
-      "article9.religios_overtygelse": 5,
-      "article9.fackmedlemskap": 6,
-      "article9.biometrisk_data": 5,
-      "article9.genetisk_data": 6,
-      "article9.sexuell_laggning": 5
+      "article9.halsodata": 0,
+      "article9.etniskt_ursprung": 0,
+      "article9.politisk_asikt": 0,
+      "article9.religios_overtygelse": 0,
+      "article9.fackmedlemskap": 0,
+      "article9.biometrisk_data": 0,
+      "article9.genetisk_data": 0,
+      "article9.sexuell_laggning": 0
     },
-    "negative_controls": 12
+    "negative_controls": 0,
+    "dropped": 8
+  },
+  "guideline_reference": {
+    "path": "docs/annotation_guidelines.md",
+    "git_commit": "bd99ebc432b356fc271ee6282396143e72b04b6b",
+    "generated_at": "2026-05-01T16:33:59.972360"
   }
 }

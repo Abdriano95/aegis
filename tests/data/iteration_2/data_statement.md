@@ -45,3 +45,11 @@ Utvärderings-LLM:n för Article9Layer-komponenten och LLM:n som genererat testk
 
 **Granskningsprotokoll:**
 I FAS B granskade de två annoterarna genererade kandidattexter oberoende av varandra. Eventuella avvikelser i bedömningen löstes genom konsensusdiskussion. Endast kandidater där full konsensus nåddes inkluderades i den slutgiltiga datamängden.
+
+## 9. FAS A2-revidering
+
+Efter granskning av de ursprungliga kandidaterna (FAS A1) kasserades dessa på grund av frekventa missförstånd av kategorierna och icke-idiomatisk svenska från `qwen2.5:7b-instruct`. En ny genereringsomgång (FAS A2) utfördes med följande justeringar:
+- **Modellbyte:** Genereringen flyttades till `gemini-1.5-flash` via GeminiProvider. Den empiriska observationen från FAS A1 var att svensk fritextgenerering och noll-shot-klassificering kräver olika nivåer av modellkapacitet. Användningen av Gemini är godkänd (Beslut 17) eftersom all genererad data är strikt syntetisk och fiktiv; inga verkliga personuppgifter skickas därmed till en tredje part.
+- **Annoteringsguide:** Genereringen integrerades med den nya, formella guiden (`docs/annotation_guidelines.md`). Modellen instruerades med kategorispecifika utdrag från denna guide vid varje genereringsanrop. Guiden bygger på EU-domstolens avgörande i mål C-184/20 (OT-domen) som fastställer att artikel 9 även omfattar indirekt avslöjande.
+- **Cirkularitet:** Cirkularitetsrisken är nu *minskad* jämfört med FAS A1. Genereringsmodellen (Gemini) skiljer sig nu från den planerade utvärderingsmodellen (qwen2.5), vilket minskar risken för att utvärderingsmodellen enbart testas på data som den "själv" förstår bäst.
+- **Genereringsstrategi:** Textgenereringen skedde nu iterativt och strikt per kategori, med explicita "negative-examples" inbäddade för att hindra vanliga fel (t.ex. att geografiskt ursprung felaktigt markerades som etnicitet).

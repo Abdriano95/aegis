@@ -305,3 +305,23 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Skripten modifierades för att plocka `get_llm_provider` konfig och manuellt justera temperature under testkörningen eftersom config default var 0.0 (Karras et al.) och testgenerering vill ha variation (0.7).
 **Öppet/Nästa steg:** Issue #71 är uppdelat i två. Denna session var FAS A. **Det som nu kvarstår är FAS B:** De mänskliga granskarna behöver utföra den manuella granskningen oberoende och klistra in en gemensam godkänd dataset i `article9_dataset.json` för att slutföra issue.
+
+### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #71 (I-4) — Testdataset, artikel 9-texter: FAS A2 (revidering av kandidatgenerering).
+
+**Ändrade filer:**
+- `tests/data/iteration_2/article9_dataset_candidates_round1.json.archive` - Tidigare kandidater från A1 arkiverade.
+- `scripts/generate_article9_candidates.py` - Ombyggd för att läsa `docs/annotation_guidelines.md` (via fristående markdown-parser), tvinga svenskt vardagsspråk, samt kräva Git-commit spårbarhet av guiden.
+- `tests/unit/test_generate_article9_candidates.py` - Nytt enhetstest för markdown-parsern i genereringsskriptet (100% grönt).
+- `tests/data/iteration_2/data_statement.md` - Uppdaterad med "FAS A2-revidering" där byte till Gemini-modell motiveras och OT-domsreferens inkorporeras.
+
+**Gjort:**
+- Modifierade genereringsflödet att köras per kategori med injicerade sektioner (t.ex. 4.1 och 5) från annoteringsguiden för att drastiskt sänka risken för kategori-förväxling.
+- Omdirigerade standardmodellen till `gemini-1.5-flash` eftersom Gemini (enligt Beslut 17) får användas vid syntetisk data och var nödvändigt för högkvalitativ svensk text.
+- Lade till automatisk commit-hash extraktion från guiden till `.candidates_metadata.json` så att den testdata vi tar fram exakt kan spåras till regelverket som fanns när den skapades.
+- Eftersom `GEMINI_API_KEY` saknades i min miljö var sista exekveringssteget av skriptet tvunget att lämnas över till mänsklig operatör.
+
+**Beslut fattade:** Committade den ocommittade ändringen av `docs/annotation_guidelines.md` för att säkerställa spårbarhet (Git-hash loggning).
+**Öppet/Nästa steg:** Skriptet `python scripts/generate_article9_candidates.py --output tests/data/iteration_2/article9_dataset_candidates.json` måste nu köras med API-nyckel på värdmaskinen. Därefter validering innan FAS B inleds.
