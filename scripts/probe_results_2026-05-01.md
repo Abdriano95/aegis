@@ -4,6 +4,7 @@
 **Temperatur:** 0.0  
 **Körningar per prompt:** 1  
 **Kontext:** Spike för att empiriskt motivera val av lokal Ollama-modell inför Article9Layer (#70) och CombinationLayer (#72).
+**Hårdvara:** [Ryzen 7 5800H] / [Nvidia RTX 3070 Laptop] / [16GB RAM] / [Pop!_OS 24.04]
 
 > **Normalisering:** Kategori-fältet normaliseras före jämförelse: lowercase, diakritik borttagen (å→a, ä→a, ö→o), mellanslag/bindestreck→underscore. Semantiskt korrekta svar i annat format (t.ex. "hälsodata" vs "halsodata", "etniskt ursprung" vs "etniskt_ursprung") godkänns. Svar på fel språk (t.ex. "religious_belief") räknas fortfarande som felaktiga.
 
