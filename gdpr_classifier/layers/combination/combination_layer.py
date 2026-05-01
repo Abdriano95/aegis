@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import re
 
 from ...core.category import Category
@@ -110,6 +111,10 @@ class CombinationLayer:
                 raise CombinationLayerError(
                     f"Invalid confidence value: {confidence}"
                 ) from e
+            if not math.isfinite(confidence_float) or not (0.0 <= confidence_float <= 1.0):
+                raise CombinationLayerError(
+                    f"Confidence must be a finite float in [0.0, 1.0], got: {confidence}"
+                )
 
             category = Category(f"context.{signal_str}")
 
@@ -145,7 +150,11 @@ class CombinationLayer:
 
         # Step 3: Combination aggregate finding
         is_identifiable = combination_data.get("is_identifiable")
-        if is_identifiable is True:
+        if not isinstance(is_identifiable, bool):
+            raise CombinationLayerError(
+                "'combination.is_identifiable' must be a bool."
+            )
+        if is_identifiable:
             text_span = combination_data.get("text_span")
             confidence = combination_data.get("confidence")
             reasoning = combination_data.get("reasoning")
@@ -161,6 +170,10 @@ class CombinationLayer:
                 raise CombinationLayerError(
                     f"Invalid confidence value for combination: {confidence}"
                 ) from e
+            if not math.isfinite(confidence_float) or not (0.0 <= confidence_float <= 1.0):
+                raise CombinationLayerError(
+                    f"Combination confidence must be a finite float in [0.0, 1.0], got: {confidence}"
+                )
 
             # Tolerant validation
             start = text.find(text_span)
