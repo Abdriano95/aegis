@@ -49,7 +49,13 @@ I FAS B granskade de två annoterarna genererade kandidattexter oberoende av var
 ## 9. FAS A2-revidering
 
 Efter granskning av de ursprungliga kandidaterna (FAS A1) kasserades dessa på grund av frekventa missförstånd av kategorierna och icke-idiomatisk svenska från `qwen2.5:7b-instruct`. En ny genereringsomgång (FAS A2) utfördes med följande justeringar:
-- **Modellbyte:** Genereringen flyttades till `gemini-1.5-flash` via GeminiProvider. Den empiriska observationen från FAS A1 var att svensk fritextgenerering och noll-shot-klassificering kräver olika nivåer av modellkapacitet. Användningen av Gemini är godkänd (Beslut 17) eftersom all genererad data är strikt syntetisk och fiktiv; inga verkliga personuppgifter skickas därmed till en tredje part.
-- **Annoteringsguide:** Genereringen integrerades med den nya, formella guiden (`docs/annotation_guidelines.md`). Modellen instruerades med kategorispecifika utdrag från denna guide vid varje genereringsanrop. Guiden bygger på EU-domstolens avgörande i mål C-184/20 (OT-domen) som fastställer att artikel 9 även omfattar indirekt avslöjande.
-- **Cirkularitet:** Cirkularitetsrisken är nu *minskad* jämfört med FAS A1. Genereringsmodellen (Gemini) skiljer sig nu från den planerade utvärderingsmodellen (qwen2.5), vilket minskar risken för att utvärderingsmodellen enbart testas på data som den "själv" förstår bäst.
-- **Genereringsstrategi:** Textgenereringen skedde nu iterativt och strikt per kategori, med explicita "negative-examples" inbäddade för att hindra vanliga fel (t.ex. att geografiskt ursprung felaktigt markerades som etnicitet).
+
+- **Annoteringsguide:** Genereringen integrerades med den nya, formella guiden (`docs/annotation_guidelines.md`). Modellen instruerades med kategorispecifika utdrag från denna guide vid varje genereringsanrop.
+- **Genereringsstrategi:** Textgenereringen skedde iterativt och strikt per kategori, med explicita varningar inbäddade för att hindra vanliga kategoriförväxlingar (t.ex. att geografiskt ursprung felaktigt markeras som etnicitet).
+- **Modellbyte:** Genereringen gjordes om med `gemma2:9b` via OllamaProvider. Den pragmatiska triggern var att Gemini-API:t konsekvent returnerade "resource exhausted"-fel. Den substantiella motiveringen vilar på tre ben:
+
+  1. **Cirkularitetsreducering (Pilán et al., 2022).** FAS A1 använde `qwen2.5:7b-instruct` för både generering och utvärdering — samma modellfamilj (Alibaba). I FAS A2 används `gemma2:9b` (Google DeepMind) för generering och `qwen2.5:7b-instruct` (Alibaba) för utvärdering. Dessa modeller härstammar från skilda träningskorpusar, tokenizers och arkitekturella familjer, vilket reducerar risken att utvärderingsmodellen bedömer data som den "förstår bäst" av familjesläktskaps-skäl.
+
+  2. **Konsekvent med Beslut 17.** Beslut 17 (Loggbok iteration 2) fastställer lokal LLM som primär exekveringsmiljö för hela systemets utvärderingslager. Att applicera samma princip på testdatagenerering är konsekvent med arkitekturens grundvärden — inte en avvikelse från dem.
+
+  3. **Eliminerad tredjelandsöverföring.** Lokal körning innebär att ingen data skickas till extern part. Eftersom inga verkliga personuppgifter förekommer i syntetisk data är detta inte ett juridiskt krav, men för forskningsmetodologisk renlighet är lokal exekvering att föredra.

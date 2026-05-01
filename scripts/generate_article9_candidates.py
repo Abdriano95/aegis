@@ -68,7 +68,7 @@ def check_guidelines_status(filepath: Path) -> str:
     # Get commit hash
     try:
         commit_hash = subprocess.check_output(
-            ["git", "rev-parse", f"HEAD:{filepath.relative_to(project_root)}"],
+            ["git", "rev-parse", f"HEAD:{filepath.relative_to(project_root).as_posix()}"],
             cwd=str(project_root),
             text=True
         ).strip()
@@ -194,8 +194,6 @@ def create_prompt(category: str | None, is_negative: bool, guidelines_context: s
 
 def generate_candidate(provider, category: str | None, is_negative: bool, guidelines_context: str = "") -> dict | None:
     """Generate a single candidate and validate text spans and lengths."""
-    import time
-    
     prompt = create_prompt(category, is_negative, guidelines_context)
     system_instruction = "Du är en assistent som genererar fiktiv testdata i strikt JSON-format."
     
@@ -208,9 +206,6 @@ def generate_candidate(provider, category: str | None, is_negative: bool, guidel
             logger.info("  Validation failed on attempt 1. Re-prompting...")
             prompt += "\n\nOBS: I ditt förra svar misslyckades valideringen. Se till att 'text' är minst 30 tecken, och att 'text_span' (om sådan finns) är en EXAKT, case-sensitive sub-sträng av 'text' och minst 5 tecken lång."
 
-        # Proactive sleep to avoid free-tier rate limits (5 RPM for 2.5-flash)
-        time.sleep(15)
-        
         try:
             data = provider.generate_json(
                 prompt=prompt,
@@ -218,10 +213,6 @@ def generate_candidate(provider, category: str | None, is_negative: bool, guidel
             )
         except LLMProviderError as e:
             logger.error(f"  Provider error: {e}")
-            if "429" in str(e):
-                logger.info("  Rate limit hit (429). Sleeping for 60 seconds before retrying...")
-                time.sleep(60)
-                continue # Retry without consuming a validation attempt
             validation_attempts += 1
             continue
             
@@ -283,7 +274,7 @@ def generate_candidate(provider, category: str | None, is_negative: bool, guidel
 def main():
     parser = argparse.ArgumentParser(description="Generate synthetic dataset candidates (FAS A2).")
     parser.add_argument("--output", required=True, help="Path to output JSON file.")
-    parser.add_argument("--model", default="gemini-2.5-flash", help="Model to use (default: gemini-2.5-flash).")
+    parser.add_argument("--model", default="gemma2:9b", help="Model to use (default: gemma2:9b).")
     parser.add_argument("--target-per-category", type=int, default=6, help="Target count per positive category.")
     parser.add_argument("--negative-controls", type=int, default=12, help="Target count for negative controls.")
     parser.add_argument("--temperature", type=float, default=0.7, help="Temperature for generation.")
@@ -317,11 +308,6 @@ def main():
                         
     # Instantiate provider
     try:
-        # Override the environment variable LLM_PROVIDER if the model starts with 'gemini'
-        # to ensure get_llm_provider fetches the right one if not explicitly set.
-        if args.model.startswith("gemini"):
-            os.environ["LLM_PROVIDER"] = "gemini"
-        
         provider = get_llm_provider(model_name=args.model)
         # Override temperature for generation
         provider._temperature = args.temperature
@@ -383,6 +369,8 @@ def main():
     metadata = {
         "generation_date": datetime.datetime.now().isoformat(),
         "model": args.model,
+        "provider": type(provider).__name__.replace("Provider", "").lower(),
+        "provider_endpoint": getattr(provider, "endpoint", None),
         "temperature": args.temperature,
         "target_per_category": args.target_per_category,
         "negative_controls_target": args.negative_controls,

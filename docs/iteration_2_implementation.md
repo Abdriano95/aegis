@@ -325,3 +325,22 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Committade den ocommittade ändringen av `docs/annotation_guidelines.md` för att säkerställa spårbarhet (Git-hash loggning).
 **Öppet/Nästa steg:** Skriptet `python scripts/generate_article9_candidates.py --output tests/data/iteration_2/article9_dataset_candidates.json` måste nu köras med API-nyckel på värdmaskinen. Därefter validering innan FAS B inleds.
+
+### Session 2026-05-01 - Claude Code (Sonnet 4.6)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #71 (I-4) — Testdataset, artikel 9-texter: FAS A2-modellbyte (Gemini → gemma2:9b lokalt via Ollama).
+
+**Ändrade filer:**
+- `scripts/generate_article9_candidates.py` - Default `--model` ändrad till `gemma2:9b`; auto-env-block borttaget; `time.sleep(15)` och 429-retry-loop borttagna; `provider` och `provider_endpoint` tillagda i metadata
+- `tests/data/iteration_2/data_statement.md` - FAS A2-sektion omskriven med tre-bens-motivering (cirkularitetsreducering, Beslut 17-konsekvens, eliminerad tredjelandsöverföring)
+
+**Gjort:**
+- Bytt default-modell från `gemini-2.5-flash` till `gemma2:9b`
+- Tagit bort implicit `LLM_PROVIDER`-överskrivning baserad på modellnamn; factory i `config.py` styr nu ensam provider-val via `LLM_PROVIDER`-env-var (default: `"ollama"`)
+- Tagit bort Gemini-specifika rate limit-workarounds: proaktiv 15s sleep och 429-retry-loop
+- Utökat `.candidates_metadata.json` med spårbarhetsfälten `provider` och `provider_endpoint` (None om attribut saknas)
+- Omformulerat FAS A2-motivering i data_statement.md: Gemini- och OT-dom-referenserna borttagna, ersatta med modellfamilje-asymmetri-argumentet (Pilán et al., 2022), Beslut 17-konsekvens och eliminerad tredjelandsöverföring
+
+**Beslut fattade:** Inga nya arkitekturbeslut. Implementationen stärker Beslut 17 (lokal LLM) och bibehåller Pilán et al. (2022)-motivering via modellfamilje-asymmetri (gemma2:9b ↔ qwen2.5:7b).
+**Öppet/Nästa steg:** **Exekvering är ett separat steg.** Skriptet har inte körts i denna session. Kvarstår: (1) köra `python scripts/generate_article9_candidates.py --output tests/data/iteration_2/article9_dataset_candidates.json` med Ollama igång och gemma2:9b nedladdad, (2) validering med `python scripts/validate_article9_dataset.py`, (3) kvantitativa nyckeltal (antal genererade, antal droppade per kategori) dokumenteras i en uppföljande sessionspost, (4) FAS B (manuell granskning av Abdulla och Johanna) inleds därefter.
