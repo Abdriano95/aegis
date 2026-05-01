@@ -79,7 +79,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #70 (I-3) | Article9Layer | ⬜ Ej startad | #69, #78 | - |
+| #70 (I-3) | Article9Layer | ✅ Klar | #69, #78 | 2026-05-01 |
 | #71 (I-4) | Testdataset, artikel 9-texter | ⬜ Ej startad | - | - |
 
 ### Kluster 3: CombinationLayer
@@ -260,3 +260,26 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Kategori-normalisering appliceras på båda sidor (expected + actual) före jämförelse. Strikt boolean-jämförelse för contains_sensitive behålls. Engelska svar räknas som fel (modellen följer inte svensk formatinstruktion).
 **Öppet/Nästa steg:** Kluster 1 komplett (#68 ✅, #69 ✅, #78 ✅, #84 ✅). Rekommendation: qwen2.5:7b-instruct som primär modell. #70 (Article9Layer) och #72 (CombinationLayer) kan använda denna modell som utgångspunkt.
+
+### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #70 (I-3) — Article9Layer: Implementera lager 3 för direkt detektion av artikel 9-data via LLM.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/category.py` - Lade till `GENETISK_DATA = "article9.genetisk_data"`
+- `gdpr_classifier/layers/article9/__init__.py` - Ny fil, re-exporterar Article9Layer och Article9LayerError
+- `gdpr_classifier/layers/article9/article9_layer.py` - Ny fil, Article9Layer som uppfyller Layer-protokollet, använder LLMProvider och text.find()-validering
+- `gdpr_classifier/prompts/article9/v2.yaml` - Ny fil, prompt v2 med 4 examples och avgränsningsinstruktioner
+- `tests/unit/test_article9_layer.py` - Ny fil, 10 enhetstester
+
+**Gjort:**
+- Lagt till saknad enum-kategori för genetisk data.
+- Byggt `Article9Layer` med dependency injection av `LLMProvider`.
+- Implementerat validering av hallucinations-`text_span` via case-sensitive sedan case-insensitive `text.find()`.
+- Skapat en robust prompt i YAML-format (`v2.yaml`) som specificerar uppgiften och avgränsningen från identifierbarhetsbedömning.
+- Skrivit omfattande enhetstester (konstruktorkrav, tomt svar, positivt fynd, hallucinerat fynd, fallback casing, schemafel, provider errors).
+- Verifierat att testerna går grönt.
+
+**Beslut fattade:** Två designbeslut förs in i Loggboken (iteration 2): hallucinations-skydd via `text.find()` på lagernivå som komplement till aggregatorns Mekanism 1; tillägg av `GENETISK_DATA` som separat artikel 9-kategori med juridisk motivering enligt art. 9.1. Strikt substring-match: vid utebliven träff ignoreras fyndet helt.
+**Öppet/Nästa steg:** Kluster 2 fortsätter med #71 (testdataset, artikel 9-texter). Kluster 3 (#72 CombinationLayer, #73 testdataset) kan köras parallellt. Känd begränsning: text.find() matchar första förekomsten — duplicerade text_span på olika positioner i samma text kollapsas till samma span. Hanteras vid behov i iteration 3 baserat på utvärderingsutfall.

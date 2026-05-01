@@ -24,6 +24,7 @@ class Category(str, Enum):
     RELIGIOS_OVERTYGELSE = "article9.religios_overtygelse"
     FACKMEDLEMSKAP = "article9.fackmedlemskap"
     BIOMETRISK_DATA = "article9.biometrisk_data"
+    GENETISK_DATA = "article9.genetisk_data"
     SEXUELL_LAGGNING = "article9.sexuell_laggning"
 
     # Kontextsignaler: inte art 4-data i sig, bidrar till klassificering i kombination
