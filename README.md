@@ -4,6 +4,8 @@ A layered Python pipeline for automatic GDPR text classification.
 
 ### Miljösetup
 
+pip install -e ".[all,llm,demo,nlp,dev]" 
+
 ```bash
 git clone https://github.com/Abdriano95/aegis.git
 cd aegis
