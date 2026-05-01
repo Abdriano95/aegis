@@ -28,6 +28,7 @@ import statistics
 import subprocess
 import sys
 import time
+import math
 from datetime import date
 from pathlib import Path
 
@@ -60,12 +61,17 @@ JSON_VALIDITY_THRESHOLD = 0.9  # 90% — disqualification rule
 # Data structures for results
 # ---------------------------------------------------------------------------
 
+
 class PromptResult:
     """Result of running a single probe prompt against a model."""
 
     __slots__ = (
-        "prompt_id", "category", "success", "latency_s",
-        "error_message", "raw_response",
+        "prompt_id",
+        "category",
+        "success",
+        "latency_s",
+        "error_message",
+        "raw_response",
     )
 
     def __init__(
@@ -89,9 +95,13 @@ class ModelResult:
     """Aggregated results for a single model."""
 
     __slots__ = (
-        "model_name", "model_size", "prompt_results",
-        "json_valid", "json_total",
-        "swedish_correct", "swedish_total",
+        "model_name",
+        "model_size",
+        "prompt_results",
+        "json_valid",
+        "json_total",
+        "swedish_correct",
+        "swedish_total",
     )
 
     def __init__(self, model_name: str, model_size: str) -> None:
@@ -125,6 +135,7 @@ class ModelResult:
 # ---------------------------------------------------------------------------
 # Ollama connectivity & model checks
 # ---------------------------------------------------------------------------
+
 
 def check_ollama_connection() -> list[str]:
     """Check that Ollama is running and return list of available model names.
@@ -226,6 +237,7 @@ def _normalize_category(value: str | None) -> str | None:
 # Prompt evaluation
 # ---------------------------------------------------------------------------
 
+
 def evaluate_prompt(
     provider: OllamaProvider,
     prompt: ProbePrompt,
@@ -234,7 +246,7 @@ def evaluate_prompt(
     """Run a single probe prompt against the provider and evaluate the result."""
 
     combined_prompt = f"{prompt.task_prompt}\n\nText: {prompt.text}"
-    best_latency = float("inf")
+    latencies: list[float] = []
     last_error = ""
     last_response: dict | None = None
 
@@ -246,24 +258,21 @@ def evaluate_prompt(
                 system_prompt=prompt.system_prompt,
             )
             elapsed = time.perf_counter() - t0
+            latencies.append(elapsed)
             last_response = response
-            if elapsed < best_latency:
-                best_latency = elapsed
         except LLMProviderError as exc:
             elapsed = time.perf_counter() - t0
+            latencies.append(elapsed)
             last_error = str(exc)
-            if elapsed < best_latency:
-                best_latency = elapsed
             return PromptResult(
                 prompt_id=prompt.id,
                 category=prompt.category,
                 success=False,
-                latency_s=elapsed,
+                latency_s=statistics.mean(latencies),
                 error_message=f"LLMProviderError: {exc}",
             )
 
-    # Use the single-run latency (or best of multiple runs)
-    latency = best_latency
+    latency = statistics.mean(latencies)
 
     # Evaluate correctness based on category
     if prompt.category == "A":
@@ -377,6 +386,7 @@ def _evaluate_swedish_correctness(
 # Model evaluation orchestration
 # ---------------------------------------------------------------------------
 
+
 def evaluate_model(
     model_name: str,
     temperature: float,
@@ -410,8 +420,10 @@ def evaluate_model(
 
         # Live stdout output
         icon = "✅" if pr.success else "❌"
-        label = "JSON OK" if prompt.category == "A" else (
-            "Korrekt" if pr.success else f"Fel — {pr.error_message}"
+        label = (
+            "JSON OK"
+            if prompt.category == "A"
+            else ("Korrekt" if pr.success else f"Fel — {pr.error_message}")
         )
         print(f"  [{model_name}] {prompt.id}: {icon} {label}  ({pr.latency_s:.2f}s)")
 
@@ -421,6 +433,7 @@ def evaluate_model(
 # ---------------------------------------------------------------------------
 # Results file generation
 # ---------------------------------------------------------------------------
+
 
 def generate_results_markdown(
     results: list[ModelResult],
@@ -442,9 +455,9 @@ def generate_results_markdown(
     lines.append(
         "> **Normalisering:** Kategori-fältet normaliseras före jämförelse: "
         "lowercase, diakritik borttagen (å→a, ä→a, ö→o), mellanslag/bindestreck→underscore. "
-        "Semantiskt korrekta svar i annat format (t.ex. \"hälsodata\" vs \"halsodata\", "
-        "\"etniskt ursprung\" vs \"etniskt_ursprung\") godkänns. Svar på fel språk "
-        "(t.ex. \"religious_belief\") räknas fortfarande som felaktiga.\n"
+        'Semantiskt korrekta svar i annat format (t.ex. "hälsodata" vs "halsodata", '
+        '"etniskt ursprung" vs "etniskt_ursprung") godkänns. Svar på fel språk '
+        '(t.ex. "religious_belief") räknas fortfarande som felaktiga.\n'
     )
 
     # Summary table
@@ -453,19 +466,15 @@ def generate_results_markdown(
         "| Modell | JSON-validitet | Svensk-korrekt | "
         "Snitt-latens | P95-latens | Storlek |"
     )
-    lines.append("|--------|---------------|----------------|"
-                  "-------------|-----------|---------|")
+    lines.append(
+        "|--------|---------------|----------------|"
+        "-------------|-----------|---------|"
+    )
 
     for r in results:
-        json_pct = (
-            f"{r.json_valid}/{r.json_total}"
-            if r.json_total > 0
-            else "N/A"
-        )
+        json_pct = f"{r.json_valid}/{r.json_total}" if r.json_total > 0 else "N/A"
         swe_pct = (
-            f"{r.swedish_correct}/{r.swedish_total}"
-            if r.swedish_total > 0
-            else "N/A"
+            f"{r.swedish_correct}/{r.swedish_total}" if r.swedish_total > 0 else "N/A"
         )
         lines.append(
             f"| {r.model_name} | {json_pct} | {swe_pct} | "
@@ -474,9 +483,10 @@ def generate_results_markdown(
 
     # Disqualification rule
     lines.append("\n## Diskvalificeringsregel\n")
+    required_json = math.ceil(len(PROMPTS_CATEGORY_A) * JSON_VALIDITY_THRESHOLD)
     lines.append(
         f"Modeller under {JSON_VALIDITY_THRESHOLD:.0%} JSON-validitet "
-        f"(< {int(len(PROMPTS_CATEGORY_A) * JSON_VALIDITY_THRESHOLD)}/{len(PROMPTS_CATEGORY_A)} "
+        f"(< {required_json}/{len(PROMPTS_CATEGORY_A)} "
         "på Kategori A) är inte aktuella oavsett språk-prestanda.\n"
     )
 
@@ -510,9 +520,9 @@ def _generate_recommendation(results: list[ModelResult]) -> str:
         return "Inga modeller utvärderades.\n"
 
     qualified = [
-        r for r in results
-        if r.json_total > 0
-        and (r.json_valid / r.json_total) >= JSON_VALIDITY_THRESHOLD
+        r
+        for r in results
+        if r.json_total > 0 and (r.json_valid / r.json_total) >= JSON_VALIDITY_THRESHOLD
     ]
     disqualified = [r for r in results if r not in qualified]
 
@@ -579,6 +589,7 @@ def _generate_recommendation(results: list[ModelResult]) -> str:
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -622,6 +633,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
+    if args.runs_per_prompt < 1:
+        print("--runs-per-prompt must be at least 1.", file=sys.stderr)
+        sys.exit(2)
 
     logging.basicConfig(
         level=logging.WARNING,
@@ -651,26 +665,29 @@ def main(argv: list[str] | None = None) -> None:
 
     for model_name in args.models:
         # Check if model is available (handle both exact and fuzzy matching)
-        model_available = (
-            model_name in available_names
-            or any(model_name in m for m in available_names)
-            or any(m in model_name for m in available_names)
-        )
+        if model_name in available_names:
+            resolved_model = model_name
+        else:
+            matches = [m for m in available_names if m.startswith(model_name)]
+            if len(matches) == 1:
+                resolved_model = matches[0]
+            else:
+                resolved_model = None
 
-        if not model_available:
+        if resolved_model is None:
             print(
-                f"\n⚠️  Modell '{model_name}' finns inte lokalt. "
+                f"\n Modell '{model_name}' finns inte lokalt. "
                 f"Hoppar över. (Tillgängliga: {', '.join(sorted(available_names))})",
                 file=sys.stderr,
             )
             continue
 
         print(f"\n{'─' * 50}")
-        print(f"  Utvärderar: {model_name}")
+        print(f"  Utvärderar: {resolved_model}")
         print(f"{'─' * 50}")
 
         result = evaluate_model(
-            model_name=model_name,
+            model_name=resolved_model,
             temperature=args.temperature,
             runs_per_prompt=args.runs_per_prompt,
         )
@@ -678,7 +695,7 @@ def main(argv: list[str] | None = None) -> None:
 
         # Print model summary
         print(
-            f"\n  Resultat {model_name}: "
+            f"\n  Resultat {resolved_model}: "
             f"JSON {result.json_valid}/{result.json_total}, "
             f"Svensk {result.swedish_correct}/{result.swedish_total}, "
             f"Latens snitt {result.mean_latency:.2f}s"
