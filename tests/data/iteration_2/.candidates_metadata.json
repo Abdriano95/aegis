@@ -1,0 +1,21 @@
+{
+  "generation_date": "2026-05-01T13:08:05.362270",
+  "model": "qwen2.5:7b-instruct",
+  "temperature": 0.7,
+  "target_per_category": 6,
+  "negative_controls_target": 12,
+  "actual_generated": {
+    "total": 56,
+    "per_category": {
+      "article9.halsodata": 5,
+      "article9.etniskt_ursprung": 6,
+      "article9.politisk_asikt": 6,
+      "article9.religios_overtygelse": 5,
+      "article9.fackmedlemskap": 6,
+      "article9.biometrisk_data": 5,
+      "article9.genetisk_data": 6,
+      "article9.sexuell_laggning": 5
+    },
+    "negative_controls": 12
+  }
+}

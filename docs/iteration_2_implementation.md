@@ -80,7 +80,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
 | #70 (I-3) | Article9Layer | ✅ Klar | #69, #78 | 2026-05-01 |
-| #71 (I-4) | Testdataset, artikel 9-texter | ⬜ Ej startad | - | - |
+| #71 (I-4) | Testdataset, artikel 9-texter | 🔄 Pågår | - | - |
 
 ### Kluster 3: CombinationLayer
 
@@ -283,3 +283,25 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Två designbeslut förs in i Loggboken (iteration 2): hallucinations-skydd via `text.find()` på lagernivå som komplement till aggregatorns Mekanism 1; tillägg av `GENETISK_DATA` som separat artikel 9-kategori med juridisk motivering enligt art. 9.1. Strikt substring-match: vid utebliven träff ignoreras fyndet helt.
 **Öppet/Nästa steg:** Kluster 2 fortsätter med #71 (testdataset, artikel 9-texter). Kluster 3 (#72 CombinationLayer, #73 testdataset) kan köras parallellt. Känd begränsning: text.find() matchar första förekomsten — duplicerade text_span på olika positioner i samma text kollapsas till samma span. Hanteras vid behov i iteration 3 baserat på utvärderingsutfall.
+
+### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #71 (I-4) — Testdataset, artikel 9-texter: FAS A (infrastruktur och kandidatgenerering).
+
+**Ändrade filer:**
+- `docs/iteration_2_implementation.md` - Status uppdaterad till Pågår.
+- `tests/data/iteration_2/article9_dataset.json` - Skapad tom platshållare [].
+- `tests/data/iteration_2/data_statement.md` - Skapad med Bender & Friedman 2018 struktur och notering om begränsning/cirkularitet för oberoende manuell granskning.
+- `tests/data/iteration_2/README.md` - Svensk beskrivande prosa om gransknings-arbetsflödet.
+- `scripts/validate_article9_dataset.py` - Nytt valideringsskript.
+- `scripts/generate_article9_candidates.py` - Genereringsskript av kandidater med qwen2.5:7b-instruct.
+- `tests/unit/test_article9_dataset_schema.py` - Enhetstest som laddar via dataset_loader och validerar schema.
+
+**Gjort:**
+- Genererade testkandidater (`article9_dataset_candidates.json`) via lokalt anrop till Ollama (qwen2.5:7b-instruct). Totalt 56 kandidater producerades; de med korrupta `text_span` re-promptades och droppades om de fortfarande saknades, för att behålla strikt schemalydnad framför exakt volym.
+- Implementerade valideringsskript som verifierar schemats struktur, tillåtna enums, samt att `text_span` finns och är matchar med indexet i hela originaltexten (inga offsets var accepterade).
+- Körde pytest unit test som framgångsrikt verifierar JSON laddning via systemets `dataset_loader`.
+
+**Beslut fattade:** Skripten modifierades för att plocka `get_llm_provider` konfig och manuellt justera temperature under testkörningen eftersom config default var 0.0 (Karras et al.) och testgenerering vill ha variation (0.7).
+**Öppet/Nästa steg:** Issue #71 är uppdelat i två. Denna session var FAS A. **Det som nu kvarstår är FAS B:** De mänskliga granskarna behöver utföra den manuella granskningen oberoende och klistra in en gemensam godkänd dataset i `article9_dataset.json` för att slutföra issue.
