@@ -86,7 +86,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #72 (I-5) | CombinationLayer | ⬜ Ej startad | #69, #78 | - |
+| #72 (I-5) | CombinationLayer | ✅ Klar | #69, #78 | 2026-05-01 |
 | #73 (I-6) | Testdataset, pusselbitseffekt-texter | ⬜ Ej startad | - | - |
 
 ### Kluster 4: Aggregator & Evaluation
@@ -283,3 +283,27 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Två designbeslut förs in i Loggboken (iteration 2): hallucinations-skydd via `text.find()` på lagernivå som komplement till aggregatorns Mekanism 1; tillägg av `GENETISK_DATA` som separat artikel 9-kategori med juridisk motivering enligt art. 9.1. Strikt substring-match: vid utebliven träff ignoreras fyndet helt.
 **Öppet/Nästa steg:** Kluster 2 fortsätter med #71 (testdataset, artikel 9-texter). Kluster 3 (#72 CombinationLayer, #73 testdataset) kan köras parallellt. Känd begränsning: text.find() matchar första förekomsten — duplicerade text_span på olika positioner i samma text kollapsas till samma span. Hanteras vid behov i iteration 3 baserat på utvärderingsutfall.
+
+### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #72 (I-5) — CombinationLayer: Implementera lager 4 för bedömning av pusselbitseffekten enligt GDPR skäl 26 via LLM.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/category.py` - Lade till `YRKE`, `PLATS` och `KOMBINATION` under kontextsignaler.
+- `gdpr_classifier/layers/combination/__init__.py` - Ny fil, re-exporterar CombinationLayer och CombinationLayerError.
+- `gdpr_classifier/layers/combination/combination_layer.py` - Ny fil, CombinationLayer som uppfyller Layer-protokollet, använder LLMProvider och utför differentierad validering av fynd.
+- `gdpr_classifier/prompts/combination/v2.yaml` - Ny fil, prompt v2 med 3 examples, systeminstruktioner för svensk kontext, och CoT-resonemang för pusselbitseffekten.
+- `tests/unit/test_combination_layer.py` - Ny fil, 7 enhetstester för alla valideringsscenarier och schemafel.
+- `docs/arkitektur.md` - Uppdaterat SSOT 3.3 med de tre nya enum-posterna i Category-blocket.
+
+**Gjort:**
+- Lagt till nya enum-kategorier för yrke, plats och kombination (skäl 26).
+- Byggt `CombinationLayer` med dependency injection av `LLMProvider`.
+- Implementerat validering i tre steg: schemavalidering, individuella signaler (case-sensitive/insensitive fallback), och aggregatfynd (differentierad validering med exact, insensitive, normalized, och reconstructed fallbacks).
+- Skapat robust prompt i YAML-format (`v2.yaml`) som specificerar uppgiften och avgränsningen från direkt Artikel 9/4-detektion, med betoning på svensk språkhantering.
+- Skrivit omfattande enhetstester och lagt in mock-förväntningar.
+
+**Beslut fattade:** Val av differentierad validering för att skydda mot LLM-hallucinationer (Beslut 21) implementeras genom fallback till whitespace-normalisering eller min/max-positionering av de individuella signalerna vid aggregat-fel. Reasoning-fältet i combination-output görs obligatoriskt vid is_identifiable=true (Beslut 22, Loggbok iteration 2) för att operationalisera Wei et al. (2022) chain-of-thought-spårbarhet.
+
+**Öppet/Nästa steg:** Kluster 4 (#74 Aggregator med kombinationslogik och #75 Utvärderingsmodul-utökning) avblockeras av detta samt #70 som är klara. #73 (testdataset) kvar i Kluster 3.
