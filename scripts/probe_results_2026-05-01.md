@@ -87,3 +87,11 @@ Modeller under 90% JSON-validitet (< 5/5 på Kategori A) är inte aktuella oavse
 
 </details>
 
+## Rekommendation
+
+Av kvalificerade modeller presterar **qwen2.5:7b-instruct** bäst med 8/9 korrekt svensk-klassificering och 5/5 JSON-validitet.
+Snittlatens: 1.72s, P95-latens: 15.37s, storlek: 7.6B.
+Näst bästa alternativ: **llama3.1:8b** med 6/9 svensk-korrekt och snittlatens 1.11s.
+
+Rekommendation: **qwen2.5:7b-instruct** som primär modell för Article9Layer och CombinationLayer. Modellen uppfyller JSON-validitetskravet (≥ 90%) och visar bäst prestanda på svensk språkförståelse bland testade alternativ.
+OBS: Denna rekommendation baseras på ett begränsat probe-set (14 prompts) och bör valideras vidare vid implementation av #70 och #72. Skriptet kan köras igen i iteration 3 om modellvalet behöver omprövas.

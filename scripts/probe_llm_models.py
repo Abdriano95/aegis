@@ -264,15 +264,19 @@ def evaluate_prompt(
             elapsed = time.perf_counter() - t0
             latencies.append(elapsed)
             last_error = str(exc)
-            return PromptResult(
-                prompt_id=prompt.id,
-                category=prompt.category,
-                success=False,
-                latency_s=statistics.mean(latencies),
-                error_message=f"LLMProviderError: {exc}",
-            )
+            continue
 
     latency = statistics.mean(latencies)
+
+    if last_error:
+        return PromptResult(
+            prompt_id=prompt.id,
+            category=prompt.category,
+            success=False,
+            latency_s=latency,
+            error_message=f"LLMProviderError: {last_error}",
+            raw_response=last_response,
+        )
 
     # Evaluate correctness based on category
     if prompt.category == "A":
@@ -664,7 +668,7 @@ def main(argv: list[str] | None = None) -> None:
     all_results: list[ModelResult] = []
 
     for model_name in args.models:
-        # Check if model is available (handle both exact and fuzzy matching)
+        # Ch+            continueck if model is available (handle both exact and fuzzy matching)
         if model_name in available_names:
             resolved_model = model_name
         else:
