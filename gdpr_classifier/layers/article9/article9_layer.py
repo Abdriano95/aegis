@@ -1,5 +1,6 @@
 """Article 9 detection layer using LLM."""
 
+from _plotly_utils.png import Error
 from __future__ import annotations
 
 import logging
@@ -54,45 +55,56 @@ class Article9Layer:
                 match the expected schema.
         """
         prompt = load_prompt("article9", version=self._prompt_version)
-        
-        user_prompt = f"{prompt.assembled_prompt}\n\nText att analysera:\n<<<\n{text}\n>>>\n"
-        
+
+        user_prompt = (
+            f"{prompt.assembled_prompt}\n\nText att analysera:\n<<<\n{text}\n>>>\n"
+        )
+
         response = self._provider.generate_json(
             prompt=user_prompt,
             system_prompt=prompt.system_prompt,
         )
-        
+
         if not isinstance(response, dict):
             raise Article9LayerError("Expected JSON response to be a dict.")
-            
+
         if "findings" not in response:
             raise Article9LayerError("Missing 'findings' field in JSON response.")
-            
+
         findings_data = response["findings"]
         if not isinstance(findings_data, list):
             raise Article9LayerError("'findings' field must be a list.")
-            
+
         findings = []
         for f_data in findings_data:
             if not isinstance(f_data, dict):
                 raise Article9LayerError("Each finding must be a dict.")
-                
+
             cat_str = f_data.get("category")
             text_span = f_data.get("text_span")
             confidence = f_data.get("confidence")
-            
+
             if not cat_str or not text_span or confidence is None:
-                raise Article9LayerError("Finding missing required fields (category, text_span, confidence).")
-                
+                raise Article9LayerError(
+                    "Finding missing required fields (category, text_span, confidence)."
+                )
+
+            try:
+                confidence_float = float(confidence)
+            except (TypeError, ValueError) as e:
+                raise Article9LayerError(
+                    f"Invalid confidence value: {confidence}"
+                ) from e
+
             try:
                 category = Category(f"article9.{cat_str}")
             except ValueError as e:
                 raise Article9LayerError(f"Unknown category: {cat_str}") from e
-                
+
             # Fallback text search: case-sensitive first, then case-insensitive
             start = text.find(text_span)
             actual_text_span = text_span
-            
+
             if start == -1:
                 # Case-insensitive search
                 lower_text = text.lower()
@@ -100,20 +112,25 @@ class Article9Layer:
                 start = lower_text.find(lower_span)
                 if start != -1:
                     # Extract the exact substring from the original text
-                    actual_text_span = text[start:start+len(text_span)]
+                    actual_text_span = text[start : start + len(text_span)]
                 else:
-                    logger.debug("Hallucination detected: text_span '%s' not found in text.", text_span)
+                    logger.debug(
+                        "Hallucination detected: text_span '%s' not found in text.",
+                        text_span,
+                    )
                     continue
-                    
+
             end = start + len(actual_text_span)
-            
-            findings.append(Finding(
-                category=category,
-                start=start,
-                end=end,
-                text_span=actual_text_span,
-                confidence=float(confidence),
-                source=f"article9.{cat_str}"
-            ))
-            
+
+            findings.append(
+                Finding(
+                    category=category,
+                    start=start,
+                    end=end,
+                    text_span=actual_text_span,
+                    confidence=float(confidence),
+                    source=f"article9.{cat_str}",
+                )
+            )
+
         return findings
