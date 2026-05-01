@@ -9,7 +9,7 @@ git clone https://github.com/Abdriano95/aegis.git
 cd aegis
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[all,llm,demo,nlp,dev]"
 pytest --co -q
 ```
 
