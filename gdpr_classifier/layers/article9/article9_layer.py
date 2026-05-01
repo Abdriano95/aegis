@@ -1,6 +1,5 @@
 """Article 9 detection layer using LLM."""
 
-from _plotly_utils.png import Error
 from __future__ import annotations
 
 import logging
