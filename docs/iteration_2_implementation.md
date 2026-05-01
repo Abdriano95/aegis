@@ -31,7 +31,7 @@ Beroendekartan visar vilka issues som beror på varandra och i vilken ordning de
 
 ```
 Kluster 1
-               #68 → #69, #78
+               #68 → #69, #78, #84
                    │
     ┌──────────────┼──────────────┐
     │              │              │
@@ -52,7 +52,7 @@ Kluster 5      Kluster 2      Kluster 3
                       #79, #80
 ```
 
-Kluster 1 är blockerande för Kluster 2, 3 och 5. Kluster 4 beror på Kluster 2 och 3. Kluster 6 är slutskede efter Kluster 4. Detaljerade beroenden per issue dokumenteras i issuesarna själva (GitHub) samt i Issue-specifikationer-tabellen nedan.
+Kluster 1 är blockerande för Kluster 2, 3 och 5. #84 beror på #69 och är beroende från #70 och #72 (modellvalet motiveras av probe-resultaten). Kluster 4 beror på Kluster 2 och 3. Kluster 6 är slutskede efter Kluster 4. Detaljerade beroenden per issue dokumenteras i issuesarna själva (GitHub) samt i Issue-specifikationer-tabellen nedan.
 
 ---
 
@@ -73,6 +73,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | #68 (I-1) | SSOT-revidering för iteration 2 | ✅ Klar | - | 2026-04-30 |
 | #69 (I-2) | LLMProvider-abstraktion | ✅ Klar | #68 | 2026-04-30 |
 | #78 (I-11) | Prompt-konstruktion enligt etablerad metod | ✅ Klar | #68 | 2026-04-30 |
+| #84 (I-14) | Modellutvärdering — probe-skript för Ollama-modellval | ✅ Klar | #69 | 2026-05-01 |
 
 ### Kluster 2: Article9Layer
 
@@ -234,3 +235,28 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** base_dir-parameter istället för monkeypatch av _PROMPTS_DIR (dependency injection). pyyaml enbart i [llm]-grupp, inte [all]. Se Loggboken för full motivering.
 **Öppet/Nästa steg:** Kluster 1 är komplett (#68 ✅, #69 ✅, #78 ✅). #70 (Article9Layer) och #72 (CombinationLayer) är fullt avblockerade. arkitektur.md sektion 10 behöver uppdateras med prompts/-katalogen (görs separat efter verifiering).
+
+### Session 2026-05-01 - Antigravity (Claude Opus 4.6)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #84 (I-14) — Modellutvärdering: probe-skript för Ollama-modellval.
+
+**Ändrade filer:**
+- `scripts/probe_prompts.py` - ny fil, 14 probe-prompts (5 Kategori A: JSON-validitet, 9 Kategori B: svensk språkförståelse) som ProbePrompt dataclass
+- `scripts/probe_llm_models.py` - ny fil, CLI-skript som kör probes mot OllamaProvider, mäter latens, validerar JSON, bedömer korrekthet, genererar markdown-resultatfil
+- `scripts/probe_results_2026-05-01.md` - resultatfil med sammanfattning, per-prompt-detaljer och rekommendation
+- `docs/iteration_2_implementation.md` - #84 tillagd i Kluster 1, status uppdaterad
+
+**Gjort:**
+- ProbePrompt dataclass (frozen) med id, category, system_prompt, task_prompt, text, expected_json_keys, expected_classification
+- 5 Kategori A-prompts (trivial JSON-extraktion) och 9 Kategori B-prompts (5 positiva artikel 9-fall, 4 negativa kontroller)
+- CLI med --models (obligatoriskt), --output-dir, --temperature, --runs-per-prompt
+- Latensmätning med time.perf_counter(), snitt och P95
+- Modellstorlek via subprocess-anrop till "ollama show"
+- Robust felhantering: Ollama-anslutningskontroll vid start, modell-existenskontroll, LLMProviderError per prompt
+- Normaliseringsfunktion _normalize_category() tillagd efter första körningen: NFKD-normalisering, ASCII-filtrering, lowercase, mellanslag→underscore. Löser formatvariationer ("hälsodata" vs "halsodata", "etniskt ursprung" vs "etniskt_ursprung") utan att acceptera engelska översättningar ("religious_belief")
+- Körning mot llama3.1:8b, qwen2.5:7b-instruct, mistral-nemo:12b. Alla 5/5 JSON-validitet. Svensk-korrekt: qwen2.5:7b-instruct 8/9, llama3.1:8b 6/9, mistral-nemo:12b 5/9
+- 66/66 enhetstester gröna, inga regressioner
+
+**Beslut fattade:** Kategori-normalisering appliceras på båda sidor (expected + actual) före jämförelse. Strikt boolean-jämförelse för contains_sensitive behålls. Engelska svar räknas som fel (modellen följer inte svensk formatinstruktion).
+**Öppet/Nästa steg:** Kluster 1 komplett (#68 ✅, #69 ✅, #78 ✅, #84 ✅). Rekommendation: qwen2.5:7b-instruct som primär modell. #70 (Article9Layer) och #72 (CombinationLayer) kan använda denna modell som utgångspunkt.
