@@ -80,7 +80,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
 | #70 (I-3) | Article9Layer | ✅ Klar | #69, #78 | 2026-05-01 |
-| #71 (I-4) | Testdataset, artikel 9-texter | 🔄 Pågår | - | - |
+| #71 (I-4) | Testdataset, artikel 9-texter | ✅ Klar | - | 2026-05-02 |
 
 ### Kluster 3: CombinationLayer
 
