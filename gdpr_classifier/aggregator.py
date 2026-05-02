@@ -13,6 +13,25 @@ from gdpr_classifier.core import (
 
 
 class Aggregator:
+    def __init__(
+        self,
+        medium_threshold: float = 0.7,
+        high_confidence_bypass: float = 0.85,
+        min_evidence_count: int = 2,
+    ) -> None:
+        if not (0.0 <= medium_threshold <= 1.0):
+            raise ValueError("medium_threshold must be between 0.0 and 1.0")
+        if not (0.0 <= high_confidence_bypass <= 1.0):
+            raise ValueError("high_confidence_bypass must be between 0.0 and 1.0")
+        if high_confidence_bypass < medium_threshold:
+            raise ValueError("high_confidence_bypass must be >= medium_threshold")
+        if min_evidence_count < 1:
+            raise ValueError("min_evidence_count must be a positive integer")
+        
+        self.medium_threshold = medium_threshold
+        self.high_confidence_bypass = high_confidence_bypass
+        self.min_evidence_count = min_evidence_count
+
     def aggregate(
         self,
         findings: list[Finding],
@@ -81,20 +100,53 @@ class Aggregator:
     def _determine_sensitivity(
         self, findings: list[Finding],
     ) -> SensitivityLevel:
-        """Bestämmer sammanfattande känslighetsnivå.
+        """Bestämmer sammanfattande känslighetsnivå (SSOT arkitektur.md §8).
 
-        NONE: inga findings.
-        LOW:  enbart Artikel 4-fynd.
-        HIGH: minst ett Artikel 9-fynd eller kontextuellt känsligt fynd.
+        HIGH:   minst ett article9.*-fynd (Lager 3, Article9Layer).
+        MEDIUM: context.kombination-fynd med confidence >= medium_threshold
+                som passerar hög-konfidens-bypass eller Mekanism 3.
+        LOW:    article4.*-fynd utan HIGH- eller MEDIUM-triggar.
+        NONE:   inga fynd.
 
-        MEDIUM är definierad i ``SensitivityLevel`` men tilldelas aldrig i
-        iteration 1 - aktiveras i iteration 2 när kontextuella
-        indirekt-identifierare (pusselbitseffekten) införs via Lager 3.
+        D5-korrigering: isolerade context.*-fynd (source != "context.kombination")
+        ignoreras vid sensitivity-bestämning men bevaras i Classification.findings.
         """
-        if not findings:
-            return SensitivityLevel.NONE
-        for finding in findings:
-            category: Category = finding.category
-            if category.value.startswith(("article9.", "context.")):
-                return SensitivityLevel.HIGH
-        return SensitivityLevel.LOW
+        if any(f.category.value.startswith("article9.") for f in findings):
+            return SensitivityLevel.HIGH
+
+        kombination_candidates = [
+            f for f in findings
+            if f.source == "context.kombination"
+            and f.confidence >= self.medium_threshold
+        ]
+        for kf in kombination_candidates:
+            # Privacy by Design fail-safe: hög konfidens kringgår Mekanism 3 (Beslut 21, GDPR art. 25)
+            if kf.confidence >= self.high_confidence_bypass:
+                return SensitivityLevel.MEDIUM
+            if self._passes_mechanism_3(kf, findings):
+                return SensitivityLevel.MEDIUM
+
+        if any(f.category.value.startswith("article4.") for f in findings):
+            return SensitivityLevel.LOW
+
+        return SensitivityLevel.NONE
+
+    def _passes_mechanism_3(
+        self, kombination: Finding, all_findings: list[Finding],
+    ) -> bool:
+        """Mekanism 3: verifiera att minst min_evidence_count Lager 1/2-fynd
+        överlappar med kombination-fyndets span.
+
+        CombinationLayer exponerar inga sub-spans i kombination-fyndet; metadata
+        innehåller reasoning och validation_path. Individuella signaler returneras
+        som separata Finding-objekt. Mekanism 3 räknar överlappande fynd från
+        Lager 1 (source börjar på "pattern.") och Lager 2 (source börjar på
+        "entity.") mot kombination-fyndets totala span.
+        """
+        evidence = [
+            f for f in all_findings
+            if (f.source.startswith("pattern.") or f.source.startswith("entity."))
+            and f.start < kombination.end
+            and kombination.start < f.end
+        ]
+        return len(evidence) >= self.min_evidence_count
