@@ -19,6 +19,15 @@ class Aggregator:
         high_confidence_bypass: float = 0.85,
         min_evidence_count: int = 2,
     ) -> None:
+        if not (0.0 <= medium_threshold <= 1.0):
+            raise ValueError("medium_threshold must be between 0.0 and 1.0")
+        if not (0.0 <= high_confidence_bypass <= 1.0):
+            raise ValueError("high_confidence_bypass must be between 0.0 and 1.0")
+        if high_confidence_bypass < medium_threshold:
+            raise ValueError("high_confidence_bypass must be >= medium_threshold")
+        if min_evidence_count < 1:
+            raise ValueError("min_evidence_count must be a positive integer")
+        
         self.medium_threshold = medium_threshold
         self.high_confidence_bypass = high_confidence_bypass
         self.min_evidence_count = min_evidence_count
