@@ -100,7 +100,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #76 (I-9) | Containment-regel för IBAN-telefon-överlapp | 🔄 Pågår | #68 | - |
+| #76 (I-9) | Containment-regel för IBAN-telefon-överlapp | ✅ Klar | #68 | 2026-05-02 |
 | #77 (I-10) | Testdataset-utökning, längre texter med pattern och NER | ⬜ Ej startad | - | - |
 
 ### Kluster 6: Utbytbarhet & Demo

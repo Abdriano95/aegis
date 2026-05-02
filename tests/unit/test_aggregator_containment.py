@@ -90,6 +90,32 @@ class TestContainmentIbanTelefon:
         assert telefon in result.findings
         assert len(result.findings) == 2
 
+    def test_boundary_touching_iban_telefon_both_kept(self) -> None:
+        """Boundary-touching intervals (telefon.start == iban.end) are not overlapping."""
+        iban = _make_finding(
+            Category.IBAN,
+            start=0,
+            end=26,
+            confidence=1.0,
+            source="pattern.checksum_iban",
+        )
+        telefon = _make_finding(
+            Category.TELEFONNUMMER,
+            start=26,
+            end=40,
+            confidence=0.9,
+            source="pattern.regex_telefon",
+        )
+
+        result = Aggregator().aggregate(
+            findings=[iban, telefon],
+            active_layers=["pattern"],
+        )
+
+        assert iban in result.findings
+        assert telefon in result.findings
+        assert len(result.findings) == 2
+
     def test_overlapping_other_categories_both_kept(self) -> None:
         """Overlap between non-IBAN/telefon categories is not affected."""
         personnummer = _make_finding(

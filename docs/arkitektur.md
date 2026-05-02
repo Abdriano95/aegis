@@ -188,6 +188,8 @@ När två lager rapporterar fynd som överlappar i samma textavsnitt bevaras bå
 
 **Överlappskriterium:** Två fynd överlappar om deras textavsnitt har gemensamma teckenpositioner (start/end-intervallen skär varandra).
 
+**Undantag: containment-regler.** Aggregatorns `_apply_containment_rules` (avsnitt 8) kan ta bort ett fynd före överlappsdetektion när ett specifikt cross-recognizer-mönster identifieras. I iteration 2 gäller detta enbart IBAN-telefon-överlapp: ett `Category.TELEFONNUMMER`-fynd vars span överlappar med ett `Category.IBAN`-fynd filtreras bort och förekommer varken i `Classification.findings` eller `overlapping_findings`. Övriga recognizer-kombinationer bevaras enligt huvudregeln ovan.
+
 
 ### 3.5 Layer-protokoll
 
