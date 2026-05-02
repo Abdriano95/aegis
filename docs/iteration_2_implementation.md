@@ -100,7 +100,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #76 (I-9) | Containment-regel för IBAN-telefon-överlapp | ⬜ Ej startad | #68 | - |
+| #76 (I-9) | Containment-regel för IBAN-telefon-överlapp | 🔄 Pågår | #68 | - |
 | #77 (I-10) | Testdataset-utökning, längre texter med pattern och NER | ⬜ Ej startad | - | - |
 
 ### Kluster 6: Utbytbarhet & Demo
@@ -307,3 +307,26 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Val av differentierad validering för att skydda mot LLM-hallucinationer (Beslut 21) implementeras genom fallback till whitespace-normalisering eller min/max-positionering av de individuella signalerna vid aggregat-fel. Reasoning-fältet i combination-output görs obligatoriskt vid is_identifiable=true (Beslut 22, Loggbok iteration 2) för att operationalisera Wei et al. (2022) chain-of-thought-spårbarhet.
 
 **Öppet/Nästa steg:** Kluster 4 (#74 Aggregator med kombinationslogik och #75 Utvärderingsmodul-utökning) avblockeras av detta samt #70 som är klara. #73 (testdataset) kvar i Kluster 3.
+
+### Session 2026-05-02 - Antigravity (Claude Opus 4.6) - Issue `#76`
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #76 (I-9) — Containment-regel för IBAN-telefon-överlapp: implementera filtreringsregel i Aggregator som tar bort telefonfynd som överlappar med IBAN-fynd.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` - Ny metod `_apply_containment_rules()`; `aggregate()` anropar den före `_find_overlaps` och `_determine_sensitivity`
+- `tests/unit/test_aggregator_containment.py` - Ny fil, 6 enhetstester (3 kravscenarier + 3 edge cases)
+- `docs/arkitektur.md` - §8 pseudokod uppdaterad med `_apply_containment_rules` + ny containment-dokumentation; §14.1 uppdaterad från "planerad åtgärd" till "åtgärd"
+- `docs/iteration_2_implementation.md` - Status #76 uppdaterad till 🔄 Pågår
+
+**Gjort:**
+- Uppdaterat #76-status till 🔄 Pågår som första åtgärd
+- Implementerat `_apply_containment_rules()` i Aggregator: identifierar IBAN-telefon-överlapp via `Category`-enum (inte source-strängar), tar bort telefonfynd med överlappande span
+- Skapat 6 enhetstester: överlapp (telefon borttagen), ej överlapp (båda kvar), annan kombination (regeln ej applicerad), multipla telefon mot samma IBAN, sensitivity-nivå korrekt, overlapping_findings tom efter borttagning
+- Uppdaterat SSOT §8 med containment-regelns pseudokod och motivering
+- Uppdaterat SSOT §14.1: begränsningen markerad som åtgärdad med hänvisning till §8
+- 93/93 enhetstester gröna, inga regressioner (1 pre-existing integration fail pga saknad SpaCy-modell)
+
+**Beslut fattade:** Identifiering via `Category`-enum istället för `source`-strängar — robust mot framtida namnändringar. Borttagna fynd exkluderas helt ur `Classification` (inget `removed_findings`-fält) — enklare design, framtida spårbarhetsbehov hanteras i separat issue. 
+Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitivity-signal (Beslut 25, Loggbok iteration 2).
+**Öppet/Nästa steg:** #76 redo för granskning och commit. Samma containment-mekanism kan utökas till NER-FPs (§14.2) i separat issue.

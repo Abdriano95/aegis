@@ -18,14 +18,50 @@ class Aggregator:
         findings: list[Finding],
         active_layers: list[str],
     ) -> Classification:
-        overlaps = self._find_overlaps(findings)
-        sensitivity = self._determine_sensitivity(findings)
+        filtered = self._apply_containment_rules(findings)
+        overlaps = self._find_overlaps(filtered)
+        sensitivity = self._determine_sensitivity(filtered)
         return Classification(
-            findings=findings,
+            findings=filtered,
             sensitivity=sensitivity,
             active_layers=active_layers,
             overlapping_findings=overlaps,
         )
+
+    def _apply_containment_rules(
+        self, findings: list[Finding],
+    ) -> list[Finding]:
+        """Remove telefon findings that overlap with IBAN findings.
+
+        IBAN requires mod97 checksum validation and is strictly more specific
+        than telefon regex matching.  A valid IBAN is never a phone number.
+        This rule only targets IBAN-telefon overlap; all other recognizer
+        combinations are left untouched.
+
+        See SSOT arkitektur.md §8 and §14.1 for motivation.
+        """
+        iban_findings = [
+            f for f in findings if f.category == Category.IBAN
+        ]
+        if not iban_findings:
+            return findings
+
+        telefon_to_remove: set[int] = set()
+        for idx, f in enumerate(findings):
+            if f.category != Category.TELEFONNUMMER:
+                continue
+            for iban in iban_findings:
+                if f.start < iban.end and iban.start < f.end:
+                    telefon_to_remove.add(idx)
+                    break
+
+        if not telefon_to_remove:
+            return findings
+
+        return [
+            f for idx, f in enumerate(findings)
+            if idx not in telefon_to_remove
+        ]
 
     def _find_overlaps(
         self, findings: list[Finding],
