@@ -87,7 +87,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
 | #72 (I-5) | CombinationLayer | ✅ Klar | #69, #78 | 2026-05-01 |
-| #73 (I-6) | Testdataset, pusselbitseffekt-texter | ⬜ Ej startad | - | - |
+| #73 (I-6) | Testdataset, pusselbitseffekt-texter | 🔄 Pågår | - | 2026-05-02 |
 
 ### Kluster 4: Aggregator & Evaluation
 
@@ -441,3 +441,21 @@ ekologisk validitet i den artificiella utvärderingen (#75).
 **Beslut fattade:** Identifiering via `Category`-enum istället för `source`-strängar — robust mot framtida namnändringar. Borttagna fynd exkluderas helt ur `Classification` (inget `removed_findings`-fält) — enklare design, framtida spårbarhetsbehov hanteras i separat issue. 
 Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitivity-signal (Beslut 25, Loggbok iteration 2).
 **Öppet/Nästa steg:** #76 redo för granskning och commit. Samma containment-mekanism kan utökas till NER-FPs (§14.2) i separat issue.
+
+### Session 2026-05-02 - Claude Code (claude-sonnet-4-6) - Issue `#73` (delsteg 0)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #73 (I-6) — Testdataset, pusselbitseffekt-texter: Delsteg 0 (annoteringsguide).
+
+**Ändrade filer:**
+- `docs/combination_annotation_guidelines.md` - Ny fil, annoteringsguide för CombinationLayer:s testdataset.
+- `scripts/verify_combination_guidelines.py` - Nytt verifieringsskript som asserterar guidens struktur (10 H2-sektioner, 4 H3 i sektion 4, minst 3 H3 i sektion 5).
+- `docs/iteration_2_implementation.md` - Status #73 uppdaterad till 🔄 Pågår.
+
+**Gjort:**
+- Skapat `docs/combination_annotation_guidelines.md` med innehåll levererat från arkitekt-session. Tio sektioner inklusive juridisk förankring (skäl 26, art. 4.1, Breyer C-582/14, IMY-vägledning), signaltyper (yrke, plats, organisation), specificitetskategorisering (tre nivåer per dimension plus narrativ specificitet som bedömningsdimension), kombinationsregler (Regel A-D), datasetets fyra strukturella celler med målvolym 25-35 entries, samt arkitektoniska val (lagerovetskap, schemaval, artikel 9-exklusion).
+- Skrivit `scripts/verify_combination_guidelines.py` som asserterar guidens struktur. Skriptet går grönt.
+- Verifierat att guiden inte innehåller em-streck.
+
+**Beslut fattade:** Inga nya arkitekturbeslut i denna session. Guidens innehåll reflekterar redan dokumenterade Beslut 17, 18, 19, 20, 22.
+**Öppet/Nästa steg:** Delsteg 0 klart. #73 fortsätter med delsteg 1 (FAS A-genereringsskript) i separat session.
