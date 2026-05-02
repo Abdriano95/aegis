@@ -188,6 +188,8 @@ När två lager rapporterar fynd som överlappar i samma textavsnitt bevaras bå
 
 **Överlappskriterium:** Två fynd överlappar om deras textavsnitt har gemensamma teckenpositioner (start/end-intervallen skär varandra).
 
+**Undantag: containment-regler.** Aggregatorns `_apply_containment_rules` (avsnitt 8) kan ta bort ett fynd före överlappsdetektion när ett specifikt cross-recognizer-mönster identifieras. I iteration 2 gäller detta enbart IBAN-telefon-överlapp: ett `Category.TELEFONNUMMER`-fynd vars span överlappar med ett `Category.IBAN`-fynd filtreras bort och förekommer varken i `Classification.findings` eller `overlapping_findings`. Övriga recognizer-kombinationer bevaras enligt huvudregeln ovan.
+
 
 ### 3.5 Layer-protokoll
 
@@ -368,14 +370,21 @@ class Aggregator:
         findings: list[Finding],
         active_layers: list[str]
     ) -> Classification:
-        overlaps = self._find_overlaps(findings)
-        sensitivity = self._determine_sensitivity(findings)
+        filtered = self._apply_containment_rules(findings)
+        overlaps = self._find_overlaps(filtered)
+        sensitivity = self._determine_sensitivity(filtered)
         return Classification(
-            findings=findings,
+            findings=filtered,
             sensitivity=sensitivity,
             active_layers=active_layers,
             overlapping_findings=overlaps
         )
+
+    def _apply_containment_rules(
+        self, findings: list[Finding]
+    ) -> list[Finding]:
+        """Remove telefon findings that overlap with IBAN findings."""
+        ...
 
     def _find_overlaps(
         self, findings: list[Finding]
@@ -432,6 +441,12 @@ class Aggregator:
         """
         ...
 ```
+
+**Containment-regel: IBAN-telefon-överlapp (Issue #76, iteration 2):**
+
+`_apply_containment_rules` filtrerar bort telefonnummer-fynd (`Category.TELEFONNUMMER`) vars span överlappar med ett IBAN-fynd (`Category.IBAN`). Motivering: IBAN-recognizern kräver mod97-kontrollsiffervalidering och har `confidence=1.0`; den är strikt mer specifik än telefon-recognizerns regex-matchning (`confidence=0.9`). Ett giltigt IBAN är aldrig ett telefonnummer. Regeln löser det cross-recognizer-överlapp som dokumenterades i avsnitt 14.1.
+
+Regeln appliceras *före* `_find_overlaps` och `_determine_sensitivity` så att borttagna telefon-fynd inte förekommer i `Classification.findings` eller `overlapping_findings`. Enbart IBAN-telefon-överlapp hanteras; andra recognizer-kombinationer lämnas opåverkade.
 
 **Konfigurerbara trösklar (Beslut 20, Loggbok iteration 2):**
 
@@ -708,7 +723,7 @@ Grundorsaken sitter på aggregator-nivå, inte på recognizer-nivå. Varje recog
 
 Begränsningen åtgärdas inte i iteration 1 eftersom en lösning kräver en aktiv reduktionsregel i aggregatorn, vilket är en arkitekturförändring som berör designprincip 3 (spårbarhet): ett filtrerat fynd får inte försvinna tyst utan måste fortfarande vara synligt i utvärderingen. En sådan förändring behöver dessutom diskuteras med intressenter under demon innan den implementeras, eftersom den påverkar vilken bild av artefaktens falska positiva som presenteras.
 
-Planerad åtgärd i iteration 2 (BIE-cykel 2): `Aggregator` utökas med en containment-regel som tar bort ett fynd från `findings` om det är helt inneslutet i ett fynd från en annan recognizer med strikt högre konfidens (till exempel 1.0 över 0.9). Det borttagna fyndet bevaras i `overlapping_findings` så spårbarheten mot designprincip 3 upprätthålls. Samma mekanism föreslås för 14.2:s NER-FPs, eventuellt kompletterad med pre-filtrering; beslut om kombinationen fattas i iteration 2:s planering.
+**Åtgärd (iteration 2, Issue #76):** Aggregatorn har utökats med `_apply_containment_rules` som tar bort telefon-fynd vars span överlappar med IBAN-fynd (se avsnitt 8). Regeln appliceras före överlappsdetektion och sensitivity-bestämning. Samma containment-mekanism kan i framtiden utökas till NER-FPs (avsnitt 14.2), eventuellt kompletterad med pre-filtrering; beslut om den utökningen fattas separat.
 
 ### 14.2 NER modell-feldetekteringar
 
