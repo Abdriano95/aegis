@@ -481,3 +481,26 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 
 **Beslut fattade:** Cell 2 aggregat beräknas automatiskt per regelmotor (Regel A och B); granskaren tar bort om oenighet i FAS B. Beslut taget i planfas av användaren. Förs in i Loggboken.
 **Öppet/Nästa steg:** Skriptet körs manuellt på Abdullas maskin för att producera `combination_dataset_candidates.json`. FAS B-granskning startar därefter. Validerings-skript skrivs i delsteg 2.
+
+---
+
+### Session 2026-05-02 - Claude Code (claude-sonnet-4-6) - Issue `#73` (delsteg 2)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #73 (I-6) — Testdataset, pusselbitseffekt-texter: Delsteg 2 (validerings-skript).
+
+**Ändrade filer:**
+- `scripts/validate_combination_dataset.py` - Nytt skript, validerar dataset-JSON i två roller (pre-FAS-B kandidatfil + post-FAS-B slutdataset).
+- `tests/unit/test_validate_combination_dataset.py` - Nya enhetstester (8 testfall) för per-entry-validering och konsistenskontroll.
+
+**Gjort:**
+- Implementerat per-entry-validering: schema-fält, span-offsets (`text[start:end] == text_span`), specificitetsnivåer (`låg|mellan|hög`), kategorier (`context.yrke|plats|organisation` + `context.kombination`).
+- Strikt konsistenskontroll (Alternativ A): om aggregat-fynd finns ska dess `start` vara `min(starts)` och `end` vara `max(ends)` av individuella findings. Aggregat utan minst 2 individuella findings flaggas som fel.
+- Övergripande rapportering till stdout: totala nyckeltal, signal-breakdown (yrke/plats/organisation), fördelning över strukturella celler (utan att parsa `description`-fältet).
+- Exit code 0 vid framgång, 1 vid något schemafel. Felsummering till stderr.
+- Teknisk skuld noterad: validatorn definierar schema-regler parallellt med `evaluation/dataset/loader.py`. Avsiktligt — validatorn körs innan datasetet är godkänt för loader-användning.
+- 124/124 enhetstester gröna (varav 8 nya), inga regressioner.
+- Skriptet inte exekverat — körs manuellt mot `combination_dataset_candidates.json` efter FAS A-generering och mot slutdatasetet efter FAS B-konsensus.
+
+**Beslut fattade:** Inga nya arkitekturbeslut. Strikt konsistensvalidering (Alternativ A) beslutad i arkitekt-session.
+**Öppet/Nästa steg:** Skriptet körs manuellt mot `combination_dataset_candidates.json` när FAS A-skriptet har producerat kandidatfilen. Därefter FAS B (manuell granskning av Abdulla och Johanna).
