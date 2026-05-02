@@ -49,6 +49,9 @@ def run_evaluation(pipeline: Any, dataset: list[LabeledText]) -> Report:
                 mech_low += 1
             case "none" | None:
                 mech_none += 1
+            case _:
+                mech_none += 1 # Count any unexpected value as "none"
+        
         match_result = match(classification.findings, item.expected_findings)
         cm.add_match_result(match_result)
         samples.append(
