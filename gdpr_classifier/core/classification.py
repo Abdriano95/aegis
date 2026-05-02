@@ -21,3 +21,4 @@ class Classification:
     sensitivity: SensitivityLevel
     active_layers: list[str]
     overlapping_findings: list[tuple[Finding, Finding]]
+    mechanism_used: str | None = None

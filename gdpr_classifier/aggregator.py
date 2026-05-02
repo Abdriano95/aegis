@@ -39,12 +39,13 @@ class Aggregator:
     ) -> Classification:
         filtered = self._apply_containment_rules(findings)
         overlaps = self._find_overlaps(filtered)
-        sensitivity = self._determine_sensitivity(filtered)
+        sensitivity, mechanism = self._determine_sensitivity(filtered)
         return Classification(
             findings=filtered,
             sensitivity=sensitivity,
             active_layers=active_layers,
             overlapping_findings=overlaps,
+            mechanism_used=mechanism,
         )
 
     def _apply_containment_rules(
@@ -99,7 +100,7 @@ class Aggregator:
 
     def _determine_sensitivity(
         self, findings: list[Finding],
-    ) -> SensitivityLevel:
+    ) -> tuple[SensitivityLevel, str]:
         """Bestämmer sammanfattande känslighetsnivå (SSOT arkitektur.md §8).
 
         HIGH:   minst ett article9.*-fynd (Lager 3, Article9Layer).
@@ -110,9 +111,12 @@ class Aggregator:
 
         D5-korrigering: isolerade context.*-fynd (source != "context.kombination")
         ignoreras vid sensitivity-bestämning men bevaras i Classification.findings.
+
+        Returnerar (SensitivityLevel, mechanism_used) där mechanism_used är en
+        av "article9", "bypass", "mechanism3", "low", "none".
         """
         if any(f.category.value.startswith("article9.") for f in findings):
-            return SensitivityLevel.HIGH
+            return SensitivityLevel.HIGH, "article9"
 
         kombination_candidates = [
             f for f in findings
@@ -122,14 +126,14 @@ class Aggregator:
         for kf in kombination_candidates:
             # Privacy by Design fail-safe: hög konfidens kringgår Mekanism 3 (Beslut 21, GDPR art. 25)
             if kf.confidence >= self.high_confidence_bypass:
-                return SensitivityLevel.MEDIUM
+                return SensitivityLevel.MEDIUM, "bypass"
             if self._passes_mechanism_3(kf, findings):
-                return SensitivityLevel.MEDIUM
+                return SensitivityLevel.MEDIUM, "mechanism3"
 
         if any(f.category.value.startswith("article4.") for f in findings):
-            return SensitivityLevel.LOW
+            return SensitivityLevel.LOW, "low"
 
-        return SensitivityLevel.NONE
+        return SensitivityLevel.NONE, "none"
 
     def _passes_mechanism_3(
         self, kombination: Finding, all_findings: list[Finding],

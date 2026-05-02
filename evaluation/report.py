@@ -27,11 +27,23 @@ class SampleResult:
 
 
 @dataclass(frozen=True)
+class MechanismStats:
+    high_via_article9: int
+    medium_via_bypass: int
+    medium_via_mechanism3: int
+    low_count: int
+    none_count: int
+
+
+@dataclass(frozen=True)
 class Report:
     total: RunMetrics
     per_category: dict[Category, RunMetrics]
     per_layer: dict[str, RunMetrics]
     samples: list[SampleResult] = field(default_factory=list)
+    per_mechanism: MechanismStats = field(
+        default_factory=lambda: MechanismStats(0, 0, 0, 0, 0)
+    )
 
 
 def _context_snippet(text: str, start: int, end: int, window: int = 20) -> str:
@@ -65,6 +77,14 @@ def print_report(report: Report, verbose: bool = False) -> None:
         print(f"Layer: {layer}")
         print(f"  TP: {metrics.tp:<5} FP: {metrics.fp:<5} FN: {metrics.fn:<5}")
         print(f"  Precision: {metrics.precision:.2%} | Recall: N/A | F1: N/A")
+
+    print("\n--- Per Mechanism ---")
+    pm = report.per_mechanism
+    print(f"  HIGH  via Article 9:   {pm.high_via_article9}")
+    print(f"  MEDIUM via bypass:     {pm.medium_via_bypass}")
+    print(f"  MEDIUM via mechanism3: {pm.medium_via_mechanism3}")
+    print(f"  LOW:                   {pm.low_count}")
+    print(f"  NONE:                  {pm.none_count}")
 
     if verbose:
         fp_pairs: list[tuple[str, Finding]] = [

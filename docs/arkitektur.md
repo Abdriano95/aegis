@@ -179,6 +179,7 @@ class Classification:
     sensitivity: SensitivityLevel
     active_layers: list[str]        # vilka lager som kördes
     overlapping_findings: list[tuple[Finding, Finding]]  # par av överlappande fynd
+    mechanism_used: str | None = None  # "article9" | "bypass" | "mechanism3" | "low" | "none"
 ```
 
 
@@ -372,12 +373,13 @@ class Aggregator:
     ) -> Classification:
         filtered = self._apply_containment_rules(findings)
         overlaps = self._find_overlaps(filtered)
-        sensitivity = self._determine_sensitivity(filtered)
+        sensitivity, mechanism = self._determine_sensitivity(filtered)
         return Classification(
             findings=filtered,
             sensitivity=sensitivity,
             active_layers=active_layers,
-            overlapping_findings=overlaps
+            overlapping_findings=overlaps,
+            mechanism_used=mechanism,
         )
 
     def _apply_containment_rules(
@@ -394,7 +396,7 @@ class Aggregator:
 
     def _determine_sensitivity(
         self, findings: list[Finding]
-    ) -> SensitivityLevel:
+    ) -> tuple[SensitivityLevel, str]:
         """
         HIGH:   minst ett article9.*-fynd (Lager 3, Article9Layer).
         MEDIUM: context.kombination-fynd som passerar Mekanism 1 (span-validering)
@@ -406,10 +408,13 @@ class Aggregator:
         D5-korrigering: isolerade context.*-fynd utan ett matchande
         context.kombination-fynd triggar inte sensitivity-höjning (Beslut 11,
         Loggbok iteration 1; Beslut 19, Loggbok iteration 2).
+
+        Returnerar (SensitivityLevel, mechanism_used) där mechanism_used är en
+        av "article9", "bypass", "mechanism3", "low", "none".
         """
         # HIGH: direkt artikel 9-data hittad (Lager 3)
         if any(f.category.value.startswith("article9.") for f in findings):
-            return SensitivityLevel.HIGH
+            return SensitivityLevel.HIGH, "article9"
 
         # MEDIUM: kombinationsfynd som passerar validering
         kombination_findings = [
@@ -420,16 +425,16 @@ class Aggregator:
         for kf in kombination_findings:
             # Hög-konfidens-bypass: Privacy by Design fail-safe (Beslut 21, GDPR art. 25)
             if kf.confidence >= self.high_confidence_bypass:
-                return SensitivityLevel.MEDIUM
+                return SensitivityLevel.MEDIUM, "bypass"
             # Mekanism 3: minimum evidence
             if self._passes_mechanism_3(kf, findings):
-                return SensitivityLevel.MEDIUM
+                return SensitivityLevel.MEDIUM, "mechanism3"
 
         # LOW: artikel 4-data hittad
         if any(f.category.value.startswith("article4.") for f in findings):
-            return SensitivityLevel.LOW
+            return SensitivityLevel.LOW, "low"
 
-        return SensitivityLevel.NONE
+        return SensitivityLevel.NONE, "none"
 
     def _passes_mechanism_3(
         self, kombination: Finding, all_findings: list[Finding]
@@ -484,7 +489,7 @@ Utvärderingen följer FEDS (Venable, Pries-Heje & Baskerville, 2016) med artifi
 - Precision = TP / (TP + FP). Sekundärt mätvärde. Överklassificering skapar ohanterlig administrativ börda.
 - F1 = 2 * (Precision * Recall) / (Precision + Recall). Kompletterande balanserat mått.
 
-**Aggregering:** Metriker rapporteras totalt, per GDPR-kategori, per lager och per regel (möjligt tack vare `Finding.source`).
+**Aggregering:** Metriker rapporteras totalt, per GDPR-kategori, per lager och per mekanism (möjligt tack vare `Finding.source` och `Classification.mechanism_used`).
 
 ### 9.3 Utvärderingsdatamodell
 
@@ -523,7 +528,7 @@ Märkt testdataset (LabeledText[])
     ConfusionMatrix: TP, FP, FN
          │
          ▼
-    Rapport: Recall, Precision, F1 (totalt + per kategori + per lager)
+    Rapport: Recall, Precision, F1 (totalt + per kategori + per lager + per mekanism)
 ```
 
 ### 9.5 Testdata

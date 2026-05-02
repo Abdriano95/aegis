@@ -9,12 +9,13 @@ F1), and a runner that ties it all together.
 from .confusion_matrix import ConfusionMatrix
 from .matcher import MatchResult, match
 from .metrics import f1, precision, recall
-from .report import Report, RunMetrics, print_report
+from .report import MechanismStats, Report, RunMetrics, print_report
 from .runner import run_evaluation
 
 __all__ = [
     "ConfusionMatrix",
     "MatchResult",
+    "MechanismStats",
     "Report",
     "RunMetrics",
     "f1",
