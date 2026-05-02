@@ -12,6 +12,7 @@ Run: python scripts/build_iteration2_pattern_ner_testdata.py
 Output: Validated JSON entries (printed to stdout) ready to insert into
         tests/data/iteration_1/test_dataset.json
 """
+
 import json
 import sys
 
@@ -27,6 +28,7 @@ ORGANISATION = "context.organisation"
 
 
 # --- Luhn check (PNR uses 10-digit form, cards use standard right-to-left) ---
+
 
 def luhn_pnr(digits_10: str) -> bool:
     """Luhn check for Swedish personnummer (10-digit form YYMMDDXXXX)."""
@@ -45,6 +47,8 @@ def luhn_pnr(digits_10: str) -> bool:
 def luhn_card(card_str: str) -> bool:
     """Standard Luhn check for payment card numbers (right-to-left)."""
     digits = [int(d) for d in card_str if d.isdigit()]
+    if not digits:
+        return False
     digits.reverse()
     total = 0
     for i, d in enumerate(digits):
@@ -58,14 +62,16 @@ def luhn_card(card_str: str) -> bool:
 
 def iban_mod97(iban_str: str) -> bool:
     """IBAN mod-97 check (ISO 13616)."""
-    iban = iban_str.replace(" ", "")
+    iban = iban_str.replace(" ", "").upper()
     rearranged = iban[4:] + iban[:4]
     numeric = ""
     for ch in rearranged:
         if ch.isdigit():
             numeric += ch
-        else:
+        elif "A" <= ch <= "Z":
             numeric += str(ord(ch) - ord("A") + 10)
+        else:
+            return False
     return int(numeric) % 97 == 1
 
 
@@ -244,20 +250,22 @@ def build_findings(text: str, span_category_pairs: list[tuple[str, str]]) -> lis
     search_from = 0
     for span, category in span_category_pairs:
         start = text.find(span, search_from)
-        assert start != -1, (
-            f"Span {span!r} not found in text (searching from {search_from}):\n{text!r}"
-        )
+        assert (
+            start != -1
+        ), f"Span {span!r} not found in text (searching from {search_from}):\n{text!r}"
         end = start + len(span)
         # Critical assertion: verify that slice matches span exactly
-        assert text[start:end] == span, (
-            f"Index mismatch: text[{start}:{end}]={text[start:end]!r} != {span!r}"
+        assert (
+            text[start:end] == span
+        ), f"Index mismatch: text[{start}:{end}]={text[start:end]!r} != {span!r}"
+        findings.append(
+            {
+                "category": category,
+                "start": start,
+                "end": end,
+                "text_span": span,
+            }
         )
-        findings.append({
-            "category": category,
-            "start": start,
-            "end": end,
-            "text_span": span,
-        })
         search_from = end
     return findings
 
@@ -273,21 +281,17 @@ def validate_checksums(entries: list[dict]) -> None:
                 # Extract 10-digit form for Luhn
                 digits = span.replace("-", "").replace("+", "")
                 digits_10 = digits[-10:]
-                assert luhn_pnr(digits_10), (
-                    f"Entry {i}: PNR {span!r} fails Luhn (10-digit: {digits_10})"
-                )
+                assert luhn_pnr(
+                    digits_10
+                ), f"Entry {i}: PNR {span!r} fails Luhn (10-digit: {digits_10})"
                 print(f"  ✓ PNR {span} Luhn OK")
 
             elif cat == IBAN:
-                assert iban_mod97(span), (
-                    f"Entry {i}: IBAN {span!r} fails mod-97"
-                )
+                assert iban_mod97(span), f"Entry {i}: IBAN {span!r} fails mod-97"
                 print(f"  ✓ IBAN {span} mod-97 OK")
 
             elif cat == BETALKORT:
-                assert luhn_card(span), (
-                    f"Entry {i}: Card {span!r} fails Luhn"
-                )
+                assert luhn_card(span), f"Entry {i}: Card {span!r} fails Luhn"
                 print(f"  ✓ Card {span} Luhn OK")
 
 
@@ -310,7 +314,9 @@ def main() -> None:
             }
             entries.append(entry)
             for f in findings:
-                print(f"  [{f['category']}] {f['start']}:{f['end']} = {f['text_span']!r}")
+                print(
+                    f"  [{f['category']}] {f['start']}:{f['end']} = {f['text_span']!r}"
+                )
         except AssertionError as e:
             print(f"  ✗ ASSERTION FAILED: {e}")
             errors += 1
@@ -333,20 +339,23 @@ def main() -> None:
 
     # Summary statistics
     categories_per_entry = [
-        len(set(f["category"] for f in e["expected_findings"]))
-        for e in entries
+        len(set(f["category"] for f in e["expected_findings"])) for e in entries
     ]
     multi_category = sum(1 for c in categories_per_entry if c >= 3)
     multiline = sum(1 for e in entries if "\n" in e["text"])
-    has_iban = sum(1 for e in entries if any(
-        f["category"] == IBAN for f in e["expected_findings"]
-    ))
-    has_card = sum(1 for e in entries if any(
-        f["category"] == BETALKORT for f in e["expected_findings"]
-    ))
-    has_pnr = sum(1 for e in entries if any(
-        f["category"] == PERSONNUMMER for f in e["expected_findings"]
-    ))
+    has_iban = sum(
+        1 for e in entries if any(f["category"] == IBAN for f in e["expected_findings"])
+    )
+    has_card = sum(
+        1
+        for e in entries
+        if any(f["category"] == BETALKORT for f in e["expected_findings"])
+    )
+    has_pnr = sum(
+        1
+        for e in entries
+        if any(f["category"] == PERSONNUMMER for f in e["expected_findings"])
+    )
     total_findings = sum(len(e["expected_findings"]) for e in entries)
 
     print(f"ALL {len(entries)} entries validated OK – 0 AssertionErrors")
