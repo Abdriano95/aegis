@@ -459,3 +459,25 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 
 **Beslut fattade:** Inga nya arkitekturbeslut i denna session. Guidens innehåll reflekterar redan dokumenterade Beslut 17, 18, 19, 20, 22.
 **Öppet/Nästa steg:** Delsteg 0 klart. #73 fortsätter med delsteg 1 (FAS A-genereringsskript) i separat session.
+
+### Session 2026-05-02 - Claude Code (claude-sonnet-4-6) - Issue `#73` (delsteg 1)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #73 (I-6) — Testdataset, pusselbitseffekt-texter: Delsteg 1 (FAS A-genereringsskript).
+
+**Ändrade filer:**
+- `scripts/generate_combination_candidates.py` - Nytt skript, FAS A-generering med sex prompt-funktioner per cell-och-regel-kombination (modellfamilje-asymmetri: gemma2:9b genererar).
+- `tests/unit/test_generate_combination_candidates.py` - Nya enhetstester (16 testfall) för guide-parser och aggregat-hjälpfunktioner.
+
+**Gjort:**
+- Implementerat sex separata prompt-funktioner: `create_prompt_cell1_rule_a`, `create_prompt_cell1_rule_b`, `create_prompt_cell1_rule_c`, `create_prompt_cell2_borderline`, `create_prompt_cell3_no_signals`, `create_prompt_cell4_signals_not_identifiable`. Varje prompt injicerar relevanta guidesektioner (tjock injektion).
+- Guide-parsern (`_extract_section`, `extract_guide_sections`, `extract_combination_rule`) kopierad och anpassad från `generate_article9_candidates.py` — `scripts/` är inte ett Python-paket, import undvikts. Teknisk skuld: refaktorering till `scripts/_guide_utils.py` i iteration 3.
+- Implementerat `compute_aggregate_span` som deterministiskt beräknar aggregat-spannet som `text[min(starts):max(ends)]`. Aggregat-fyndet saknar avsiktligt `specificity_level` — FAS B-granskaren verifierar specificitet på individuell signalnivå.
+- Cell 1-körningarna (Regel A, B, C) beräknar alltid aggregat vid ≥2 validerade fynd. Cell 2 beräknar aggregat via lättvikts-regelmotor (`_should_add_aggregate_cell2`) enbart om Regel A eller B formellt utlöses — beslutad i planfasen av användaren (automatisk beräkning). Cell 3 och 4 beräknar aldrig aggregat.
+- CLI-flaggor `--cell1-rule-a 4 --cell1-rule-b 3 --cell1-rule-c 3 --cell2 7 --cell3 6 --cell4 7`, default totalt 30 kandidater.
+- Metadata skrivs till `tests/data/iteration_2/.combination_candidates_metadata.json` med per-cell-och-regel-distribution och git-hash av guiden.
+- 116/116 enhetstester gröna (varav 16 nya), inga regressioner.
+- Skriptet inte exekverat — kräver Ollama-instans med gemma2:9b, hanteras manuellt av Abdulla.
+
+**Beslut fattade:** Cell 2 aggregat beräknas automatiskt per regelmotor (Regel A och B); granskaren tar bort om oenighet i FAS B. Beslut taget i planfas av användaren. Förs in i Loggboken.
+**Öppet/Nästa steg:** Skriptet körs manuellt på Abdullas maskin för att producera `combination_dataset_candidates.json`. FAS B-granskning startar därefter. Validerings-skript skrivs i delsteg 2.
