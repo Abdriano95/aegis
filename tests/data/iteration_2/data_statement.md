@@ -59,3 +59,62 @@ Efter granskning av de ursprungliga kandidaterna (FAS A1) kasserades dessa på g
   2. **Konsekvent med Beslut 17.** Beslut 17 (Loggbok iteration 2) fastställer lokal LLM som primär exekveringsmiljö för hela systemets utvärderingslager. Att applicera samma princip på testdatagenerering är konsekvent med arkitekturens grundvärden — inte en avvikelse från dem.
 
   3. **Eliminerad tredjelandsöverföring.** Lokal körning innebär att ingen data skickas till extern part. Eftersom inga verkliga personuppgifter förekommer i syntetisk data är detta inte ett juridiskt krav, men för forskningsmetodologisk renlighet är lokal exekvering att föredra.
+
+## 10. CombinationLayer-dataset (`combination_dataset.json`)
+
+Detta avsnitt dokumenterar pusselbitseffekt-datasetet som annoteras enligt `docs/combination_annotation_guidelines.md`. Det skapades inom Issue #73 och kompletterar artikel 9-datasetet (`article9_dataset.json`).
+
+### 10.1 Curation Rationale
+
+Datasetet konstruerades för att möjliggöra utvärdering av CombinationLayer (Lager 4) samt empirisk grund för kalibrering av aggregatorns kombinationströsklar (Beslut 20). Identifierbarhetsbedömning enligt GDPR skäl 26 är till sin natur gradvis snarare än binär, vilket motiverade en mer komplex datastruktur än artikel 9-datasetet. Datasetet täcker fyra strukturella celler: tydligt identifierbara kombinationer (Cell 1), gränsfall (Cell 2), negativa kontroller utan signaler (Cell 3), och negativa kontroller med signaler men utan identifierbarhet (Cell 4). Cell 4 testar specifikt D5-korrigeringen i Beslut 19.
+
+### 10.2 Language Variety
+
+Svenska, samma som artikel 9-datasetet. Samtliga texter är skrivna på modern svensk standardprosa. Dialekter, regionala uttryck eller historiska språkformer förekommer inte.
+
+### 10.3 Speaker Demographic
+
+Inte tillämpligt. Texterna är syntetiskt genererade och representerar fiktiva avsändare.
+
+### 10.4 Annotator Demographic
+
+Annoteringen utfördes av samma två examensarbetstuderande som för artikel 9-datasetet (sektion 4). Modersmålstalare av svenska, båda i sista terminen av Systemarkitektur med inriktning mot programutveckling vid Högskolan i Borås. Granskningen genomfördes oberoende av varandra med konsensusupplösning via annoteringsguiden.
+
+### 10.5 Speech Situation
+
+Inte tillämpligt. Skriftliga texter, inga inspelningar.
+
+### 10.6 Text Characteristics
+
+Datasetet består av 27 syntetiskt genererade svenska texter, fördelade enligt:
+
+- Cell 1 (tydligt identifierbara): 9 entries fördelade på Regel A (4), Regel B (3), Regel C (2)
+- Cell 2 (gränsfall): 5 entries
+- Cell 3 (inga signaler): 6 entries
+- Cell 4 (signaler men inte identifierande): 7 entries
+
+Texterna är 30-260 tecken långa och representerar arbetsplatskontexter (e-post, interna anteckningar, ärendeloggar). Totalt 46 individuella signaler (yrke 22, plats 14, organisation 10) plus 9 aggregat-fynd av typ `context.kombination`. Texternas innehåll är fiktivt; inga verkliga personer, händelser eller direkta personuppgifter förekommer.
+
+### 10.7 Recording Quality
+
+Inte tillämpligt. Datasetet innehåller enbart skriftlig text.
+
+### 10.8 Other
+
+**Kandidatgenerering (FAS A):**
+Den preliminära genereringen utfördes med språkteknologi enligt FAS A-mönstret etablerat i Issue #71. Modellfamilje-asymmetri tillämpades: `gemma2:9b` (Google DeepMind) genererade kandidater medan `qwen2.5:7b-instruct` (Alibaba) används som utvärderingsmodell vid CombinationLayer-evaluering. Detta reducerar cirkularitetsrisken som beskrivs i Pilán et al. (2022). Genereringsskriptet (`scripts/generate_combination_candidates.py`) läste annoteringsguiden med git-hash-spårbarhet och injicerade kategorispecifika sektioner per cell-och-regel-kombination. Sex separata genereringskörningar utfördes: Cell 1 Regel A, B, C; Cell 2 gränsfall; Cell 3 utan signaler; Cell 4 med signaler men inte identifierande.
+
+**Känd metodologisk begränsning (Cirkularitet i Cell 2):**
+Cell 2 (gränsfall) är där tröskelkalibreringen sker enligt Beslut 20. Eftersom samtliga celler genererades automatiskt utan manuell konstruktion, och både genererings- och utvärderingsmodellen har sett guidens regler i sina respektive inferenskontexter, finns en cirkularitetsrisk att kalibreringen sker mot LLM-tolkning av guidens regler snarare än oberoende fakta. Denna begränsning accepterades pragmatiskt eftersom examensarbetets bidrag inte är testdatageneringsmetodologi. Manuell konstruktion av Cell 2-gränsfall noteras som potentiell förbättring för iteration 3.
+
+**Schemaval och arkitektoniska begränsningar:**
+Datasetet följer schemat `allowed_signals = {yrke, plats, organisation}` enligt CombinationLayer:s implementation (Issue #72). Ålder identifierades under guidens utformning som potentiellt stark identifierare men sköts till iteration 3 för att inte bryta koordinationsregeln för `gdpr_classifier/core/`. Artikel 9-kategorier exkluderas från schemat eftersom de redan triggar sensitivity via Lager 3.
+
+**Aggregat-spans och narrativ specificitet:**
+Aggregat-fynd (`context.kombination`) följer mekanisk min/max-regel: `text[min(starts):max(ends)]` av individuella signaler. Detta innebär att Regel C-bedömningar vars identifierbarhet drivs av narrativ specificitet (tidsmarkörer, händelsereferenser, demografiska detaljer) får aggregat-spans avgränsade till individuella signal-positioner, även när den narrativa kontexten ligger utanför dessa positioner. Detta är ett medvetet val för att ground-truth ska matcha vad CombinationLayer faktiskt producerar. Den narrativa kontexten dokumenteras i varje entrys `description`-fält.
+
+**Granskningsprotokoll (FAS B):**
+60 ursprungliga kandidater togs ej fram — FAS A producerade 29 kandidater (1 droppad i Cell 1 Regel A på grund av text_span under 5 tecken). Annotörerna granskade alla 29 kandidater oberoende av varandra. Inter-rater agreement: 22/29 = 75,9% strikt enighet på beslutsnivå (Behåll/Justera/Stryk). Konsensusupplösning skedde via annoteringsguiden enligt sektion 8 i `docs/combination_annotation_guidelines.md`. Resultat: 25 entries behållna (varav 21 justerade), 4 strukna. Två manuellt kompletterande Regel C-entries genererades efter konsensus för att täcka cellens krav om narrativ specificitet — dessa konstruerades med direkt span-verifiering snarare än via genereringsskriptet, vilket noteras som avvikelse från primär genereringsmetod.
+
+**Begränsningar för utvärderingsanvändning:**
+Datasetet är litet (27 entries) jämfört med modern NLP-praxis och utvärderingen är därför formativ snarare än summativ. Resultaten ger indikation om CombinationLayer:s prestanda och underlag för tröskelkalibrering, men inte statistiskt robusta mått. Detta är konsistent med examensarbetets DSR-positionering där datasetet är instrument för designkunskap, inte slutgiltig benchmark. Iteration 3 förväntas utvidga datasetet baserat på iteration 2:s utvärderingsutfall.

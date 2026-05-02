@@ -1,0 +1,576 @@
+[
+  {
+    "text": "Förslagsgruppen bestod av VD för Hvitfeldtska gymnasiets musiklinje och professor emeritus vid Göteborgs universitet.",
+    "description": "Regel A triggas eftersom vi har två signaler med hög specificitet: 'VD för Hvitfeldtska gymnasiets musiklinje' (yrke hög + organisation hög).",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "VD för Hvitfeldtska gymnasiets",
+        "start": 26,
+        "end": 56,
+        "specificity_level": "hög"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "Hvitfeldtska gymnasiets musiklinje",
+        "start": 33,
+        "end": 67,
+        "specificity_level": "hög"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "VD för Hvitfeldtska gymnasiets musiklinje",
+        "start": 26,
+        "end": 67,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "Rektor på Hvitfeldtska gymnasiets musiklinje har bett mig att kontakta läkare i Göteborg om akut tandvård för hennes dotter.",
+    "description": "Regel A triggas: 'rektor på Hvitfeldtska' (yrke hög specificitet) + 'musiklinje' (organisation hög specificitet).",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "Rektor",
+        "start": 0,
+        "end": 6,
+        "specificity_level": "hög"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "musiklinje",
+        "start": 34,
+        "end": 44,
+        "specificity_level": "hög"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "Rektor på Hvitfeldtska gymnasiets musiklinje",
+        "start": 0,
+        "end": 44,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "Professor Lars Eriksson, rektor på Hvitfeldtska gymnasiets musiklinje, meddelade personalen att de förväntade sig ett ökat antal elever.",
+    "description": "Regel A triggas då 'reaktor på Hvitfeldtska gymnasiets musiklinje' (organisation hög + yrke hög specificitet) gör kombinationen identifierande.",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "text_span": "Hvitfeldtska gymnasiets musiklinje",
+        "start": 35,
+        "end": 69,
+        "specificity_level": "hög"
+      },
+      {
+        "category": "context.yrke",
+        "text_span": "rektor",
+        "start": 25,
+        "end": 31,
+        "specificity_level": "hög"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "rektor på Hvitfeldtska gymnasiets musiklinje",
+        "start": 25,
+        "end": 69,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "En legitimerad tandläkare vid Västra Götalandsregionens tandvårdscenter i Borås har rapporterat ett misstänkt fall av bakterielinfektion.",
+    "description": "Regel B triggas eftersom vi har tre signaler med minst mellan specificitet. Yrke (tandläkare), plats (Västra Götalandsregionens tandvårdscenter i Borås) och organisation (Västra Götalandsregionens tandvårdscenter) uppfyller kraven.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "tandläkare",
+        "start": 15,
+        "end": 25,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Västra Götalandsregionens tandvårdscenter i Borås",
+        "start": 30,
+        "end": 79,
+        "specificity_level": "hög"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "Västra Götalandsregionens tandvårdscenter",
+        "start": 30,
+        "end": 71,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "tandläkare vid Västra Götalandsregionens tandvårdscenter i Borås",
+        "start": 15,
+        "end": 79,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "Sjuksköterskan på intensivvården vid Sahlgrenska Universitetssjukhuset i Göteborg tog emot patienten från Hallands sjukhus.",
+    "description": "Kombination av tre signaler med minst mellan specificitet triggar Regel B. Yrke (sjuksköterskan), plats (Sahlgrenska, Göteborg) och organisation (intensivvården vid Sahlgrenska Universitetssjukhuset) är alla specifika.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "Sjuksköterskan",
+        "start": 0,
+        "end": 14,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Sahlgrenska",
+        "start": 37,
+        "end": 48,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "intensivvården vid Sahlgrenska Universitetssjukhuset",
+        "start": 18,
+        "end": 70,
+        "specificity_level": "hög"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "Sjuksköterskan på intensivvården vid Sahlgrenska Universitetssjukhuset",
+        "start": 0,
+        "end": 70,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "Förläggaren för den nya elbilen, Volvo Cars, har etablerat ett produktionscenter i Trollhättan. De anställda där arbetar som montörer och mekaniker med hög specialisering inom elbilsteknik.",
+    "description": "Regel B triggas. Tre signaler - 'montörer', 'Trollhättan' och 'Volvo Cars' - alla har minst mellan specificitet, varav 'montörer' är mellan och 'Volvo Cars' är mellan.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "montörer",
+        "start": 125,
+        "end": 133,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Trollhättan",
+        "start": 83,
+        "end": 94,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "Volvo Cars",
+        "start": 33,
+        "end": 43,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "Volvo Cars, har etablerat ett produktionscenter i Trollhättan. De anställda där arbetar som montörer",
+        "start": 33,
+        "end": 133,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "Den nya IT-säkerhetskonsulten som anställs efter den stora datalekkaget i höstas är mycket uppskattad av personalen på kontoret.",
+    "description": "Texten triggar Regel C. Den innehåller två signaler med minst mellan specificitet (yrke och organisation) samt en händelsereferens ('den stora datalekkaget') som ger narrativ specificitet (hög).",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "IT-säkerhetskonsulten",
+        "start": 8,
+        "end": 29,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "kontoret",
+        "start": 119,
+        "end": 127,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "IT-säkerhetskonsulten som anställs efter den stora datalekkaget i höstas är mycket uppskattad av personalen på kontoret",
+        "start": 8,
+        "end": 127,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "Förstärkningen som kom från huvudkontoret efter coronapausen fick en plats på den tekniska avdelningen i Halmstad. Han började direkt med att implementera det nya system för datahantering, vilket ska göra arbetet mer effektivt.",
+    "description": "Texten triggar REGEL C eftersom den har minst två signaler med minst mellan specificitet (yrke: 'förstärkningen', plats: 'Halmstad') och narrativ specificitet är hög (händelsereferens: 'kom från huvudkontoret efter coronapausen').",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "Förstärkningen",
+        "start": 0,
+        "end": 14,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Halmstad",
+        "start": 105,
+        "end": 113,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "Förstärkningen som kom från huvudkontoret efter coronapausen fick en plats på den tekniska avdelningen i Halmstad",
+        "start": 0,
+        "end": 113,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "Det nya lagret på industrivägen öppnar i morgon och de första anställda börjar sin utbildning. Den ansvariga förlogistikstrategen, som flyttat hit från huvudkontoret i Stockholm, har gett tydliga instruktioner om hur man ska hantera den höga arbetsbelastningen.",
+    "description": "Regel C triggas eftersom texten innehåller minst två signaler med mellan specificitet (yrke och organisation) samt en signal med hög narrativ specificitet (händelsereferens - 'öppnar i morgon', 'börjar sin utbildning').",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "logistikstrategen",
+        "start": 112,
+        "end": 129,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "huvudkontoret i Stockholm",
+        "start": 152,
+        "end": 177,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.kombination",
+        "text_span": "logistikstrategen, som flyttat hit från huvudkontoret i Stockholm",
+        "start": 112,
+        "end": 177,
+        "is_identifiable": true
+      }
+    ]
+  },
+  {
+    "text": "Under mötesdagen diskuterade projektledaren och den ekonomiska experten från huvudkontoret om de nya budgetplanerna för deras gemensamma projekt i Uppsala.",
+    "description": "gränsfall: två mellan-signaler, faller under Regel D men nära Regel B",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "projektledaren",
+        "start": 29,
+        "end": 43,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.yrke",
+        "text_span": "ekonomiska experten",
+        "start": 52,
+        "end": 71,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "Han jobbade som projektledare på den kommunala vårdcentralen i Karlskrona under 2022. Han var inte nöjd med sin lön och började leta efter nya möjligheter.",
+    "description": "gränsfall: två mellan-signaler, faller under Regel D men nära Regel B",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "projektledare",
+        "start": 16,
+        "end": 29,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "kommunala vårdcentralen",
+        "start": 37,
+        "end": 60,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "Lagledningen på konferensen diskuterade vikten av att anställa fler medarbetare med erfarenhet inom dataanalys och digital marknadsföring för att möta framtidens utmaningar.",
+    "description": "Gränsfall: Två mellan-signaler ('medarbetare' + 'erfarenhet'), faller under Regel D men nära Regel B. ",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "medarbetare",
+        "start": 68,
+        "end": 79,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "Lagledningen",
+        "start": 0,
+        "end": 12,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "Det var flera anställda som uttryckte oro över den nya strukturen på kontoret i Göteborg. Samtliga rapporterade att de kände sig mindre trygga med den decentraliserade organisationen och framförallt bristen på tydlig kommunikation från ledningen.",
+    "description": "gränsfall: två mellan-signaler, faller under Regel D men nära Regel B - 'anställda' (mellan) + 'ledning' (mellan) är i sig inte tillräckligt för Regel B, saknar den tredje signalen",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "anställda",
+        "start": 14,
+        "end": 23,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "ledning",
+        "start": 236,
+        "end": 243,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "På mötet diskuterade vi med den nya ekonomichefen hur projektet skulle drivas framåt. Han har tidigare arbetat som konsult inom IT-sektorn, men är nu ansvarig för vår avdelning här på fabriken i Borås.",
+    "description": "gränsfall: två mellan-signaler (yrke och organisation), faller under Regel D men nära Regel B då 'fabriken' ger viss kontextuell specificitet",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "ekonomichef",
+        "start": 36,
+        "end": 47,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "fabriken i Borås",
+        "start": 184,
+        "end": 200,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "Det var en anställd på receptionen som berättade att de nya systemen för bokning av mötesrum skulle bli tillgängliga i höst. Hon nämnde också att personalen på IT-avdelningen jobbade hårt med det, men att det fortfarande var lite oklart när exakt de skulle vara färdiga.",
+    "description": "gränsfall: två mellan-signaler (yrke och organisation), faller under Regel D men nära Regel B. Ingen signal är hög specificitet.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "anställd",
+        "start": 11,
+        "end": 19,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.organisation",
+        "text_span": "IT-avdelningen",
+        "start": 160,
+        "end": 174,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "Avdelningschefen på vårdcentralen i Karlskoga diskuterade med den nya sjuksköterskan om patientflödet.",
+    "description": "gränsfall: två mellan-signaler, faller under Regel D men nära Regel B",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "Avdelningschefen",
+        "start": 0,
+        "end": 16,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.yrke",
+        "text_span": "sjuksköterskan",
+        "start": 70,
+        "end": 84,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "Den automatiserade processen aktiverades klockan 14.37. En loggsändning registrerades med kodnamn 'Fjärilsdans'. Det följande skedet, 'Stjärnfall', väntas inledas inom de närmaste fem minuterna.",
+    "description": "Cell 3 negativ kontroll: inga signaler",
+    "expected_findings": []
+  },
+  {
+    "text": "Systemet registrerar automatiskt alla förändringar i databasen. Varje uppdatering sparas med en timestamp för fullständig historik.",
+    "description": "Cell 3 negativ kontroll: inga signaler",
+    "expected_findings": []
+  },
+  {
+    "text": "Protokollen för uppdatering av databasen kommer att ske vid två tillfällen per dag. Första gången sker klockan 07:00 och den andra klockan 15:00. Under perioden mellan dessa uppdateringar kan det uppstå små variationer i informationen.",
+    "description": "Cell 3 negativ kontroll: inga signaler",
+    "expected_findings": []
+  },
+  {
+    "text": "En ny regel för hantering av digitala filer implementeras den 15 november. Det innebär att alla dokument ska sparas i en centraliserad plats med automatiskt numreringssystem.",
+    "description": "Cell 3 negativ kontroll: inga signaler",
+    "expected_findings": []
+  },
+  {
+    "text": "Automatiserad processen genomfördes enligt schema. Dataanalysen visade en ökning i volym under perioden, vilket påverkade systemhastigheten. Vidare utvärderades algoritmen för att minska energiförbrukning.",
+    "description": "Cell 3 negativ kontroll: inga signaler",
+    "expected_findings": []
+  },
+  {
+    "text": "Enligt protokoll från den senaste iterationen ska den optimerade modellen gå igenom en komplex serie testfall. Syftet är att säkerställa att algoritmen hanterar olika scenarier korrekt och utan fel.",
+    "description": "Cell 3 negativ kontroll: inga signaler",
+    "expected_findings": []
+  },
+  {
+    "text": "Att jobba som försäljningskonsult i Malmö kan vara utmanande, men också väldigt givande. Det är viktigt att ha god kundservice och ett starkt nätverk för att lyckas.",
+    "description": "Regel D - Kombi av lågspecifika yrke (försäljningskonsult) och plats (Malmö) som inte identifierar enskild person. ",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "försäljningskonsult",
+        "start": 14,
+        "end": 33,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Malmö",
+        "start": 36,
+        "end": 41,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "På mötet diskuterade vi behovet av fler lärare inom den digitala utbildningen i Stockholm.",
+    "description": "Texten innehåller två signaler, 'lärare' och 'Stockholm', som är lågspecifika. Kombinationen faller under Regel D eftersom det inte finns någon identifierbar person eller enhet.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "lärare",
+        "start": 40,
+        "end": 46,
+        "specificity_level": "låg"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Stockholm",
+        "start": 80,
+        "end": 89,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "Förra veckan deltog många lärare från Stockholm i konferensen om digitalisering inom skolan.",
+    "description": "Texten innehåller två signaler: 'lärare' och 'Stockholm'. Kombinationen faller under Regel D eftersom både yrket och platsen är lågspecifika. ",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "lärare",
+        "start": 26,
+        "end": 32,
+        "specificity_level": "låg"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Stockholm",
+        "start": 38,
+        "end": 47,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "På mötet diskuterade vi hur många anställda som arbetade på kontoret i Stockholm.",
+    "description": "Regel D triggas då signalen 'anställda' är lågspecificitet och 'Stockholm' är lågspecificitet. Kombinationen är inte identifierande.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "anställda",
+        "start": 34,
+        "end": 43,
+        "specificity_level": "låg"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Stockholm",
+        "start": 71,
+        "end": 80,
+        "specificity_level": "låg"
+      }
+    ]
+  },
+  {
+    "text": "Det är alltid roligt att träffa nya kollegor på konferenser. I år var många från banksektorn i Stockholm.",
+    "description": "Texten innehåller två signaler, 'banksektor' som yrke och 'Stockholm' som plats. Båda faller under låg specificitet och kombinerat är de inte identifierande enligt Regel D.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "banksektorn",
+        "start": 81,
+        "end": 92,
+        "specificity_level": "låg"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Stockholm",
+        "start": 95,
+        "end": 104,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "Vi har fått många ansökningar om tjänster som ekonomichef i Malmö, men det var svårt att hitta rätt profil.",
+    "description": "Triggerar Regel D: Kombinationen 'ekonomichef' och 'Malmö' är lågspecifika signaler. Teksten faller under Regel D eftersom det inte finns någon direkt identifiering eller information som kan kombineras till en unik individ.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "ekonomichef",
+        "start": 46,
+        "end": 57,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "Malmö",
+        "start": 60,
+        "end": 65,
+        "specificity_level": "mellan"
+      }
+    ]
+  },
+  {
+    "text": "De nya anställda inom försäljningsavdelningen fick sig ett välkomnande möte i förra veckan. Bland annat fick de träffa den lokala HR-chefen som berättade om företagets vision och värderingar.",
+    "description": "Texten innehåller två lågspecifika signaler: 'HR-chef' (yrke) och 'lokala' (plats). Kombinationen är inte identifierande då det saknas specifika detaljer som skulle göra signalerna unika för en individa.",
+    "expected_findings": [
+      {
+        "category": "context.yrke",
+        "text_span": "HR-chef",
+        "start": 130,
+        "end": 137,
+        "specificity_level": "mellan"
+      },
+      {
+        "category": "context.plats",
+        "text_span": "lokala",
+        "start": 123,
+        "end": 129,
+        "specificity_level": "låg"
+      }
+    ]
+  }
+]
