@@ -93,7 +93,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #74 (I-7) | Aggregator med kombinationslogik och D5-korrigering | ⬜ Ej startad | #70, #72 | - |
+| #74 (I-7) | Aggregator med kombinationslogik och D5-korrigering | ✅ Klar | #70, #72 | 2026-05-02 |
 | #75 (I-8) | Utvärderingsmodul-utökning för Lager 3 och 4 | ⬜ Ej startad | #74 | - |
 
 ### Kluster 5: Edge cases & Testdata
@@ -462,3 +462,27 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 
 **Beslut fattade:** Valideringsskriptet skrevs med inbyggd validering för både Luhn- och mod-97-algoritmerna för att säkerställa hög datakvalitet i syntetiska personuppgifter, samt för att strikt skydda mot offset-fel, vilket bygger vidare på erfarenheter från iteration 1.
 **Öppet/Nästa steg:** #77 är nu klart. Nästa naturliga steg är #74 (Aggregator med kombinationslogik och D5-korrigering) och #73 (Testdataset, pusselbitseffekt-texter).
+
+### Session 2026-05-02 - Claude Code (Sonnet 4.6) - Issue `#74`
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #74 (I-7) — Aggregator med kombinationslogik och D5-korrigering: implementera `__init__` med konfigurerbara trösklar, `_determine_sensitivity()` med full iteration 2-logik, och `_passes_mechanism_3()`.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — Ny `__init__` med `medium_threshold=0.7`, `high_confidence_bypass=0.85`, `min_evidence_count=2`; `_determine_sensitivity()` omskriven med HIGH/MEDIUM/LOW/NONE-logik och D5-korrigering; ny `_passes_mechanism_3()` som räknar överlappande Lager 1/2-fynd mot kombination-fyndets span
+- `tests/unit/test_aggregator_combination.py` — Ny fil, 9 enhetstester
+- `docs/arkitektur.md` — §8 Mekanism 1-beskrivning korrigerad: span-validering är lagrens ansvar, aggregatorn utför ingen egen span-kontroll
+- `docs/iteration_2_implementation.md` — Status #74 uppdaterad till ✅ Klar
+
+**Gjort:**
+- Uppdaterade #74-status till 🔄 Pågår som första åtgärd
+- Implementerade `__init__` med tre konfigurerbara trösklar (Beslut 20)
+- Implementerade `_determine_sensitivity()`: HIGH (article9.*), MEDIUM (context.kombination + bypass eller Mekanism 3), LOW (article4.*), NONE (inga fynd)
+- D5-korrigering uppnås automatiskt: isolerade context.*-fynd matchas aldrig i kombination_candidates
+- Implementerade `_passes_mechanism_3()`: eftersom CombinationLayer inte exponerar sub-spans i kombination-fyndet (metadata har bara reasoning och validation_path) räknar metoden antalet Lager 1/2-fynd (source börjar på "pattern." eller "entity.") vars span överlappar kombination-fyndets totala span
+- Skapade 9 enhetstester: article9→HIGH, bypass→MEDIUM, Mekanism 3 med tillräcklig evidens→MEDIUM, Mekanism 3 med otillräcklig evidens→LOW, isolerat context-fynd→NONE, article4→LOW, inga fynd→NONE, HIGH trumfar MEDIUM, context+article4→LOW (D5 varken sänker eller höjer)
+- Korrigerade SSOT §8 Mekanism 1-mening (span-validering är lagrens ansvar)
+- 73/73 tester gröna, inga regressioner (3 pre-existing import-fel pga saknad pyyaml-modul, opåverkade)
+
+**Beslut fattade:** `_passes_mechanism_3()` implementeras mot kombination-fyndets totala span istället för sub-spans eftersom CombinationLayer inte exponerar sub-spans i Finding-objektet — individuella signaler finns som separata Finding-objekt i listan. Designvalet är i linje med SRP: aggregatorn bedömer mekaniskt, CombinationLayer ansvarar för span-validering (Mekanism 1).
+**Öppet/Nästa steg:** #74 redo för granskning och commit. Nästa steg är #75 (Utvärderingsmodul-utökning för Lager 3 och 4).

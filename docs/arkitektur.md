@@ -456,7 +456,7 @@ Regeln appliceras *före* `_find_overlaps` och `_determine_sensitivity` så att 
 
 Slutgiltig kalibrering av trösklarna sker baserat på iteration 2:s kvantitativa utvärdering (Issue #75 / I-8).
 
-**Mekanism 1 (span-validering):** Delegeras till Lager 4 (CombinationLayer) som producerar `context.kombination`-fynd med valida span-positioner. Aggregatorn kan verifiera span-integriteten vid behov utan att re-implementera logiken.
+**Mekanism 1 (span-validering):** Span-validering är lagrens ansvar. CombinationLayer producerar `context.kombination`-fynd med valida span-positioner; Article9Layer gör detsamma för `article9.*`-fynd. Aggregatorn utför ingen egen span-kontroll och tar inte emot originaltexten som parameter.
 
 **D5-korrigering:** Isolerade `context.*`-fynd — alltså individuella signaler från Lager 4 utan ett matchande `context.kombination`-fynd — triggar inte sensitivity-höjning. Motivering: en enskild kontextsignal ökar inte identifieringsrisken utan kombination med andra signaler (Beslut 11, Loggbok iteration 1; Beslut 19, Loggbok iteration 2). Isolerade `context.*`-fynd bevaras i `Classification.findings` för spårbarhet men påverkar inte `sensitivity`.
 
