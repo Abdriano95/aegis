@@ -606,3 +606,46 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 
 **Beslut fattade:** `mechanism_used` implementeras som fält på `Classification` med default `None`, snarare än som separat returvärde från aggregatorn — beslut förs in i Loggboken (iteration 2). `_determine_sensitivity()` ändrades att returnera `tuple[SensitivityLevel, str]` som följdverkan av detta. `None`-värdet räknas som "none" i runner för bakåtkompatibilitet med pipelines som inte använder Aggregator.
 **Öppet/Nästa steg:** #75 redo för granskning och commit. Kluster 4 komplett (#74 ✅, #75 ✅). Nästa steg är Kluster 6 (#79 Layer-protokollets utbytbarhet, #80 Demo-uppdatering) samt #73 (testdataset pusselbitseffekt).
+
+### Session 2026-05-02 - Claude Code (Sonnet 4.6) — Issue #75 (komplettering)
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Slutgiltig evalueringskörning mot komplett iteration 2-dataset, kompletterar #75 efter att #73 mergeats.
+**Ändrade filer:**
+- `run_evaluation.py` — Pipeline uppgraderad från `ContextLayer`-stub till `Article9Layer` + `CombinationLayer` (qwen2.5:7b-instruct via OllamaProvider); dataset utökad till att ladda alla tre datasources och konkatenera dem
+
+**Gjort:**
+- Ersatte `ContextLayer()` (stub, returnerar alltid tom lista) med `Article9Layer(provider)` och `CombinationLayer(provider)` i pipeline-konfigurationen
+- Lade till `get_llm_provider("qwen2.5:7b-instruct")` för Ollama-integration (modellval baserat på probe-resultat, Session 2026-05-01)
+- Utökade `load_dataset`-anropen till att konkatenera `iteration_1/test_dataset.json` + `iteration_2/article9_dataset.json` + `iteration_2/combination_dataset.json`
+- Körde fullständig utvärdering mot 159 texter (80 iteration 1 + 52 artikel 9 + 27 kombination)
+
+**Resultat (baslinje, qwen2.5:7b-instruct):**
+- Total: TP=206, FP=272, FN=27 — Precision 43.10%, Recall 88.41%, F1 57.95%
+- Per Mechanism: HIGH via Article 9=40, MEDIUM via bypass=11, MEDIUM via mechanism3=0, LOW=82, NONE=26
+- Mönster/IBAN/email/betalkort/personnummer/telefon: precision 100% (pattern-lagret är opåverkat)
+- Huvudsakliga FP-källor: `article4.namn` (NER flaggar namn i texter utan namn-annotation, 106 FP), `context.organisation`/`context.yrke` (CombinationLayer är liberal, ~27–29% precision)
+- Huvudsakliga FN: `article9.sexuell_laggning` (recall 17%) och `article9.genetisk_data` (recall 43%) — LLM:n missar indirekta formuleringar
+- `article9` (lager): precision 70%, `context` (lager): precision 37%, `entity` (lager): precision 23%
+- Mekanism 3 triggar aldrig (mechanism3=0): alla MEDIUM-klassificeringar passerar hög-konfidens-bypass
+
+**Beslut fattade:** Inga nya designbeslut. Resultaten utgör baslinje för tröskelkalibrering och promptförbättring i iteration 3 enligt Beslut 20.
+
+**Öppet/Nästa steg:** #75 formellt avslutat. Observationerna kring `article9`-recall, `context`-precision och Mekanism 3-tystnad förs in i iteration 2:s utvärderingsanalys som råmaterial för iteration 3. Svagaste punkter att adressera: `sexuell_laggning`-recall, `genetisk_data`-recall, `context`-precision. Mekanism 3-tystnad bör undersökas — trolig orsak är att bypass-tröskeln (0.85) träder in innan Mekanism 3 hinner utvärderas.
+
+---
+
+### Session 2026-05-02 - Claude Code (Sonnet 4.6) — Issue #94 (retroaktiv defektfix på #72)
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Defektfix i `CombinationLayer`: okända signaltyper och signalobjekt med saknade fält ska loggas och hoppas över istället för att kasta undantag.
+**Ändrade filer:**
+- `gdpr_classifier/layers/combination/combination_layer.py` — Två robusthetsfixar: okända signaltyper (t.ex. "person") loggas och hoppas nu över istället för att kasta `CombinationLayerError`; signalobjekt med saknade obligatoriska fält loggas och hoppas nu över istället för att kasta undantag
+
+**Gjort:**
+- Defekten upptäcktes under #75:s slutgiltiga evalueringskörning
+- Diagnostiserade och fixade `CombinationLayerError: Invalid signal type: person` — LLM:n hallucinerar ibland signaltypen "person" som inte finns i `allowed_signals = {"yrke", "plats", "organisation"}`
+- Diagnostiserade och fixade `CombinationLayerError: Individual signal missing required fields` — LLM:n returnerar ibland ofullständiga signalobjekt
+- Hanteringen aligneras med befintlig hallucinationshantering för `text_span`
+
+**Beslut fattade:** Logga och hoppa över hallucinerade eller ofullständiga signaler snarare än att kasta undantag och avbryta klassificeringen. Beslut förs in i Loggboken (iteration 2).
+
+**Öppet/Nästa steg:** Fix klar. Issuet skapades retroaktivt efter att fixen implementerats under #75-körningen, vilket dokumenteras i denna logg.
