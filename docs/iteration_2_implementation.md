@@ -87,7 +87,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
 | #72 (I-5) | CombinationLayer | ✅ Klar | #69, #78 | 2026-05-01 |
-| #73 (I-6) | Testdataset, pusselbitseffekt-texter | 🔄 Pågår | - | 2026-05-02 |
+| #73 (I-6) | Testdataset, pusselbitseffekt-texter | ✅ Klar |  | 2026-05-02 |
 
 ### Kluster 4: Aggregator & Evaluation
 
@@ -504,3 +504,30 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 
 **Beslut fattade:** Inga nya arkitekturbeslut. Strikt konsistensvalidering (Alternativ A) beslutad i arkitekt-session.
 **Öppet/Nästa steg:** Skriptet körs manuellt mot `combination_dataset_candidates.json` när FAS A-skriptet har producerat kandidatfilen. Därefter FAS B (manuell granskning av Abdulla och Johanna).
+
+### Session 2026-05-02 - Manuell (Abdulla Mehdi och Johanna Gull) - Issue `#73` (delsteg 3 + 4)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #73 (I-6) — Testdataset, pusselbitseffekt-texter: FAS A-exekvering, FAS B-granskning, manuell komplettering, slutdataset, data statement.
+
+**Ändrade filer:**
+- `tests/data/iteration_2/combination_dataset_candidates.json` - FAS A-kandidatfil, 29 entries genererade via gemma2:9b
+- `tests/data/iteration_2/.combination_candidates_metadata.json` - Metadata med modell, temperatur, guideline-hash, fördelning
+- `tests/data/iteration_2/combination_dataset.json` - Slutdataset efter FAS B-konsensus, 27 entries
+- `docs/combination_review_consensus.md` - Konsensusbeslut entry-för-entry från oberoende granskning
+- `tests/data/iteration_2/data_statement.md` - Utökad med sektion 10 för CombinationLayer-datasetet
+- `docs/iteration_2_implementation.md` - Status #73 uppdaterad till ✅ Klar
+
+**Gjort:**
+- Körde FAS A-genereringsskriptet mot gemma2:9b lokalt på Abdullas maskin. 29 kandidater producerades, 1 droppad (Cell 1 Regel A: text_span under 5 tecken). Validatorn passerade 29/29 entries.
+- Genomförde oberoende FAS B-granskning av båda annotörerna mot kandidatfilen. Inter-rater agreement: 22/29 = 75,9% strikt enighet. Avvikelser koncentrerade till Cell 1 där 4 av 5 divergenser handlade om Justera vs Stryk (Abdulla mer benägen att rädda entries via justering, Johanna mer benägen att stryka). Konsensus löstes via guiden utan subjektiv kompromiss.
+- Konsensusbeslut: 25 entries behållna (varav 21 justerade), 4 strukna (entries 7, 8, 13, 29). Vanligaste annoteringsfelet i FAS A var att storstäder klassificerats som "mellan" specificitet trots att guidens 4.2 explicit listar Stockholm/Göteborg/Malmö som låg specificitet (storstadsområden över 200 000 invånare). Andra återkommande fel: felaktiga organisationsspann i entries 1-3 (musiklinje vs Hvitfeldtska gymnasiet), saknade plats- och organisationssignaler i entries 11 och 16, "banksektorn" felaktigt klassat som yrke i entry 27.
+- Cell 1 Regel C tappade 2 av 3 entries efter strykningar (endast entry 9 kvar) och kvarvarande entry omklassades till Cell 2 efter att organisation tagits bort. Genererade 2 manuellt kompletterande Regel C-entries med direkt span-verifiering — båda triggar Regel C via två signaler med minst mellan specificitet plus hög narrativ specificitet (tidsmarkör, händelsereferens, demografisk detalj).
+- Slutfördelning: Cell 1 Regel A (4), Regel B (3), Regel C (2); Cell 2 (5); Cell 3 (6); Cell 4 (7). Totalt 27 entries inom 25-35-intervallet.
+- Validerade slutdatasetet via `scripts/validate_combination_dataset.py`. Aggregat-konsistensregeln (Mekanism A: aggregat.start = min(starts), aggregat.end = max(ends)) nödvändiggjorde justering av Regel C-aggregatens spans så att narrativ kontext faller utanför aggregat-spannet. Detta är konsistent med vad CombinationLayer producerar enligt #72.
+- 27/27 texter schema-giltiga, 0 fel, 0 varningar. 55 totala fynd: 46 individuella (yrke 22, plats 14, organisation 10) plus 9 aggregat.
+- Data statement utökad med sektion 10 enligt Bender & Friedman (2018) struktur, inklusive cirkularitetsdiskussion och dokumentation av aggregat-spans-konvention.
+
+**Beslut fattade:** Aggregat-spans följer mekanisk min/max-regel även för Regel C där narrativ specificitet ligger utanför signal-positionerna. Detta säkerställer att ground-truth matchar vad lagret producerar. Två manuella Regel C-entries genererades utanför genereringsskriptet eftersom underrepresenterad cell efter strykningar krävde direkt komplettering. Beslut förs in i Loggboken (Beslut 27 eller motsvarande nästa nummer).
+
+**Öppet/Nästa steg:** Issue #73 stängs när commit är klar. Kluster 3 är komplett (#72 och #73 båda klara). Kluster 4 (#74 Aggregator med kombinationslogik och D5-korrigering, #75 Utvärderingsmodul-utökning) är fullt avblockerat och kan påbörjas. Känd begränsning: tröskelkalibreringens cirkularitet eftersom samtliga celler är LLM-genererade — manuell konstruktion av Cell 2-gränsfall flaggas som potentiell förbättring för iteration 3. Aggregat-spans-konventionen för Regel C dokumenterad i data statement.
