@@ -29,6 +29,9 @@ class Category(str, Enum):
 
     # Kontextsignaler: inte art 4-data i sig, bidrar till klassificering i kombination
     ORGANISATION = "context.organisation"
+    YRKE = "context.yrke"
+    PLATS = "context.plats"
+    KOMBINATION = "context.kombination"
 
     # Kontextuellt känsligt data
     KONTEXTUELLT_KANSLIG = "context.identifierbar"

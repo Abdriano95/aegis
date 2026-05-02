@@ -86,7 +86,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #72 (I-5) | CombinationLayer | ⬜ Ej startad | #69, #78 | - |
+| #72 (I-5) | CombinationLayer | ✅ Klar | #69, #78 | 2026-05-01 |
 | #73 (I-6) | Testdataset, pusselbitseffekt-texter | ⬜ Ej startad | - | - |
 
 ### Kluster 4: Aggregator & Evaluation
@@ -100,7 +100,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #76 (I-9) | Containment-regel för IBAN-telefon-överlapp | ⬜ Ej startad | #68 | - |
+| #76 (I-9) | Containment-regel för IBAN-telefon-överlapp | ✅ Klar | #68 | 2026-05-02 |
 | #77 (I-10) | Testdataset-utökning, längre texter med pattern och NER | ⬜ Ej startad | - | - |
 
 ### Kluster 6: Utbytbarhet & Demo
@@ -163,7 +163,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 ### Poster
 
 <!-- Kommande sessionsposter läggs till här i kronologisk ordning. -->
-### Session 2026-04-30 - Claude Code (Sonnet 4.5)
+### Session 2026-04-30 - Claude Code (Sonnet 4.5) - Issue `#68`
 
 **Iteration:** 2 / v0.2.0-dev
 **Mål:** Issue #68 (I-1) — SSOT-revidering för iteration 2.
@@ -181,9 +181,9 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Notering om saknad GENETISK_DATA-enum-kategori (hanteras i Issue #70)
 
 **Beslut fattade:** Sektion 10 inkluderades utöver acceptanskriterier för att undvika drift mellan filstruktur-dokumentation och nya lagerkataloger.
-**Öppet/Nästa steg:** Commit efter granskning. GENETISK_DATA-tillägg till Category-enum hanteras i Issue #70 (alternativ a, b eller c att bestämma vid issue-öppning).
+**Öppet/ Nästa steg:** Commit efter granskning. GENETISK_DATA-tillägg till Category-enum hanteras i Issue #70 (alternativ a, b eller c att bestämma vid issue-öppning).
 
-### Session 2026-04-30 - Claude Code (Sonnet 4.6)
+### Session 2026-04-30 - Claude Code (Sonnet 4.6) - Issue `#69`
 
 **Iteration:** 2 / v0.2.0-dev
 **Mål:** Issue #69 (I-2) — LLMProvider-abstraktion: skapa utbytbar provider-abstraktion för Ollama och Gemini.
@@ -208,9 +208,9 @@ Lägg till en ny post längst ner. Använd följande mall:
 - 48/48 tester gröna, inga regressioner
 
 **Beslut fattade:** Valde typing.Protocol (inte ABC) för konsistens med befintliga Layer/Recognizer-protokoll. Valde google-genai v1.x (inte legacy google-generativeai). Valde unittest.mock (stdlib) för testpatchning. llm-beroenden inkluderades även i [all]-gruppen (användarbeslut). Se Loggboken för full motivering (Beslut 17, 18).
-**Öppet/Nästa steg:** #70 (Article9Layer) och #72 (CombinationLayer) är avblockerade. #78 (Prompt-konstruktion) ingår i Kluster 1 och kan köras parallellt.
+**Öppet/ Nästa steg:** #70 (Article9Layer) och #72 (CombinationLayer) är avblockerade. #78 (Prompt-konstruktion) ingår i Kluster 1 och kan köras parallellt.
 
-### Session 2026-04-30 - Antigravity (Claude Opus 4.6)
+### Session 2026-04-30 - Antigravity (Claude Opus 4.6) - Issue `#78`
 
 **Iteration:** 2 / v0.2.0-dev
 **Mål:** Issue #78 (I-11) — Prompt-konstruktion enligt etablerad metod: YAML-schema, loader-modul, validering och placeholder-prompts.
@@ -234,9 +234,9 @@ Lägg till en ny post längst ner. Använd följande mall:
 - 66/66 enhetstester gröna, inga regressioner.
 
 **Beslut fattade:** base_dir-parameter istället för monkeypatch av _PROMPTS_DIR (dependency injection). pyyaml enbart i [llm]-grupp, inte [all]. Se Loggboken för full motivering.
-**Öppet/Nästa steg:** Kluster 1 är komplett (#68 ✅, #69 ✅, #78 ✅). #70 (Article9Layer) och #72 (CombinationLayer) är fullt avblockerade. arkitektur.md sektion 10 behöver uppdateras med prompts/-katalogen (görs separat efter verifiering).
+**Öppet/ Nästa steg:** Kluster 1 är komplett (#68 ✅, #69 ✅, #78 ✅). #70 (Article9Layer) och #72 (CombinationLayer) är fullt avblockerade. arkitektur.md sektion 10 behöver uppdateras med prompts/-katalogen (görs separat efter verifiering).
 
-### Session 2026-05-01 - Antigravity (Claude Opus 4.6)
+### Session 2026-05-01 - Antigravity (Claude Opus 4.6) - Issue `#84`
 
 **Iteration:** 2 / v0.2.0-dev
 **Mål:** Issue #84 (I-14) — Modellutvärdering: probe-skript för Ollama-modellval.
@@ -261,7 +261,7 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Kategori-normalisering appliceras på båda sidor (expected + actual) före jämförelse. Strikt boolean-jämförelse för contains_sensitive behålls. Engelska svar räknas som fel (modellen följer inte svensk formatinstruktion).
 **Öppet/Nästa steg:** Kluster 1 komplett (#68 ✅, #69 ✅, #78 ✅, #84 ✅). Rekommendation: qwen2.5:7b-instruct som primär modell. #70 (Article9Layer) och #72 (CombinationLayer) kan använda denna modell som utgångspunkt.
 
-### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro)
+### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro) - Issue `#70`
 
 **Iteration:** 2 / v0.2.0-dev
 **Mål:** Issue #70 (I-3) — Article9Layer: Implementera lager 3 för direkt detektion av artikel 9-data via LLM.
@@ -395,3 +395,49 @@ Beslut 25 (manuell komplettering).
 (testdataset kombination) kan nu påbörjas. Känd begränsning:
 datasetet är syntetiskt och LLM-genererat, vilket påverkar
 ekologisk validitet i den artificiella utvärderingen (#75).
+### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro) - Issue `#72`
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #72 (I-5) — CombinationLayer: Implementera lager 4 för bedömning av pusselbitseffekten enligt GDPR skäl 26 via LLM.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/category.py` - Lade till `YRKE`, `PLATS` och `KOMBINATION` under kontextsignaler.
+- `gdpr_classifier/layers/combination/__init__.py` - Ny fil, re-exporterar CombinationLayer och CombinationLayerError.
+- `gdpr_classifier/layers/combination/combination_layer.py` - Ny fil, CombinationLayer som uppfyller Layer-protokollet, använder LLMProvider och utför differentierad validering av fynd.
+- `gdpr_classifier/prompts/combination/v2.yaml` - Ny fil, prompt v2 med 3 examples, systeminstruktioner för svensk kontext, och CoT-resonemang för pusselbitseffekten.
+- `tests/unit/test_combination_layer.py` - Ny fil, 7 enhetstester för alla valideringsscenarier och schemafel.
+- `docs/arkitektur.md` - Uppdaterat SSOT 3.3 med de tre nya enum-posterna i Category-blocket.
+
+**Gjort:**
+- Lagt till nya enum-kategorier för yrke, plats och kombination (skäl 26).
+- Byggt `CombinationLayer` med dependency injection av `LLMProvider`.
+- Implementerat validering i tre steg: schemavalidering, individuella signaler (case-sensitive/insensitive fallback), och aggregatfynd (differentierad validering med exact, insensitive, normalized, och reconstructed fallbacks).
+- Skapat robust prompt i YAML-format (`v2.yaml`) som specificerar uppgiften och avgränsningen från direkt Artikel 9/4-detektion, med betoning på svensk språkhantering.
+- Skrivit omfattande enhetstester och lagt in mock-förväntningar.
+
+**Beslut fattade:** Val av differentierad validering för att skydda mot LLM-hallucinationer (Beslut 21) implementeras genom fallback till whitespace-normalisering eller min/max-positionering av de individuella signalerna vid aggregat-fel. Reasoning-fältet i combination-output görs obligatoriskt vid is_identifiable=true (Beslut 22, Loggbok iteration 2) för att operationalisera Wei et al. (2022) chain-of-thought-spårbarhet.
+
+**Öppet/Nästa steg:** Kluster 4 (#74 Aggregator med kombinationslogik och #75 Utvärderingsmodul-utökning) avblockeras av detta samt #70 som är klara. #73 (testdataset) kvar i Kluster 3.
+
+### Session 2026-05-02 - Antigravity (Claude Opus 4.6) - Issue `#76`
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #76 (I-9) — Containment-regel för IBAN-telefon-överlapp: implementera filtreringsregel i Aggregator som tar bort telefonfynd som överlappar med IBAN-fynd.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` - Ny metod `_apply_containment_rules()`; `aggregate()` anropar den före `_find_overlaps` och `_determine_sensitivity`
+- `tests/unit/test_aggregator_containment.py` - Ny fil, 6 enhetstester (3 kravscenarier + 3 edge cases)
+- `docs/arkitektur.md` - §8 pseudokod uppdaterad med `_apply_containment_rules` + ny containment-dokumentation; §14.1 uppdaterad från "planerad åtgärd" till "åtgärd"
+- `docs/iteration_2_implementation.md` - Status #76 uppdaterad till 🔄 Pågår
+
+**Gjort:**
+- Uppdaterat #76-status till 🔄 Pågår som första åtgärd
+- Implementerat `_apply_containment_rules()` i Aggregator: identifierar IBAN-telefon-överlapp via `Category`-enum (inte source-strängar), tar bort telefonfynd med överlappande span
+- Skapat 6 enhetstester: överlapp (telefon borttagen), ej överlapp (båda kvar), annan kombination (regeln ej applicerad), multipla telefon mot samma IBAN, sensitivity-nivå korrekt, overlapping_findings tom efter borttagning
+- Uppdaterat SSOT §8 med containment-regelns pseudokod och motivering
+- Uppdaterat SSOT §14.1: begränsningen markerad som åtgärdad med hänvisning till §8
+- 93/93 enhetstester gröna, inga regressioner (1 pre-existing integration fail pga saknad SpaCy-modell)
+
+**Beslut fattade:** Identifiering via `Category`-enum istället för `source`-strängar — robust mot framtida namnändringar. Borttagna fynd exkluderas helt ur `Classification` (inget `removed_findings`-fält) — enklare design, framtida spårbarhetsbehov hanteras i separat issue. 
+Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitivity-signal (Beslut 25, Loggbok iteration 2).
+**Öppet/Nästa steg:** #76 redo för granskning och commit. Samma containment-mekanism kan utökas till NER-FPs (§14.2) i separat issue.
