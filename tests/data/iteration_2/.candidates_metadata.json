@@ -1,0 +1,29 @@
+{
+  "generation_date": "2026-05-01T17:46:33.010268",
+  "model": "gemma2:9b",
+  "provider": "ollama",
+  "provider_endpoint": null,
+  "temperature": 0.7,
+  "target_per_category": 6,
+  "negative_controls_target": 12,
+  "actual_generated": {
+    "total": 60,
+    "per_category": {
+      "article9.halsodata": 6,
+      "article9.etniskt_ursprung": 6,
+      "article9.politisk_asikt": 6,
+      "article9.religios_overtygelse": 6,
+      "article9.fackmedlemskap": 6,
+      "article9.biometrisk_data": 6,
+      "article9.genetisk_data": 6,
+      "article9.sexuell_laggning": 6
+    },
+    "negative_controls": 12,
+    "dropped": 0
+  },
+  "guideline_reference": {
+    "path": "docs/annotation_guidelines.md",
+    "git_commit": "bd99ebc432b356fc271ee6282396143e72b04b6b",
+    "generated_at": "2026-05-01T17:46:33.010282"
+  }
+}

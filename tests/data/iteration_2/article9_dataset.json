@@ -1,0 +1,566 @@
+[
+    {
+        "text": "Hej Malin! Hoppas du mår bra efter semestern. Jag har en fråga angående din arbetsskada från förra sommaren. Har du fortfarande ont i knät? Det är viktigt att vi ser till att du får rätt stöd och rehabilitering för att kunna komma tillbaka till jobbet fullt ut.",
+        "description": "Internt mail mellan kollegor om en arbetsskada och dess påverkan på hälsotillståndet.",
+        "expected_findings": [
+            {
+                "category": "article9.halsodata",
+                "text_span": "arbetsskada",
+                "start": 76,
+                "end": 87
+            },
+            {
+                "category": "article9.halsodata",
+                "text_span": "ont i knät",
+                "start": 128,
+                "end": 138
+            }
+        ]
+    },
+    {
+        "text": "Hej Lisa, jag hoppas du mår bättre! Jag tänkte bara höra om hur det gick med din reumatologbesök igår. Har läkaren sagt något mer om dina besvär? Hoppas att du får bra hjälp och snabb lindring.",
+        "description": "Chattkonversation mellan kollegor där en diskuterar andras hälsotillstånd.",
+        "expected_findings": [
+            {
+                "category": "article9.halsodata",
+                "text_span": "reumatologbesök",
+                "start": 81,
+                "end": 96
+            }
+        ]
+    },
+    {
+        "text": "Hej Sofia, \n\nJag skrev till dig för att få en uppdatering på hur det går med din handledare. Jag vet att du har varit sjukskriven sedan förra veckan med magsjukan och jag vill bara kolla om allt är lugnt.",
+        "description": "En medarbetare skriver ett mejl till kollegan Sofia för att fråga efter hennes hälsa efter sjukdom",
+        "expected_findings": [
+            {
+                "category": "article9.halsodata",
+                "text_span": "magsjukan",
+                "start": 153,
+                "end": 162
+            }
+        ]
+    },
+    {
+        "text": "Hej Anna, fick ett mail från Lars igår - han är inte på jobbet idag utan har ringt in sjuk. Han nämnde att han hade ont i magen sedan igår kväll och misstänker det kan vara matförgiftning. Hörde du någonting mer om det?",
+        "description": "En intern konversation om en kollegas frånvaro och möjlig sjukdom.",
+        "expected_findings": [
+            {
+                "category": "article9.halsodata",
+                "text_span": "ont i magen",
+                "start": 116,
+                "end": 127
+            },
+            {
+                "category": "article9.halsodata",
+                "text_span": "matförgiftning",
+                "start": 173,
+                "end": 187
+            }
+        ]
+    },
+    {
+        "text": "Hej Sofia, \n\nJag vet att du är ledig idag men jag tänkte höra om hur det går med dig efter operationen. Jag hoppas allt läker bra och att du inte har ont.\n\nHälsningar,\nAnna",
+        "description": "Exempel på internt mail som innehåller article9.halsodata",
+        "expected_findings": [
+            {
+                "category": "article9.halsodata",
+                "text_span": "operationen",
+                "start": 91,
+                "end": 102
+            }
+        ]
+    },
+    {
+        "text": "Hej Johan, snabb fråga om det politiska läget inför valet. Kanske vi kan diskutera vilka partier som verkar bäst för företaget och våra anställda? Jag själv lutar åt en mer liberala linje när det gäller ekonomisk politik. Vad tycker du?",
+        "description": "En intern diskussion på arbetsplatsen om politiska åsikter inför ett kommande val.",
+        "expected_findings": [
+            {
+                "category": "article9.politisk_asikt",
+                "text_span": "en mer liberala linje",
+                "start": 166,
+                "end": 187
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars! Kul att du deltar i den här diskussionen om framtidens arbetsmarknad. Jag såg att du är aktivt engagerad i Unga Socialdemokrater, det är imponerande! Vi har en spännande idé för ett nytt projekt som vi tror kan vara bra för unga arbetare. Vill du diskutera det mer på Zoom imorgon?",
+        "description": "En intern e-post där två personer diskuterar politisk engagemang.",
+        "expected_findings": [
+            {
+                "category": "article9.politisk_asikt",
+                "text_span": "Unga Socialdemokrater",
+                "start": 117,
+                "end": 138
+            }
+        ]
+    },
+    {
+        "text": "Hej! Har du sett att det är full fart på anmälan till den kristna ungdomsgruppen som håller till i kyrkan? Vi behöver nog fler ledare, vad säger du?",
+        "description": "Exempel chattmeddelande med indikationer av religiös övertygelse.",
+        "expected_findings": [
+            {
+                "category": "article9.religios_overtygelse",
+                "text_span": "kristna ungdomsgruppen",
+                "start": 58,
+                "end": 80
+            }
+        ]
+    },
+    {
+        "text": "Hej! \n\nJag har precis fått en förfrågan från en kund, som heter Lars. Han vill beställa ett presentkort till sin dotter som firar sina 18-år. Han nämnde att hon är väldigt aktiv i den baptistförsamlingen på Södermalm och gärna skulle använda presentkortet till att köpa böcker om religion.",
+        "description": "Exempel som innehåller article9.religios_overtygelse",
+        "expected_findings": [
+            {
+                "category": "article9.religios_overtygelse",
+                "text_span": "baptistförsamlingen",
+                "start": 184,
+                "end": 203
+            }
+        ]
+    },
+    {
+        "text": "Hej Stefan, \n\nJag hoppas allt är bra! Vi har ett fackligt möte imorgon kl 10:00 i konferensrummet för att diskutera den nya arbetstidsmodellen. Det är viktigt att alla fackliga representanter från vår avdelning deltar, särskilt du som är skyddsombud för Unionen. \n\nMed vänlig hälsning,\nAnna",
+        "description": "Chattmeddelande mellan Anna och Stefan om ett fackligt möte.",
+        "expected_findings": [
+            {
+                "category": "article9.fackmedlemskap",
+                "text_span": "skyddsombud för Unionen",
+                "start": 238,
+                "end": 261
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars, \n\nJag vill kolla med dig om den kommande fackföreningsmötet. Jag har hört att du är skyddsombud för Byggnads? Det skulle vara kul att höra mer om vad som diskuteras. ",
+        "description": "Ett kort mejl mellan kollegor på en byggarbetsplats.",
+        "expected_findings": [
+            {
+                "category": "article9.fackmedlemskap",
+                "text_span": "skyddsombud för Byggnads",
+                "start": 94,
+                "end": 118
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars!\n\nVi har ett möte imorgon kl 10:00 för att diskutera den nya avtalsrörelsen. Det är viktigt att alla fackföreningsmedlemmar deltar eftersom det rör löneförhandlingar och arbetstidsregler.\n\nHälsningar,\nAnna",
+        "description": "E-post från Anna till Lars om ett möte med fokus på facklig aktivitet.",
+        "expected_findings": [
+            {
+                "category": "article9.fackmedlemskap",
+                "text_span": "fackföreningsmedlemmar",
+                "start": 110,
+                "end": 132
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars, hoppas du mår bra! \n\nJag tänkte fråga om det går att få in din biometriska data i vårt system. Vi använder fingeravtryck för autentisering och det skulle underlätta arbetet med åtkomst till vissa filer. Skicka gärna ett mail tillbaka när du har tid att diskutera detta.",
+        "description": "En intern kommunikation om en anställds biometri, specifikt fingeravtryck",
+        "expected_findings": [
+            {
+                "category": "article9.biometrisk_data",
+                "text_span": "fingeravtryck",
+                "start": 117,
+                "end": 130
+            }
+        ]
+    },
+    {
+        "text": "Hej Anna, det var kul att träffas på lunch igår! Vi behöver bara göra ett litet justering i systemet för att du ska kunna logga in med ditt ansikte. Har du möjlighet att komma hit och testa det imorgon morse?",
+        "description": "En intern meddelande mellan kollegor om ansiktsigenkänningssystem",
+        "expected_findings": [
+            {
+                "category": "article9.biometrisk_data",
+                "text_span": "logga in med ditt ansikte",
+                "start": 122,
+                "end": 147
+            }
+        ]
+    },
+    {
+        "text": "Hej Jonas!\n\nJag har testat det nya säkerhetssystemet med ansiktsigenkänning. Det fungerade bra! Mina kollegor tyckte också att det var smidigt att logga in med ansiktet, de sa att det kändes mer futuristiskt än att använda fingeravtryck. \n\nVad tycker du om att vi implementerar detta på vårt kontor?\n\nMvh,\nSofia",
+        "description": "Exempel som innehåller article9.biometrisk_data",
+        "expected_findings": [
+            {
+                "category": "article9.biometrisk_data",
+                "text_span": "ansiktsigenkänning",
+                "start": 57,
+                "end": 75
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars, \n\nKan du hjälpa mig med det här? Vi har ett problem med vårt nya biometriska låssystem. Det verkar som att Lisa's ansiktssigenkänning inte fungerar korrekt. Hon har provat flera gånger men systemet accepterar inte hennes mätningar. Kan du kolla in det så fort som möjligt?",
+        "description": "Exempel på internt meddelande om ett problem med ansiktssigenkänningsteknik.",
+        "expected_findings": [
+            {
+                "category": "article9.biometrisk_data",
+                "text_span": "Lisa's ansiktssigenkänning",
+                "start": 117,
+                "end": 143
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars,  \n\nVi har ett problem med det nya biometriska låssystemet. Det verkar felaktigt identifiera vissa användare, till exempel registrerar det inte alltid Annas ansikte korrekt när hon försöker logga in. Kan du ta en titt på systemet och se om du hittar felet? \n\nMvh,\nJohan",
+        "description": "Intern e-post om fel i ett biometri system.",
+        "expected_findings": [
+            {
+                "category": "article9.biometrisk_data",
+                "text_span": "Annas ansikte",
+                "start": 160,
+                "end": 173
+            }
+        ]
+    },
+    {
+        "text": "Hej Anna, \n\nJag vill berätta att jag har fått tillbaka resultatet från mina genetiska analyser. Det visade sig att jag har en högre risk för utveckla hjärtkärlsjukdomar än genomsnittet, men inget som är akut eller behöver någon omedelbar åtgärd. Vi kan diskutera det mer när du har tid. \n\nMvh,\nLisa",
+        "description": "Exempel på chattmeddelande med article9.genetisk_data.",
+        "expected_findings": [
+            {
+                "category": "article9.genetisk_data",
+                "text_span": "mina genetiska analyser",
+                "start": 71,
+                "end": 94
+            },
+            {
+                "category": "article9.genetisk_data",
+                "text_span": "en högre risk för utveckla hjärtkärlsjukdomar än genomsnittet",
+                "start": 123,
+                "end": 184
+            }
+        ]
+    },
+    {
+        "text": "Hej Lena! Har du sett Anna på sjukhuset idag? Hon verkar lite låg i energi och berättade att hon nyligen gjorde en genetisk testning som visade att hon har en förhöjd risk för diabetes. Det är ju tråkigt, men hoppas det inte blir något allvarligt.",
+        "description": "Exempel som innehåller article9.genetisk_data",
+        "expected_findings": [
+            {
+                "category": "article9.genetisk_data",
+                "text_span": "hon har en förhöjd risk för diabetes",
+                "start": 148,
+                "end": 184
+            }
+        ]
+    },
+    {
+        "text": "Anna jobbade som genetisk rådgivare på ett privat företag. En klient, Lars, hade genomgått en DNA-analys och fick besked att han har en högre risk att utveckla Parkinsons sjukdom än genomsnittet. Anna förklarade för Lars att detta inte betyder att han automatiskt kommer att få sjukdomen, utan att det är ett resultat av hans genetiska profil. Hon rekommenderade honom att prata med sin läkare om riskerna och möjliga förebyggande åtgärder.",
+        "description": "Exempel som innehåller article9.genetisk_data",
+        "expected_findings": [
+            {
+                "category": "article9.genetisk_data",
+                "text_span": "har en högre risk att utveckla Parkinsons sjukdom än genomsnittet",
+                "start": 129,
+                "end": 194
+            }
+        ]
+    },
+    {
+        "text": "Hej Anna, hoppas du mår bra! Jag skrev för att höra om det genetiska testet som du beställde. Det visade sig att du har en predisponering för diabetes typ 2, men det betyder inte nödvändigtvis att du kommer att utveckla sjukdomen. Vi kan diskutera riskerna och vilka åtgärder du kan vidta för att minska din risk. Ring gärna om du vill prata mer om det.",
+        "description": "Intern meddelande från en sjuksköterska till Anna angående hennes genetiska testresultat.",
+        "expected_findings": [
+            {
+                "category": "article9.genetisk_data",
+                "text_span": "en predisponering för diabetes typ 2",
+                "start": 120,
+                "end": 156
+            }
+        ]
+    },
+    {
+        "text": "Hej Anna, hoppas du mår bra! Jag har fått ett mail från en kund som vill att vi ska analysera deras släktforskningsresultat. De nämner att de har hittat en genetisk koppling till en känd släkting med Down syndrom och är oroliga för att det kan vara något fel med deras egna barn. Vi behöver diskutera hur vi ska handskas med detta, eftersom det rör känslig information om deras familj.",
+        "description": "Exempel som innehåller article9.genetisk_data",
+        "expected_findings": [
+            {
+                "category": "article9.genetisk_data",
+                "text_span": "genetisk koppling",
+                "start": 156,
+                "end": 173
+            },
+            {
+                "category": "article9.genetisk_data",
+                "text_span": "Down syndrom",
+                "start": 200,
+                "end": 212
+            }
+        ]
+    },
+    {
+        "text": "Hej Johan! Jag skrev bara för att höra hur det går med projektet. Har du hunnit diskutera designen med din pojkvän, som jag vet är superkunnig inom detta område?",
+        "description": "Exempel som innehåller article9.sexuell_laggning",
+        "expected_findings": [
+            {
+                "category": "article9.sexuell_laggning",
+                "text_span": "din pojkvän",
+                "start": 103,
+                "end": 114
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars! Jag såg att du var med på Pride-paraden i Stockholm igår. Var det kul? Jag tänkte eventuellt gå nästa år. Det är ju så inspirerande att se alla människor som vågar visa sin kärlek och sitt stöd för varandra.",
+        "description": "Exempel på artikel 9 data: 'Pride-paraden' indikerar HBTQ-engagemang",
+        "expected_findings": [
+            {
+                "category": "article9.sexuell_laggning",
+                "text_span": "Pride-paraden",
+                "start": 36,
+                "end": 49
+            }
+        ]
+    },
+    {
+        "text": "Hej Stefan, hoppas du har en bra dag! Har du koll på när vi ska ha det mötet med kunden från XYZ AB? Jag skickade ett mail om det igår men fick inget svar. Hör av dig när du får chansen!\n\nMvh,\nAnna",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Stefan, \n\nKan du kolla om det är möjligt att få de nya brochuresna i tryck imorgon? Behövs dem för mötet med kunderna på tisdag. \n\nMår bra annars! \n\nMvh,\nErik",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Anna, Har du koll på den nya designen för hemsidan? Det verkar som att det är några små buggar kvar. Kan vi snabbt hoppa på Teams imorgon för att gå igenom det?",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Stefan! Kan du kolla igenom den här rapporten och ge mig feedback innan måndagens möte? \n\nMvh,\nJohanna\n\n[Bifogat: Rapport.docx]",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Johan, \n\nKan du kolla igenom den här presentationen och ge feedback innan mötet imorgon? \n\n//Linnea\n\n",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Lisa, \n\nKan du kolla om den nya produktkatalogen är klar? Behöver den imorgon för att skicka till trycket. \n\nMvh,\nAnna\n",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Anna, \n\nKan du kolla om den nya produktkatalogen är klar? Behöver den till lunchmötet med kunderna imorgon. \n\nMvh,\nJohan \n",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Johan,\n\nKan du kolla om det går att få igenom den nya fakturan från \"Teknisk Service AB\" till redovisningen? Det står på fakturan att de ska betalas senast den 15:e.  Hör gärna av dig när du gjort det!\n\nMvh,\nAnna\n",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Anna,  \n\nHar du hunnit se den nya designen för broschyren? Kan du ge mig feedback innan måndagen så vi hinner ändra den om det behövs. \n\nMvh, \nLars\n",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Anna, \n\nKan du kolla om det finns budget kvar för att köpa nya möbler till kontoret? Vi behöver definitivt uppdatera den här sofforiten! 😅  Hör gärna av dig när du har en stund. \n\nMvh,\nErik",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Anna, \n\nKan du kolla igenom den nya produktkatalogen och ge feedback senast fredag? Har skickat den till din e-post. \n\nMvh,\nLars",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Anders,\n\nHoppas du har haft en bra vecka! Kan du kolla in den nya designen för hemsidan? Jag skickade den till din mail igår. Låt mig veta vad du tycker!\n\nMvh,\nSara",
+        "description": "Negativ kontroll: arbetsplatskommunikation utan artikel 9-data",
+        "expected_findings": []
+    },
+    {
+        "text": "Hej Lars,\n\nTack för att du tog upp det på mötet igår. Jag håller helt med dig om att vi borde rösta nej till det nya förslaget om utökad kameraövervakning på arbetsplatsen. Det strider mot grundläggande integritetsprinciper.\n\nMvh,\nAnna",
+        "description": "Kollega uttrycker en tydlig politisk åsikt om övervakningsfråga.",
+        "expected_findings": [
+            {
+                "category": "article9.politisk_asikt",
+                "text_span": "rösta nej till det nya förslaget om utökad kameraövervakning på arbetsplatsen",
+                "start": 94,
+                "end": 171
+            }
+        ]
+    },
+    {
+        "text": "Hej Johan,\n\nJag såg att du kandiderar för Vänsterpartiet i höstens val. Det är modigt! Jag vet att det inte alltid är enkelt att vara öppen med politiska engagemang på arbetsplatsen.\n\nMvh,\nKarin",
+        "description": "Kollega bekräftar att Johan kandiderar för ett politiskt parti.",
+        "expected_findings": [
+            {
+                "category": "article9.politisk_asikt",
+                "text_span": "kandiderar för Vänsterpartiet",
+                "start": 27,
+                "end": 56
+            }
+        ]
+    },
+    {
+        "text": "Hej Anna,\n\nJag hittade din insändare i Aftonbladet där du skriver att Sverigedemokraterna bör uteslutas från samtliga riksdagsutskott. Ska vi ta upp det på nästa personalmöte eller håller du det privat?\n\nMvh,\nStefan",
+        "description": "Kollega refererar till en publicerad politisk ståndpunkt.",
+        "expected_findings": [
+            {
+                "category": "article9.politisk_asikt",
+                "text_span": "Sverigedemokraterna bör uteslutas från samtliga riksdagsutskott",
+                "start": 70,
+                "end": 133
+            }
+        ]
+    },
+    {
+        "text": "Hej Lena,\n\nEfter senaste styrelsemötet är det tydligt att Erik är en övertygad förespråkare för privatisering av sjukvården. Han argumenterade bestämt för att landstingen borde lägga ut mer på privata aktörer.\n\nMvh,\nMaria",
+        "description": "Anteckning efter styrelsemöte där en persons politiska ståndpunkt framgår.",
+        "expected_findings": [
+            {
+                "category": "article9.politisk_asikt",
+                "text_span": "övertygad förespråkare för privatisering av sjukvården",
+                "start": 69,
+                "end": 123
+            }
+        ]
+    },
+    {
+        "text": "Hej Stefan,\n\nJag vill bara flagga att Fatima inte kan delta i fredagsmötet. Hon har bett om att få ledigt för fredagsbönen och det har vi självklart godkänt.\n\nMvh,\nAnna",
+        "description": "HR-mail om religiös anpassning för en namngiven medarbetare.",
+        "expected_findings": [
+            {
+                "category": "article9.religios_overtygelse",
+                "text_span": "fredagsbönen",
+                "start": 110,
+                "end": 122
+            }
+        ]
+    },
+    {
+        "text": "Hej Lisa,\n\nJag har fått in en förfrågan från Lars om att byta sina semesterdagar. Han vill ha ledigt under påskveckan eftersom han och hans familj brukar fira påsk i kyrkan med sina barn.\n\nMvh,\nJohan",
+        "description": "Semesterförfrågan som avslöjar religiös praktik.",
+        "expected_findings": [
+            {
+                "category": "article9.religios_overtygelse",
+                "text_span": "fira påsk i kyrkan",
+                "start": 154,
+                "end": 172
+            }
+        ]
+    },
+    {
+        "text": "Hej!\n\nVi behöver uppdatera personalregistret. Ahmed har meddelat att han är aktiv i den lokala moskéförsamlingen och önskar att det noteras för att undvika mötesbokningar under ramadan.\n\nMvh,\nPersonalavdelningen",
+        "description": "Internmail om personalregistrering med religiös information.",
+        "expected_findings": [
+            {
+                "category": "article9.religios_overtygelse",
+                "text_span": "aktiv i den lokala moskéförsamlingen",
+                "start": 76,
+                "end": 112
+            }
+        ]
+    },
+    {
+        "text": "Hej Anna,\n\nKarin har berättat att hon numera är Jehovas vittne och därför inte längre kan delta i firandet av jul och midsommar på kontoret. Vi behöver tänka på hur vi hanterar det framöver.\n\nMvh,\nPer",
+        "description": "Kollega informerar om en medarbetares religiösa övertygelse och dess praktiska konsekvenser.",
+        "expected_findings": [
+            {
+                "category": "article9.religios_overtygelse",
+                "text_span": "är Jehovas vittne",
+                "start": 45,
+                "end": 62
+            }
+        ]
+    },
+    {
+        "text": "Hej Johan,\n\nLycka till på din vigsel imorgon! Hoppas dagen med Marcus blir allt ni har drömt om.\n\nVarma hälsningar,\nLena",
+        "description": "Gratulationsmail inför bröllop som avslöjar samkönad relation.",
+        "expected_findings": [
+            {
+                "category": "article9.sexuell_laggning",
+                "text_span": "din vigsel imorgon! Hoppas dagen med Marcus",
+                "start": 26,
+                "end": 69
+            }
+        ]
+    },
+    {
+        "text": "Hej Maria,\n\nJag ville höra om du kan ta över Annas arbetspass på torsdag. Hon behöver ledigt för att hämta sin flickvän på flygplatsen.\n\nMvh,\nStefan",
+        "description": "Schemaläggningsmail som indirekt avslöjar sexuell läggning via partneridentitet.",
+        "expected_findings": [
+            {
+                "category": "article9.sexuell_laggning",
+                "text_span": "sin flickvän",
+                "start": 107,
+                "end": 119
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars,\n\nJag har sett att Erik är ordförande i företagets HBTQ-nätverk och öppet homosexuell. Är det något vi bör ta hänsyn till vid kundmötena i Mellanöstern nästa kvartal?\n\nMvh,\nAnna",
+        "description": "Internmail där en medarbetares sexuella läggning och engagemang nämns explicit.",
+        "expected_findings": [
+            {
+                "category": "article9.sexuell_laggning",
+                "text_span": "öppet homosexuell",
+                "start": 77,
+                "end": 94
+            }
+        ]
+    },
+    {
+        "text": "Hej!\n\nEtt förtydligande inför konferensen: Karin och hennes fru Lisa bor på samma rum under övernattningen. Bokningsavdelningen ska notera detta.\n\nMvh,\nAdministrationen",
+        "description": "Administrativt mail om bokning som avslöjar samkönad relation.",
+        "expected_findings": [
+            {
+                "category": "article9.sexuell_laggning",
+                "text_span": "hennes fru Lisa",
+                "start": 53,
+                "end": 68
+            }
+        ]
+    },
+    {
+        "text": "Hej Stefan,\n\nJag fick precis bekräftelse från IF Metall att du är registrerad som medlem hos dem. Det innebär att du omfattas av det kollektivavtal vi tecknat.\n\nMvh,\nHR",
+        "description": "HR-bekräftelse på fackmedlemskap för namngiven medarbetare.",
+        "expected_findings": [
+            {
+                "category": "article9.fackmedlemskap",
+                "text_span": "registrerad som medlem hos dem",
+                "start": 66,
+                "end": 96
+            }
+        ]
+    },
+    {
+        "text": "Hej Anna,\n\nJag vill informera om att Maja har gått med i Lärarförbundet sedan förra månaden. Hon har bett om att få delta i deras utbildningsdagar den 12 mars.\n\nMvh,\nPer",
+        "description": "Mail om att en medarbetare gått med i fackförening.",
+        "expected_findings": [
+            {
+                "category": "article9.fackmedlemskap",
+                "text_span": "gått med i Lärarförbundet",
+                "start": 46,
+                "end": 71
+            }
+        ]
+    },
+    {
+        "text": "Hej Johan,\n\nFör att hantera löneförhandlingen korrekt behöver vi veta om Lars är medlem i Unionen eller Akademikerförbundet SSR. Han har tidigare nämnt att han betalar fackkontingent till Unionen.\n\nMvh,\nEkonomi",
+        "description": "Internmail om löneförhandling där fackmedlemskapet framgår.",
+        "expected_findings": [
+            {
+                "category": "article9.fackmedlemskap",
+                "text_span": "betalar fackkontingent till Unionen",
+                "start": 160,
+                "end": 195
+            }
+        ]
+    },
+    {
+        "text": "Hej Lars,\n\nVi har registrerat Saras röstavtryck i telefonisystemet så att hon kan autentisera sig vid inloggning. Systemet kräver att hon läser upp en kort fras vid varje inloggning.\n\nMvh,\nIT-avdelningen",
+        "description": "IT-mail om registrering av röstbiometri för namngiven medarbetare.",
+        "expected_findings": [
+            {
+                "category": "article9.biometrisk_data",
+                "text_span": "Saras röstavtryck",
+                "start": 30,
+                "end": 47
+            }
+        ]
+    }
+]

@@ -80,7 +80,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
 | #70 (I-3) | Article9Layer | ✅ Klar | #69, #78 | 2026-05-01 |
-| #71 (I-4) | Testdataset, artikel 9-texter | ⬜ Ej startad | - | - |
+| #71 (I-4) | Testdataset, artikel 9-texter | 🔄 Pågår | - | - |
 
 ### Kluster 3: CombinationLayer
 
@@ -284,6 +284,117 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Två designbeslut förs in i Loggboken (iteration 2): hallucinations-skydd via `text.find()` på lagernivå som komplement till aggregatorns Mekanism 1; tillägg av `GENETISK_DATA` som separat artikel 9-kategori med juridisk motivering enligt art. 9.1. Strikt substring-match: vid utebliven träff ignoreras fyndet helt.
 **Öppet/Nästa steg:** Kluster 2 fortsätter med #71 (testdataset, artikel 9-texter). Kluster 3 (#72 CombinationLayer, #73 testdataset) kan köras parallellt. Känd begränsning: text.find() matchar första förekomsten — duplicerade text_span på olika positioner i samma text kollapsas till samma span. Hanteras vid behov i iteration 3 baserat på utvärderingsutfall.
 
+### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #71 (I-4) — Testdataset, artikel 9-texter: FAS A (infrastruktur och kandidatgenerering).
+
+**Ändrade filer:**
+- `docs/iteration_2_implementation.md` - Status uppdaterad till Pågår.
+- `tests/data/iteration_2/article9_dataset.json` - Skapad tom platshållare [].
+- `tests/data/iteration_2/data_statement.md` - Skapad med Bender & Friedman 2018 struktur och notering om begränsning/cirkularitet för oberoende manuell granskning.
+- `tests/data/iteration_2/README.md` - Svensk beskrivande prosa om gransknings-arbetsflödet.
+- `scripts/validate_article9_dataset.py` - Nytt valideringsskript.
+- `scripts/generate_article9_candidates.py` - Genereringsskript av kandidater med qwen2.5:7b-instruct.
+- `tests/unit/test_article9_dataset_schema.py` - Enhetstest som laddar via dataset_loader och validerar schema.
+
+**Gjort:**
+- Genererade testkandidater (`article9_dataset_candidates.json`) via lokalt anrop till Ollama (qwen2.5:7b-instruct). Totalt 56 kandidater producerades; de med korrupta `text_span` re-promptades och droppades om de fortfarande saknades, för att behålla strikt schemalydnad framför exakt volym.
+- Implementerade valideringsskript som verifierar schemats struktur, tillåtna enums, samt att `text_span` finns och är matchar med indexet i hela originaltexten (inga offsets var accepterade).
+- Körde pytest unit test som framgångsrikt verifierar JSON laddning via systemets `dataset_loader`.
+
+**Beslut fattade:** Skripten modifierades för att plocka `get_llm_provider` konfig och manuellt justera temperature under testkörningen eftersom config default var 0.0 (Karras et al.) och testgenerering vill ha variation (0.7).
+**Öppet/Nästa steg:** Issue #71 är uppdelat i två. Denna session var FAS A. **Det som nu kvarstår är FAS B:** De mänskliga granskarna behöver utföra den manuella granskningen oberoende och klistra in en gemensam godkänd dataset i `article9_dataset.json` för att slutföra issue.
+
+### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #71 (I-4) — Testdataset, artikel 9-texter: FAS A2 (revidering av kandidatgenerering).
+
+**Ändrade filer:**
+- `tests/data/iteration_2/article9_dataset_candidates_round1.json.archive` - Tidigare kandidater från A1 arkiverade.
+- `scripts/generate_article9_candidates.py` - Ombyggd för att läsa `docs/annotation_guidelines.md` (via fristående markdown-parser), tvinga svenskt vardagsspråk, samt kräva Git-commit spårbarhet av guiden.
+- `tests/unit/test_generate_article9_candidates.py` - Nytt enhetstest för markdown-parsern i genereringsskriptet (100% grönt).
+- `tests/data/iteration_2/data_statement.md` - Uppdaterad med "FAS A2-revidering" där byte till Gemini-modell motiveras och OT-domsreferens inkorporeras.
+
+**Gjort:**
+- Modifierade genereringsflödet att köras per kategori med injicerade sektioner (t.ex. 4.1 och 5) från annoteringsguiden för att drastiskt sänka risken för kategori-förväxling.
+- Omdirigerade standardmodellen till `gemini-1.5-flash` eftersom Gemini (enligt Beslut 17) får användas vid syntetisk data och var nödvändigt för högkvalitativ svensk text.
+- Lade till automatisk commit-hash extraktion från guiden till `.candidates_metadata.json` så att den testdata vi tar fram exakt kan spåras till regelverket som fanns när den skapades.
+- Eftersom `GEMINI_API_KEY` saknades i min miljö var sista exekveringssteget av skriptet tvunget att lämnas över till mänsklig operatör.
+
+**Beslut fattade:** Committade den ocommittade ändringen av `docs/annotation_guidelines.md` för att säkerställa spårbarhet (Git-hash loggning).
+**Öppet/Nästa steg:** Skriptet `python scripts/generate_article9_candidates.py --output tests/data/iteration_2/article9_dataset_candidates.json` måste nu köras med API-nyckel på värdmaskinen. Därefter validering innan FAS B inleds.
+
+### Session 2026-05-01 - Claude Code (Sonnet 4.6)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #71 (I-4) — Testdataset, artikel 9-texter: FAS A2-modellbyte (Gemini → gemma2:9b lokalt via Ollama).
+
+**Ändrade filer:**
+- `scripts/generate_article9_candidates.py` - Default `--model` ändrad till `gemma2:9b`; auto-env-block borttaget; `time.sleep(15)` och 429-retry-loop borttagna; `provider` och `provider_endpoint` tillagda i metadata
+- `tests/data/iteration_2/data_statement.md` - FAS A2-sektion omskriven med tre-bens-motivering (cirkularitetsreducering, Beslut 17-konsekvens, eliminerad tredjelandsöverföring)
+
+**Gjort:**
+- Bytt default-modell från `gemini-2.5-flash` till `gemma2:9b`
+- Tagit bort implicit `LLM_PROVIDER`-överskrivning baserad på modellnamn; factory i `config.py` styr nu ensam provider-val via `LLM_PROVIDER`-env-var (default: `"ollama"`)
+- Tagit bort Gemini-specifika rate limit-workarounds: proaktiv 15s sleep och 429-retry-loop
+- Utökat `.candidates_metadata.json` med spårbarhetsfälten `provider` och `provider_endpoint` (None om attribut saknas)
+- Omformulerat FAS A2-motivering i data_statement.md: Gemini- och OT-dom-referenserna borttagna, ersatta med modellfamilje-asymmetri-argumentet (Pilán et al., 2022), Beslut 17-konsekvens och eliminerad tredjelandsöverföring
+
+**Beslut fattade:** Inga nya arkitekturbeslut. Implementationen stärker Beslut 17 (lokal LLM) och bibehåller Pilán et al. (2022)-motivering via modellfamilje-asymmetri (gemma2:9b ↔ qwen2.5:7b).
+**Öppet/Nästa steg:** **Exekvering är ett separat steg.** Skriptet har inte körts i denna session. Kvarstår: (1) köra `python scripts/generate_article9_candidates.py --output tests/data/iteration_2/article9_dataset_candidates.json` med Ollama igång och gemma2:9b nedladdad, (2) validering med `python scripts/validate_article9_dataset.py`, (3) kvantitativa nyckeltal (antal genererade, antal droppade per kategori) dokumenteras i en uppföljande sessionspost, (4) FAS B (manuell granskning av Abdulla och Johanna) inleds därefter.
+
+### Session 2026-05-02 - Manuell (Johanna Gull och Abdulla Mehdi)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #71 (I-4) — Testdataset, artikel 9-texter: Exekvering,
+FAS B-granskning och komplettering.
+
+**Ändrade filer:**
+- `tests/data/iteration_2/article9_dataset_candidates.json` - Genererad
+  via gemma2:9b på Abdullas maskin (AMD Ryzen 7 9800X3D, RX 9070 XT,
+  Ollama). Totalt 60 kandidater.
+- `tests/data/iteration_2/.candidates_metadata.json` - Uppdaterad med
+  provider, provider_endpoint, genereringsdatum och guideline-hash.
+- `tests/data/iteration_2/article9_dataset.json` - Slutlig dataset
+  ersätter tom platshållare efter FAS B.
+- `docs/annotation_guidelines.md` - Committad som auktoritativ
+  referens för annoteringen (Beslut 22 i Loggboken).
+
+**Gjort:**
+- Körde genereringsskriptet mot gemma2:9b lokalt. 60 kandidater
+  producerades, fördelade på åtta artikel 9-kategorier (6-8 per
+  kategori) plus 12 negativa kontroller.
+- Skapade annoteringsguide (docs/annotation_guidelines.md) förankrad
+  mot GDPR artikel 9.1, IMY:s vägledning och EU-domstolens dom
+  C-184/20 (OT-domen, 1 augusti 2022, ECLI:EU:C:2022:601).
+- Genomförde oberoende FAS B-granskning: JG och AM granskade alla 60
+  kandidater separat. Inter-rater agreement: 58,3% (25 avvikelser av
+  60 kandidater). Avvikelserna koncentrerade till kategorier med subtila
+  gränsdragningar (politisk_asikt, religios_overtygelse, fackmedlemskap,
+  sexuell_laggning). Samtliga avvikelser löstes via annoteringsguiden utan subjektiv kompromiss. Konsensus: 31 behåll, 5 justera, 24 stryk.
+- Identifierade att tre kategorier var kritiskt underrepresenterade
+  efter strykning (politisk_asikt: 2, religios_overtygelse: 2,
+  sexuell_laggning: 2). Genererade 16 kompletterande kandidater
+  manuellt med riktad prompt och direkt span-verifiering.
+- Validerade slutlig dataset via scripts/validate_article9_dataset.py.
+  Alla 52 kandidater schema-giltiga, inga span-fel.
+- 52/52 texter schema-giltiga, 0 fel, 0 varningar. 44 totala fynd
+  fördelade på 40 positiva (6-7 per kategori) och 12 negativa kontroller utan fynd.
+
+**Beslut fattade:** Kompletterande generering genomfördes manuellt
+utanför genereringsskriptet för de tre tunna kategorierna.
+Motivering: riktad promptkontroll och direkt granskning bedömdes
+starkare än skript-körning för ett komplement på 16 kandidater.
+Dokumenteras i data_statement.md som avvikelse från primär
+genereringsmetod. Se Loggboken för Beslut 24 (modellasymmetri) och
+Beslut 25 (manuell komplettering).
+
+**Öppet/Nästa steg:** #71 klar. #72 (CombinationLayer) och #73
+(testdataset kombination) kan nu påbörjas. Känd begränsning:
+datasetet är syntetiskt och LLM-genererat, vilket påverkar
+ekologisk validitet i den artificiella utvärderingen (#75).
 ### Session 2026-05-01 - Antigravity (Gemini 3.1 Pro) - Issue `#72`
 
 **Iteration:** 2 / v0.2.0-dev
