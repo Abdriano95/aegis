@@ -98,12 +98,18 @@ class CombinationLayer:
             confidence = sig_data.get("confidence")
 
             if not signal_str or not text_span or confidence is None:
-                raise CombinationLayerError(
-                    "Individual signal missing required fields (signal, text_span, confidence)."
+                logger.debug(
+                    "Individual signal missing required fields, skipping: %s.", sig_data
                 )
+                continue
 
             if signal_str not in allowed_signals:
-                raise CombinationLayerError(f"Invalid signal type: {signal_str}")
+                logger.debug(
+                    "Unknown signal type ignored: '%s'. Allowed: %s.",
+                    signal_str,
+                    allowed_signals,
+                )
+                continue
 
             try:
                 confidence_float = float(confidence)
