@@ -1,0 +1,37 @@
+{
+  "generation_date": "2026-05-02T18:04:53.582823",
+  "model": "gemma2:9b",
+  "provider": "ollama",
+  "provider_endpoint": null,
+  "temperature": 0.7,
+  "target_distribution": {
+    "cell1_rule_a": 4,
+    "cell1_rule_b": 3,
+    "cell1_rule_c": 3,
+    "cell2_borderline": 7,
+    "cell3_no_signals": 6,
+    "cell4_signals_not_identifiable": 7
+  },
+  "actual_generated": {
+    "cell1_rule_a": 3,
+    "cell1_rule_b": 3,
+    "cell1_rule_c": 3,
+    "cell2_borderline": 7,
+    "cell3_no_signals": 6,
+    "cell4_signals_not_identifiable": 7,
+    "total": 29,
+    "dropped": {
+      "cell1_rule_a": 1,
+      "cell1_rule_b": 0,
+      "cell1_rule_c": 0,
+      "cell2_borderline": 0,
+      "cell3_no_signals": 0,
+      "cell4_signals_not_identifiable": 0
+    }
+  },
+  "guideline_reference": {
+    "path": "docs/combination_annotation_guidelines.md",
+    "git_commit": "de911c1b2512d4fdbe2ba3b16259b13168614f67",
+    "generated_at": "2026-05-02T18:04:53.582838"
+  }
+}
