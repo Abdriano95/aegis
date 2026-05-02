@@ -344,3 +344,54 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Inga nya arkitekturbeslut. Implementationen stärker Beslut 17 (lokal LLM) och bibehåller Pilán et al. (2022)-motivering via modellfamilje-asymmetri (gemma2:9b ↔ qwen2.5:7b).
 **Öppet/Nästa steg:** **Exekvering är ett separat steg.** Skriptet har inte körts i denna session. Kvarstår: (1) köra `python scripts/generate_article9_candidates.py --output tests/data/iteration_2/article9_dataset_candidates.json` med Ollama igång och gemma2:9b nedladdad, (2) validering med `python scripts/validate_article9_dataset.py`, (3) kvantitativa nyckeltal (antal genererade, antal droppade per kategori) dokumenteras i en uppföljande sessionspost, (4) FAS B (manuell granskning av Abdulla och Johanna) inleds därefter.
+
+### Session 2026-05-02 - Manuell (Johanna Gull och Abdulla Mehdi)
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #71 (I-4) — Testdataset, artikel 9-texter: Exekvering,
+FAS B-granskning och komplettering.
+
+**Ändrade filer:**
+- `tests/data/iteration_2/article9_dataset_candidates.json` - Genererad
+  via gemma2:9b på Abdullas maskin (AMD Ryzen 7 9800X3D, RX 9070 XT,
+  Ollama). Totalt 60 kandidater.
+- `tests/data/iteration_2/.candidates_metadata.json` - Uppdaterad med
+  provider, provider_endpoint, genereringsdatum och guideline-hash.
+- `tests/data/iteration_2/article9_dataset.json` - Slutlig dataset
+  ersätter tom platshållare efter FAS B.
+- `docs/annotation_guidelines.md` - Committad som auktoritativ
+  referens för annoteringen (Beslut 22 i Loggboken).
+
+**Gjort:**
+- Körde genereringsskriptet mot gemma2:9b lokalt. 60 kandidater
+  producerades, fördelade på åtta artikel 9-kategorier (6-8 per
+  kategori) plus 12 negativa kontroller.
+- Skapade annoteringsguide (docs/annotation_guidelines.md) förankrad
+  mot GDPR artikel 9.1, IMY:s vägledning och EU-domstolens dom
+  C-184/20 (OT-domen, 1 augusti 2022, ECLI:EU:C:2022:601).
+- Genomförde oberoende FAS B-granskning: JG och AM granskade alla 60
+  kandidater separat. Inter-rater agreement: 58,3% (25 avvikelser av
+  60 kandidater). Avvikelserna koncentrerade till kategorier med subtila
+  gränsdragningar (politisk_asikt, religios_overtygelse, fackmedlemskap,
+  sexuell_laggning). Samtliga avvikelser löstes via annoteringsguiden utan subjektiv kompromiss. Konsensus: 31 behåll, 5 justera, 24 stryk.
+- Identifierade att tre kategorier var kritiskt underrepresenterade
+  efter strykning (politisk_asikt: 2, religios_overtygelse: 2,
+  sexuell_laggning: 2). Genererade 16 kompletterande kandidater
+  manuellt med riktad prompt och direkt span-verifiering.
+- Validerade slutlig dataset via scripts/validate_article9_dataset.py.
+  Alla 52 kandidater schema-giltiga, inga span-fel.
+- 52/52 texter schema-giltiga, 0 fel, 0 varningar. 44 totala fynd
+  fördelade på 40 positiva (6-7 per kategori) och 12 negativa kontroller utan fynd.
+
+**Beslut fattade:** Kompletterande generering genomfördes manuellt
+utanför genereringsskriptet för de tre tunna kategorierna.
+Motivering: riktad promptkontroll och direkt granskning bedömdes
+starkare än skript-körning för ett komplement på 16 kandidater.
+Dokumenteras i data_statement.md som avvikelse från primär
+genereringsmetod. Se Loggboken för Beslut 24 (modellasymmetri) och
+Beslut 25 (manuell komplettering).
+
+**Öppet/Nästa steg:** #71 klar. #72 (CombinationLayer) och #73
+(testdataset kombination) kan nu påbörjas. Känd begränsning:
+datasetet är syntetiskt och LLM-genererat, vilket påverkar
+ekologisk validitet i den artificiella utvärderingen (#75).
