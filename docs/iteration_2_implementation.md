@@ -93,7 +93,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #74 (I-7) | Aggregator med kombinationslogik och D5-korrigering | ⬜ Ej startad | #70, #72 | - |
+| #74 (I-7) | Aggregator med kombinationslogik och D5-korrigering | ✅ Klar | #70, #72 | 2026-05-02 |
 | #75 (I-8) | Utvärderingsmodul-utökning för Lager 3 och 4 | ⬜ Ej startad | #74 | - |
 
 ### Kluster 5: Edge cases & Testdata
@@ -101,7 +101,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
 | #76 (I-9) | Containment-regel för IBAN-telefon-överlapp | ✅ Klar | #68 | 2026-05-02 |
-| #77 (I-10) | Testdataset-utökning, längre texter med pattern och NER | ⬜ Ej startad | - | - |
+| #77 (I-10) | Testdataset-utökning, längre texter med pattern och NER | ✅ Klar | - | 2026-05-02 |
 
 ### Kluster 6: Utbytbarhet & Demo
 
@@ -505,6 +505,27 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 **Beslut fattade:** Inga nya arkitekturbeslut. Strikt konsistensvalidering (Alternativ A) beslutad i arkitekt-session.
 **Öppet/Nästa steg:** Skriptet körs manuellt mot `combination_dataset_candidates.json` när FAS A-skriptet har producerat kandidatfilen. Därefter FAS B (manuell granskning av Abdulla och Johanna).
 
+### Session 2026-05-02 - Antigravity (Gemini 3.1 Pro) - Issue `#77`
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #77 (I-10) — Testdataset-utökning, längre texter med pattern och NER.
+
+**Ändrade filer:**
+- `docs/iteration_2_implementation.md` - Uppdaterade status för #77 till pågår, och därefter till klar. Lade till sessionslogg.
+- `scripts/build_iteration2_pattern_ner_testdata.py` - Nytt valideringsskript med `text.find()`-indexering och Luhn/mod-97-validering för personnummer, IBAN och betalkort.
+- `tests/data/iteration_1/test_dataset.json` - Lade till 10 nya längre texter med komplexa överlappande mönster och entiteter. Ökade antalet testfall från 70 till 80.
+
+**Gjort:**
+- Analyserade befintlig datasetstruktur och Luhn-validering för svenska personnummer, kortnummer och mod-97 för IBAN.
+- Skapade `build_iteration2_pattern_ner_testdata.py` som genererar 10 nya syntetiska dokument av realistisk karaktär (HR-notat, kundtjänstmejl, incidentrapporter, protokoll).
+- Verifierade att kraven uppfylldes: alla 10 texter har ≥3 kategorier (krav: ≥5), 9 flerstyckestexter (krav: ≥2), IBAN (3), betalkort (2), personnummer (4).
+- Genomförde automatisk validering där index baserades på `text.find()` och validerade att de matchar substrängarna exakt.
+- Validerade testkörningar lokalt — inga regressioner (alla relevanta unittester går grönt).
+- Uppdaterade `docs/iteration_2_implementation.md` med status `✅ Klar`.
+
+**Beslut fattade:** Valideringsskriptet skrevs med inbyggd validering för både Luhn- och mod-97-algoritmerna för att säkerställa hög datakvalitet i syntetiska personuppgifter, samt för att strikt skydda mot offset-fel, vilket bygger vidare på erfarenheter från iteration 1.
+**Öppet/Nästa steg:** #77 är nu klart. Nästa naturliga steg är #74 (Aggregator med kombinationslogik och D5-korrigering) och #73 (Testdataset, pusselbitseffekt-texter).
+
 ### Session 2026-05-02 - Manuell (Abdulla Mehdi och Johanna Gull) - Issue `#73` (delsteg 3 + 4)
 
 **Iteration:** 2 / v0.2.0-dev
@@ -531,3 +552,27 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 **Beslut fattade:** Aggregat-spans följer mekanisk min/max-regel även för Regel C där narrativ specificitet ligger utanför signal-positionerna. Detta säkerställer att ground-truth matchar vad lagret producerar. Två manuella Regel C-entries genererades utanför genereringsskriptet eftersom underrepresenterad cell efter strykningar krävde direkt komplettering. Beslut förs in i Loggboken (Beslut 27 eller motsvarande nästa nummer).
 
 **Öppet/Nästa steg:** Issue #73 stängs när commit är klar. Kluster 3 är komplett (#72 och #73 båda klara). Kluster 4 (#74 Aggregator med kombinationslogik och D5-korrigering, #75 Utvärderingsmodul-utökning) är fullt avblockerat och kan påbörjas. Känd begränsning: tröskelkalibreringens cirkularitet eftersom samtliga celler är LLM-genererade — manuell konstruktion av Cell 2-gränsfall flaggas som potentiell förbättring för iteration 3. Aggregat-spans-konventionen för Regel C dokumenterad i data statement.
+
+### Session 2026-05-02 - Claude Code (Sonnet 4.6) - Issue `#74`
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #74 (I-7) — Aggregator med kombinationslogik och D5-korrigering: implementera `__init__` med konfigurerbara trösklar, `_determine_sensitivity()` med full iteration 2-logik, och `_passes_mechanism_3()`.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — Ny `__init__` med `medium_threshold=0.7`, `high_confidence_bypass=0.85`, `min_evidence_count=2`; `_determine_sensitivity()` omskriven med HIGH/MEDIUM/LOW/NONE-logik och D5-korrigering; ny `_passes_mechanism_3()` som räknar överlappande Lager 1/2-fynd mot kombination-fyndets span
+- `tests/unit/test_aggregator_combination.py` — Ny fil, 9 enhetstester
+- `docs/arkitektur.md` — §8 Mekanism 1-beskrivning korrigerad: span-validering är lagrens ansvar, aggregatorn utför ingen egen span-kontroll
+- `docs/iteration_2_implementation.md` — Status #74 uppdaterad till ✅ Klar
+
+**Gjort:**
+- Uppdaterade #74-status till 🔄 Pågår som första åtgärd
+- Implementerade `__init__` med tre konfigurerbara trösklar (Beslut 20)
+- Implementerade `_determine_sensitivity()`: HIGH (article9.*), MEDIUM (context.kombination + bypass eller Mekanism 3), LOW (article4.*), NONE (inga fynd)
+- D5-korrigering uppnås automatiskt: isolerade context.*-fynd matchas aldrig i kombination_candidates
+- Implementerade `_passes_mechanism_3()`: eftersom CombinationLayer inte exponerar sub-spans i kombination-fyndet (metadata har bara reasoning och validation_path) räknar metoden antalet Lager 1/2-fynd (source börjar på "pattern." eller "entity.") vars span överlappar kombination-fyndets totala span
+- Skapade 9 enhetstester: article9→HIGH, bypass→MEDIUM, Mekanism 3 med tillräcklig evidens→MEDIUM, Mekanism 3 med otillräcklig evidens→LOW, isolerat context-fynd→NONE, article4→LOW, inga fynd→NONE, HIGH trumfar MEDIUM, context+article4→LOW (D5 varken sänker eller höjer)
+- Korrigerade SSOT §8 Mekanism 1-mening (span-validering är lagrens ansvar)
+- 73/73 tester gröna, inga regressioner (3 pre-existing import-fel pga saknad pyyaml-modul, opåverkade)
+
+**Beslut fattade:** `_passes_mechanism_3()` implementeras mot kombination-fyndets totala span istället för sub-spans eftersom CombinationLayer inte exponerar sub-spans i Finding-objektet — individuella signaler finns som separata Finding-objekt i listan. Designvalet är i linje med SRP: aggregatorn bedömer mekaniskt, CombinationLayer ansvarar för span-validering (Mekanism 1).
+**Öppet/Nästa steg:** #74 redo för granskning och commit. Nästa steg är #75 (Utvärderingsmodul-utökning för Lager 3 och 4).

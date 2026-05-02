@@ -916,5 +916,359 @@
         "text_span": "lars.berg@privat.se"
       }
     ]
+  },
+  {
+    "text": "Hej,\n\nJag heter Sofia Ekström och mitt personnummer är 930715-1002. Jag har ett ärende gällande min senaste faktura som inte stämmer. Ni kan nå mig på sofia.ekstrom@mail.se eller ringa 073-555 12 34.\n\nMed vänliga hälsningar,\nSofia Ekström",
+    "description": "Längre: Kundtjänstmejl med namn, personnummer, e-post och telefon",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 16,
+        "end": 29,
+        "text_span": "Sofia Ekström"
+      },
+      {
+        "category": "article4.personnummer",
+        "start": 55,
+        "end": 66,
+        "text_span": "930715-1002"
+      },
+      {
+        "category": "article4.email",
+        "start": 151,
+        "end": 172,
+        "text_span": "sofia.ekstrom@mail.se"
+      },
+      {
+        "category": "article4.telefonnummer",
+        "start": 185,
+        "end": 198,
+        "text_span": "073-555 12 34"
+      }
+    ]
+  },
+  {
+    "text": "HR-notat 2026-03-15: Nyanställd Marcus Lindgren, personnummer 880312-1006, börjar som systemutvecklare på Ericsson AB den 1 april. Han är bosatt i Linköping och ska arbeta från kontoret på Teknikvägen 8.",
+    "description": "Längre: HR-anteckning med namn, personnummer, organisation och adresser",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 32,
+        "end": 47,
+        "text_span": "Marcus Lindgren"
+      },
+      {
+        "category": "article4.personnummer",
+        "start": 62,
+        "end": 73,
+        "text_span": "880312-1006"
+      },
+      {
+        "category": "context.organisation",
+        "start": 106,
+        "end": 117,
+        "text_span": "Ericsson AB"
+      },
+      {
+        "category": "article4.adress",
+        "start": 147,
+        "end": 156,
+        "text_span": "Linköping"
+      },
+      {
+        "category": "article4.adress",
+        "start": 189,
+        "end": 202,
+        "text_span": "Teknikvägen 8"
+      }
+    ]
+  },
+  {
+    "text": "Ekonomirapport Q1 2026\n\nHandelsbanken har bekräftat att överföringen till leverantören Anna-Karin Bergström genomfördes den 12 mars. Beloppet krediterades IBAN SE90 8000 5555 4444 3333 2222. Vid frågor, kontakta ekonomiavdelningen på ekonomi@foretaget.se.",
+    "description": "Längre: Intern ekonomirapport med organisation, namn, IBAN och e-post",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 24,
+        "end": 37,
+        "text_span": "Handelsbanken"
+      },
+      {
+        "category": "article4.namn",
+        "start": 87,
+        "end": 107,
+        "text_span": "Anna-Karin Bergström"
+      },
+      {
+        "category": "article4.iban",
+        "start": 160,
+        "end": 189,
+        "text_span": "SE90 8000 5555 4444 3333 2222"
+      },
+      {
+        "category": "article4.email",
+        "start": 234,
+        "end": 254,
+        "text_span": "ekonomi@foretaget.se"
+      }
+    ]
+  },
+  {
+    "text": "Ärende #4521 – Omtvistad transaktion\n\nKund: Henrik Sjöberg\nKortnummer: 4532 8901 2345 6785\nHenrik rapporterar en okänd debitering på 2 450 kr den 28 februari. Han nås enklast via telefon 070-888 99 11 eller på henrik.sjoberg@example.com. Ärendet eskaleras till bedrägerienheten.",
+    "description": "Längre: Kundtjänstärende med namn, betalkort, telefon och e-post",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 44,
+        "end": 58,
+        "text_span": "Henrik Sjöberg"
+      },
+      {
+        "category": "article4.betalkort",
+        "start": 71,
+        "end": 90,
+        "text_span": "4532 8901 2345 6785"
+      },
+      {
+        "category": "article4.telefonnummer",
+        "start": 187,
+        "end": 200,
+        "text_span": "070-888 99 11"
+      },
+      {
+        "category": "article4.email",
+        "start": 210,
+        "end": 236,
+        "text_span": "henrik.sjoberg@example.com"
+      }
+    ]
+  },
+  {
+    "text": "Protokoll från styrelsemöte 2026-04-10\n\nNärvarande: Eva Nilsson (ordförande), Karl Hedlund (ledamot) och Fatima Al-Hassan (sekreterare).\n\nMötet hölls i Göteborgs lokaler hos Sigma IT. Eva Nilsson öppnade mötet och noterade att samtliga ledamöter var närvarande. Nästa möte planeras till den 8 maj.",
+    "description": "Längre: Mötesprotokoll med tre namn, organisation och adress",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 52,
+        "end": 63,
+        "text_span": "Eva Nilsson"
+      },
+      {
+        "category": "article4.namn",
+        "start": 78,
+        "end": 90,
+        "text_span": "Karl Hedlund"
+      },
+      {
+        "category": "article4.namn",
+        "start": 105,
+        "end": 121,
+        "text_span": "Fatima Al-Hassan"
+      },
+      {
+        "category": "article4.adress",
+        "start": 152,
+        "end": 160,
+        "text_span": "Göteborg"
+      },
+      {
+        "category": "context.organisation",
+        "start": 174,
+        "end": 182,
+        "text_span": "Sigma IT"
+      }
+    ]
+  },
+  {
+    "text": "Hej Lena,\n\nJag skriver angående utbetalningen till Jonas Wikström. Hans personnummer är 760924-1000 och beloppet ska sättas in på kontot med IBAN SE84 1200 3456 7890 1234 5678.\n\nSwedbank har bekräftat att kontot är aktivt. Kan du verifiera uppgifterna och genomföra överföringen?\n\nTack på förhand,\nLena",
+    "description": "Längre: Flerstyckes-mejl med namn, personnummer, IBAN och organisation",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 51,
+        "end": 65,
+        "text_span": "Jonas Wikström"
+      },
+      {
+        "category": "article4.personnummer",
+        "start": 88,
+        "end": 99,
+        "text_span": "760924-1000"
+      },
+      {
+        "category": "article4.iban",
+        "start": 146,
+        "end": 175,
+        "text_span": "SE84 1200 3456 7890 1234 5678"
+      },
+      {
+        "category": "context.organisation",
+        "start": 178,
+        "end": 186,
+        "text_span": "Swedbank"
+      }
+    ]
+  },
+  {
+    "text": "Incidentrapport – IT-säkerhet 2026-04-22\n\nRapportör: Björn Axelsson, bjorn.axelsson@teknikab.se, telefon 08-123 45 67.\nIncidenten upptäcktes av Teknik AB:s driftteam i Uppsala. En obehörig inloggning registrerades från en extern IP-adress kl. 03:14. Åtkomsten spärrades omedelbart och ärendet har rapporterats till CERT-SE.",
+    "description": "Längre: IT-incidentrapport med namn, e-post, telefon, organisation och adress",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 53,
+        "end": 67,
+        "text_span": "Björn Axelsson"
+      },
+      {
+        "category": "article4.email",
+        "start": 69,
+        "end": 95,
+        "text_span": "bjorn.axelsson@teknikab.se"
+      },
+      {
+        "category": "article4.telefonnummer",
+        "start": 105,
+        "end": 117,
+        "text_span": "08-123 45 67"
+      },
+      {
+        "category": "context.organisation",
+        "start": 144,
+        "end": 153,
+        "text_span": "Teknik AB"
+      },
+      {
+        "category": "article4.adress",
+        "start": 168,
+        "end": 175,
+        "text_span": "Uppsala"
+      },
+      {
+        "category": "context.organisation",
+        "start": 315,
+        "end": 322,
+        "text_span": "CERT-SE"
+      }
+    ]
+  },
+  {
+    "text": "Betalningsbekräftelse\n\nKund: Petra Forsberg, anställd vid SEB Kort AB.\nBetalning mottagen via kort 4012 8888 8888 8811 den 15 april 2026. Beloppet 12 500 kr har bokförts. Kvitto skickas till petra.forsberg@seb.se.",
+    "description": "Längre: Betalningsbekräftelse med namn, organisation, betalkort och e-post",
+    "expected_findings": [
+      {
+        "category": "article4.namn",
+        "start": 29,
+        "end": 43,
+        "text_span": "Petra Forsberg"
+      },
+      {
+        "category": "context.organisation",
+        "start": 58,
+        "end": 69,
+        "text_span": "SEB Kort AB"
+      },
+      {
+        "category": "article4.betalkort",
+        "start": 99,
+        "end": 118,
+        "text_span": "4012 8888 8888 8811"
+      },
+      {
+        "category": "article4.email",
+        "start": 191,
+        "end": 212,
+        "text_span": "petra.forsberg@seb.se"
+      }
+    ]
+  },
+  {
+    "text": "Ärendelogg – Socialförvaltningen Malmö kommun\n\nÄrende öppnat: 2026-02-20\nKlient: Amira Hassan, personnummer 950503-1006, boende Rosengård.\nKontaktuppgifter: 076-200 33 44.\n\nAnteckning: Klienten har begärt stödinsats enligt SoL kap. 4 §1. Handläggare tilldelad. Uppföljningsmöte planeras inom två veckor.",
+    "description": "Längre: Ärendelogg med personnummer, namn, telefon, adress och organisationer",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 13,
+        "end": 32,
+        "text_span": "Socialförvaltningen"
+      },
+      {
+        "category": "context.organisation",
+        "start": 33,
+        "end": 45,
+        "text_span": "Malmö kommun"
+      },
+      {
+        "category": "article4.namn",
+        "start": 81,
+        "end": 93,
+        "text_span": "Amira Hassan"
+      },
+      {
+        "category": "article4.personnummer",
+        "start": 108,
+        "end": 119,
+        "text_span": "950503-1006"
+      },
+      {
+        "category": "article4.adress",
+        "start": 128,
+        "end": 137,
+        "text_span": "Rosengård"
+      },
+      {
+        "category": "article4.telefonnummer",
+        "start": 157,
+        "end": 170,
+        "text_span": "076-200 33 44"
+      }
+    ]
+  },
+  {
+    "text": "Faktura #2026-0891\n\nFrån: Nordström Consulting AB, Vasagatan 12, Stockholm\nTill: Oskar Blom, oskar.blom@kund.se\n\nBelopp: 45 000 kr exkl. moms.\nBetalning sker till IBAN SE69 3000 1234 5678 9012 3456 senast 2026-05-15.\n\nVid frågor, kontakta oss på faktura@nordstromconsulting.se.",
+    "description": "Längre: Faktura-mejl med IBAN, namn, e-post, organisation och adresser",
+    "expected_findings": [
+      {
+        "category": "context.organisation",
+        "start": 26,
+        "end": 49,
+        "text_span": "Nordström Consulting AB"
+      },
+      {
+        "category": "article4.adress",
+        "start": 51,
+        "end": 63,
+        "text_span": "Vasagatan 12"
+      },
+      {
+        "category": "article4.adress",
+        "start": 65,
+        "end": 74,
+        "text_span": "Stockholm"
+      },
+      {
+        "category": "article4.namn",
+        "start": 81,
+        "end": 91,
+        "text_span": "Oskar Blom"
+      },
+      {
+        "category": "article4.email",
+        "start": 93,
+        "end": 111,
+        "text_span": "oskar.blom@kund.se"
+      },
+      {
+        "category": "article4.iban",
+        "start": 168,
+        "end": 197,
+        "text_span": "SE69 3000 1234 5678 9012 3456"
+      },
+      {
+        "category": "article4.email",
+        "start": 246,
+        "end": 276,
+        "text_span": "faktura@nordstromconsulting.se"
+      }
+    ]
   }
 ]
