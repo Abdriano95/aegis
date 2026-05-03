@@ -116,7 +116,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
-| #96 | Pipeline-precisionsförbättring: entity-filter, prompt-optimering | 🔄 Pågår | - | 2026-05-03 |
+| #96 | Pipeline-precisionsförbättring: entity-filter, prompt-optimering | ✅ Klar | - | 2026-05-03 |
 
 ---
 
