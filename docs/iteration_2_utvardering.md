@@ -245,9 +245,9 @@ Slutpunkten fastställdes vid omgång 3 per Beslut 33: ytterligare optimering be
 
 **Förändring mot baslinje (#75):** FP 272 → 123 (−149 falska positiva eliminerade). Recall bibehölls i praktiken: 88.41% → 89.27%.
 
-### Reproduktionskörning (2026-05-04, #80)
+### Reproduktionskörning (2026-05-03, #80)
 
-En reproduktionskörning av samma pipeline-konfiguration (qwen2.5:7b-instruct, article9 v5, combination v4, aggregator med article9-containment-filter) genomfördes 2026-05-04 inom ramen för issue #80 (demo-snapshot). Resultatet:
+En reproduktionskörning av samma pipeline-konfiguration (qwen2.5:7b-instruct, article9 v5, combination v4, aggregator med article9-containment-filter) genomfördes 2026-05-03 inom ramen för issue #80 (demo-snapshot). Resultatet:
 
 | Mätvärde | Värde |
 |---|---|

@@ -40,7 +40,7 @@ def load_snapshot() -> SnapshotData | None:
         raw = json.loads(_SNAPSHOT_PATH.read_text(encoding="utf-8"))
         report = _rehydrate_report(raw["report"])
         return SnapshotData(metadata=raw.get("metadata", {}), report=report)
-    except Exception:
+    except (json.JSONDecodeError, FileNotFoundError, KeyError, ValueError):
         _LOG.exception("Failed to load or rehydrate snapshot from %s", _SNAPSHOT_PATH)
         return None
 

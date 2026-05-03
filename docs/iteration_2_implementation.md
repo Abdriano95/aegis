@@ -807,7 +807,7 @@ iteration_2_layer_substitutability.md. #80 (Demo-uppdatering) är nästa issue i
   nästlad HTML-rendering för aggregat-fynd, mechanism_used i summering,
   Ollama-specifikt felmeddelande, demo-textknapp-callback
 - `demo/layout.py` - tre demo-textsknappar och _DEMO_TEXTS tillagda ovanför fritext-textarea
-- `demo/snapshot_loader.py` - ny modul, SnapshotData, load_snapshot(), _rehydrate_report()
+- `demo/snapshot_loader.py` - ny modul, `SnapshotData`, `load_snapshot()`, `_rehydrate_report()`
 - `demo/snapshots/.gitkeep` - placeholder för snapshottskatalog
 - `scripts/build_demo_snapshot.py` - offline-skript för att generera snapshot
 - `tests/unit/test_snapshot_loader.py` - round-trip-test för snapshot-rehydrering

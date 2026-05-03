@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import threading
 from collections import defaultdict
 from pathlib import Path
@@ -76,13 +77,15 @@ _SNAPSHOT_LOCK = threading.Lock()
 
 
 def _get_snapshot() -> SnapshotData | None:
-    """Return the cached snapshot, loading it exactly once (thread-safe)."""
+    """Return the cached snapshot, retrying each call until a file is found."""
     global _SNAPSHOT_CACHE, _SNAPSHOT_INITIALIZED
     if not _SNAPSHOT_INITIALIZED:
         with _SNAPSHOT_LOCK:
             if not _SNAPSHOT_INITIALIZED:
-                _SNAPSHOT_CACHE = load_snapshot()
-                _SNAPSHOT_INITIALIZED = True
+                result = load_snapshot()
+                if result is not None:
+                    _SNAPSHOT_CACHE = result
+                    _SNAPSHOT_INITIALIZED = True
     return _SNAPSHOT_CACHE
 
 
@@ -706,12 +709,19 @@ def analyze_text(n_clicks: int, text: str | None) -> tuple:
     try:
         classification = _get_freetext_pipeline().classify(text)
     except LLMProviderError:
-        _LOG.exception("Ollama unavailable during freetext analysis")
-        error_msg = html.Div(
-            "Ollama är inte tillgänglig. Starta Ollama (`ollama serve`) och "
-            "säkerställ att modellen `qwen2.5:7b-instruct` är pullad.",
-            style={"color": "red"},
-        )
+        _provider = os.environ.get("LLM_PROVIDER", "ollama").lower()
+        _LOG.exception("LLM provider (%s) unavailable during freetext analysis", _provider)
+        if _provider == "ollama":
+            _err_text = (
+                "Ollama är inte tillgänglig. Starta Ollama (`ollama serve`) och "
+                "säkerställ att modellen `qwen2.5:7b-instruct` är pullad."
+            )
+        else:
+            _err_text = (
+                f"LLM-providern ({_provider}) är inte tillgänglig. "
+                "Kontrollera att modellen `qwen2.5:7b-instruct` är tillgänglig."
+            )
+        error_msg = html.Div(_err_text, style={"color": "red"})
         return [error_msg], []
     except Exception:
         _LOG.exception("Pipeline failed during freetext analysis")
