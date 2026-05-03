@@ -22,6 +22,7 @@ class OllamaProvider:
             No default is provided — the caller must choose explicitly.
         endpoint: Base URL of the Ollama HTTP API.
         temperature: Sampling temperature. 0.0 is fully deterministic.
+        timeout: HTTP request timeout in seconds. Increase for large models.
     """
 
     def __init__(
@@ -29,10 +30,12 @@ class OllamaProvider:
         model_name: str,
         endpoint: str = "http://localhost:11434",
         temperature: float = 0.0,
+        timeout: int = 300,
     ) -> None:
         self._model_name = model_name
         self._endpoint = endpoint.rstrip("/")
         self._temperature = temperature
+        self._timeout = timeout
 
     def generate_json(
         self,
@@ -50,6 +53,7 @@ class OllamaProvider:
             "prompt": prompt,
             "stream": False,
             "format": "json",
+            "think": False,
             "options": {"temperature": self._temperature},
         }
         if system_prompt is not None:
@@ -59,7 +63,7 @@ class OllamaProvider:
             response = requests.post(
                 f"{self._endpoint}/api/generate",
                 json=payload,
-                timeout=120,
+                timeout=self._timeout,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
@@ -76,6 +80,8 @@ class OllamaProvider:
         raw = body.get("response", "")
         if not raw:
             raise LLMProviderError("Ollama returned an empty 'response' field.")
+
+        logger.debug("Ollama raw response: %r", raw)
 
         try:
             result = json.loads(raw)

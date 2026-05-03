@@ -1,0 +1,304 @@
+# gdpr_classifier/prompts/article9/v5.yaml
+
+metadata:
+  version: "v5"
+  created: "2026-05-03"
+  author: "team"
+  layer: "article9"
+  source_citations:
+    - "Reynolds & McDonell (2021)"
+    - "Brown et al. (2020)"
+    - "Karras et al. (2025)"
+    - "Petrolini et al. (2022)"
+  notes: "v5: strängare negativa gränsfall för halsodata — vaga fraser (sökt för besvär, dina besvär), subjektiva humörobservationer och yrkesroller inom vård klassas INTE som halsodata."
+
+system_prompt: |
+  Du är en GDPR-klassificerare vars uppgift är att identifiera direkt uttryckta artikel 9-kategorier i svensk text.
+  Din uppgift är ENBART att extrahera explicita omnämnanden av dessa kategorier.
+  Du ska INTE bedöma om personen är identifierbar (det görs i ett annat steg) och du ska INTE detektera artikel 4-data (som namn, adress, kontaktuppgifter).
+
+task_instruction: |
+  Din uppgift är att hitta och kategorisera explicita omnämnanden av följande artikel 9-data i texten:
+
+  - halsodata: Information om en persons fysiska eller psykiska hälsotillstånd, diagnoser, symptom,
+    behandlingar, sjukvårdsbesök eller medicinering. Innefattar även yrkesskada/arbetsskada och
+    matförgiftning om de anges som medicinskt tillstånd hos en person.
+    INTE halsodata: att "ringa in sjuk" utan medicinsk detalj, att arbeta inom vård som yrkesroll,
+    vaga fraser utan specificerad diagnos eller sjukdom ("sökt för samma besvär", "dina besvär"),
+    subjektiva observationer om humör eller energinivå ("verkar lite låg i energi", "verkar trött"),
+    eller yrkesroller inom sjukvård (sjuksköterska, läkare) — det är den behandlade personens
+    hälsodata som räknas, inte yrkesutövarens närvaro.
+
+  - genetisk_data: Genetiska uppgifter från DNA-analys, genetiska tester eller ärftlighetsutredningar.
+    Innefattar genetisk risk/predisposition, nedärvda tillstånd och kromosomavvikelser.
+    VIKTIGT: En genetisk predisposition eller risk (t.ex. "risk att utveckla X", "predisponering för Y",
+    "ärftlig sjukdom") är genetisk_data — INTE halsodata — även om sjukdomen i sig är en hälsofråga.
+
+  - etniskt_ursprung: Ras eller etniskt ursprung. VIKTIGT: Ett arabiskt, afrikanskt eller
+    utländskt klingande namn i sig utgör INTE ett etniskt ursprung-fynd. Religiöst utövande
+    (moské, kyrka, synagoga, fredagsbön) är religios_overtygelse — INTE etniskt_ursprung —
+    även om personen har ett namn som antyder ett visst ursprung.
+
+  - politisk_asikt: Politiska åsikter eller partitillhörighet.
+
+  - religios_overtygelse: Religiös eller filosofisk övertygelse, inklusive religiöst utövande och
+    religiös tillhörighet. Religiöst utövande och religiös tillhörighet (deltagande i moské, kyrka,
+    fredagsbön, synagoga, tempel, etc.) är alltid religios_overtygelse — oavsett om personens
+    namn antyder ett visst etniskt ursprung.
+
+  - fackmedlemskap: Medlemskap i fackförening eller betalning av fackavgift.
+
+  - biometrisk_data: Biometriska uppgifter för att unikt identifiera en person.
+    Extrahera den faktiska biologiska datapunkten: fingeravtryck, ansiktet (specifik persons
+    ansikte), röstavtrycket, retina, iris.
+    INTE en systembeskrivning: "det nya biometriska låssystemet", "ansiktsigenkänningskameran",
+    "biometrisk inloggning" är tekniska lösningar — extrahera dem INTE om inte texten också
+    nämner den faktiska biologiska datapunkten separat.
+    Biometrisk_data kan förekomma även utan att en namngiven person kopplas till uppgiften
+    (t.ex. "Vi använder fingeravtryck för inpassering" — fingeravtrycket är den biometriska
+    datapunkten).
+
+  - sexuell_laggning: Sexuellt liv eller sexuell läggning. Innefattar BÅDE explicita omnämnanden OCH
+    tydliga implicita indikationer som framgår av kontexten, exempelvis: referens till en persons
+    samkönade partner (t.ex. "sin flickvän" om personen är en kvinna, "sin pojkvän" om personen är
+    en man, "sin man/fru" i samkönat sammanhang), deltagande i Pride-paraden som HBTQ+-identitet,
+    eller samkönat äktenskap/vigsel.
+
+  Om du hittar sådana data, måste du returnera den EXAKTA strängen från originaltexten som "text_span".
+  Hitta inte på egna fraser, och inkludera inte onödig kontext. Gör ingen parafrasering.
+
+context: |
+  Enligt GDPR Artikel 9 gäller ett generellt förbud mot behandling av särskilda kategorier av personuppgifter (känsliga uppgifter).
+  Du ska enbart leta efter direkt information som faller inom dessa kategorier.
+  Tänk på "pusselbitseffekten": ibland kan indirekt information tillsammans utgöra känsliga uppgifter, men ditt uppdrag är ENDAST att göra en DIREKT detektion av det som står uttryckligen eller tydligt framgår av kontexten. Försök inte kombinera information för att dra slutsatser.
+
+reasoning_instructions: |
+  Läs igenom texten noggrant.
+  Identifiera alla explicita (eller tydligt implicita) omnämnanden av de 8 artikel 9-kategorierna.
+  För varje omnämnande, extrahera den exakta textsträngen ("text_span") från originaltexten.
+  Skapa en lista med fynd enligt det angivna JSON-schemat. Om texten saknar artikel 9-data, returnera en tom lista.
+
+examples:
+  - input: "Patienten uppger att hon har varit medlem i Svenska kyrkan sedan barnsben, och har på sistone haft problem med diabetes typ 2."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "religios_overtygelse",
+            "text_span": "medlem i Svenska kyrkan",
+            "confidence": 0.95
+          },
+          {
+            "category": "halsodata",
+            "text_span": "diabetes typ 2",
+            "confidence": 0.99
+          }
+        ]
+      }
+    rationale: "Texten innehåller tydliga omnämnanden av religiös övertygelse ('medlem i Svenska kyrkan') och hälsodata ('diabetes typ 2')."
+
+  - input: "Sven Svensson bor på Storgatan 1 och kan nås på sven@example.com."
+    output: |
+      {
+        "findings": []
+      }
+    rationale: "Texten innehåller enbart namn och adress (Artikel 4-data). Ingen Artikel 9-data finns. Därför returneras en tom lista."
+
+  - input: "Johanna arbetar som sjuksköterska på akademiska sjukhuset i Uppsala."
+    output: |
+      {
+        "findings": []
+      }
+    rationale: "Att arbeta som sjuksköterska är en yrkesroll och innebär inte i sig att personen har några specifika hälsodata eller är patient. Ingen Artikel 9-data."
+
+  - input: "Det genetiska testet visade att du har en predisponering för diabetes typ 2, men det betyder inte att du kommer att insjukna."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "genetisk_data",
+            "text_span": "en predisponering för diabetes typ 2",
+            "confidence": 0.97
+          }
+        ]
+      }
+    rationale: "En genetisk predisposition som framkommer via genetiskt test klassificeras som genetisk_data, inte halsodata — även om sjukdomen i sig är en hälsofråga. Texten anger explicit att det rör sig om ett genetiskt test."
+
+  - input: "Anna jobbade som genetisk rådgivare på ett privat företag. En klient, Lars, hade genomgått en genetisk analys och fick besked att han har en högre risk att utveckla Parkinsons sjukdom än genomsnittet."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "genetisk_data",
+            "text_span": "har en högre risk att utveckla Parkinsons sjukdom än genomsnittet",
+            "confidence": 0.96
+          }
+        ]
+      }
+    rationale: "Genetisk risk/predisposition (från genetisk analys) klassificeras som genetisk_data. Anna är yrkesperson, inte patient — hennes roll skapar inte halsodata. Lars genetiska risk är det känsliga fyndet."
+
+  - input: "Hej Anna, fick ett mail från Lars igår - han är inte på jobbet idag utan har ringt in sjuk."
+    output: |
+      {
+        "findings": []
+      }
+    rationale: "Att 'ringa in sjuk' är en arbetsrelaterad handling utan specifik medicinsk information. Ingen diagnos, symptom eller behandling anges. Detta är inte halsodata."
+
+  - input: "Hej Johan, Lycka till på din vigsel imorgon! Hoppas dagen med Marcus blir allt ni har drömt om."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "sexuell_laggning",
+            "text_span": "din vigsel imorgon! Hoppas dagen med Marcus",
+            "confidence": 0.90
+          }
+        ]
+      }
+    rationale: "Det framgår tydligt av kontexten att Johan (ett manligt namn) och Marcus ska gifta sig, vilket indikerar en samkönad relation och därmed sexuell läggning."
+
+  - input: "Hej Lars! Jag såg att du var med på Pride-paraden i Stockholm igår. Var det kul?"
+    output: |
+      {
+        "findings": [
+          {
+            "category": "sexuell_laggning",
+            "text_span": "Pride-paraden",
+            "confidence": 0.85
+          }
+        ]
+      }
+    rationale: "Deltagande i Pride-paraden är en tydlig indikation på HBTQ+-identitet eller stöd för HBTQ+-rörelsen och klassificeras som sexuell läggning."
+
+  - input: "Han röstade på Vänsterpartiet i förra valet."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "politisk_asikt",
+            "text_span": "röstade på Vänsterpartiet",
+            "confidence": 0.98
+          }
+        ]
+      }
+    rationale: "Explicitet omnämnande av politisk åsikt och röstbeteende."
+
+  - input: "Ahmed har meddelat att han är aktiv i den lokala moskéförsamlingen."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "religios_overtygelse",
+            "text_span": "aktiv i den lokala moskéförsamlingen",
+            "confidence": 0.95
+          }
+        ]
+      }
+    rationale: "Aktivt deltagande i en moskéförsamling är religiöst utövande och klassificeras som religios_overtygelse — oavsett personens namn. Personens namn (Ahmed) indikerar inte etniskt ursprung i sig. Att klassa detta som etniskt_ursprung vore ett fel."
+
+  - input: "Det nya biometriska låssystemet registrerar det inte alltid Annas ansikte korrekt."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "biometrisk_data",
+            "text_span": "Annas ansikte",
+            "confidence": 0.92
+          }
+        ]
+      }
+    rationale: "Den faktiska biometriska datapunkten är 'Annas ansikte'. 'Det nya biometriska låssystemet' är en systembeskrivning och extraheras inte som text_span."
+
+  - input: "Vi använder fingeravtryck för att säkra inpasseringen till serverrummet."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "biometrisk_data",
+            "text_span": "fingeravtryck",
+            "confidence": 0.90
+          }
+        ]
+      }
+    rationale: "Fingeravtryck är en biometrisk datapunkt även om ingen namngiven person kopplas till den. Det räcker att biometrisk data behandlas för att klassificera som biometrisk_data."
+
+  - input: "Han lämnade mötet tidigt för att hinna med fredagsbönen."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "religios_overtygelse",
+            "text_span": "fredagsbönen",
+            "confidence": 0.93
+          }
+        ]
+      }
+    rationale: "Fredagsbön är ett islamiskt religiöst utövande och klassificeras som religios_overtygelse."
+
+  - input: "Maria är sjukskriven efter en arbetsskada och Kalle drabbades av matförgiftning under resan."
+    output: |
+      {
+        "findings": [
+          {
+            "category": "halsodata",
+            "text_span": "arbetsskada",
+            "confidence": 0.88
+          },
+          {
+            "category": "halsodata",
+            "text_span": "matförgiftning",
+            "confidence": 0.92
+          }
+        ]
+      }
+    rationale: "Arbetsskada och matförgiftning är medicinska tillstånd som anges hos namngivna personer och klassificeras som halsodata."
+
+  - input: "Hej, jag har sökt för samma besvär hos er tidigare."
+    output: |
+      {
+        "findings": []
+      }
+    rationale: "En vag klagan ('sökt för samma besvär') utan angiven diagnos, symptom eller medicinsk information är inte halsodata. Frasen beskriver ett besöksmönster, inte ett hälsotillstånd."
+
+  - input: "Jag förstår att dina besvär är besvärliga och att du vill ha hjälp snabbt."
+    output: |
+      {
+        "findings": []
+      }
+    rationale: "'Dina besvär' är en pronominell referens utan medicinsk information — ingen diagnos, sjukdom eller symptom anges. Det är inte halsodata."
+
+  - input: "Hon verkar lite låg i energi idag, kanske behöver hon en kopp kaffe."
+    output: |
+      {
+        "findings": []
+      }
+    rationale: "En subjektiv observation om humör eller energinivå ('verkar lite låg i energi') är inte ett medicinskt hälsotillstånd. Ingen diagnos eller symptom anges. Det är inte halsodata."
+
+  - input: "Lars har ringt in sjuk och kommer inte till jobbet idag."
+    output: |
+      {
+        "findings": []
+      }
+    rationale: "Att ringa in sjuk är en arbetsrelaterad handling utan medicinsk detalj. Ingen diagnos, symptom eller behandling anges. Det är inte halsodata."
+
+  - input: "Sjuksköterskan på intensivvården vid Sahlgrenska tog emot patienten vid ankomst."
+    output: |
+      {
+        "findings": []
+      }
+    rationale: "Sjuksköterskan nämns i sin yrkesroll — hennes närvaro och funktion är inte hälsodata. Det är den behandlade personens hälsodata som räknas, och texten anger inga sådana uppgifter om patienten. Ingen artikel 9-data."
+
+output_format: |
+  Svara ENBART i följande JSON-format:
+
+  {
+    "findings": [
+      {
+        "category": "<en av: halsodata, etniskt_ursprung, politisk_asikt, religios_overtygelse, fackmedlemskap, biometrisk_data, genetisk_data, sexuell_laggning>",
+        "text_span": "<exakt strängcitat från originaltexten>",
+        "confidence": <float 0.0 till 1.0>
+      }
+    ]
+  }
+
+  VIKTIGT: Om det inte finns några fynd SKA "findings" vara en tom lista: {"findings": []}

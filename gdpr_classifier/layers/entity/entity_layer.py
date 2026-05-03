@@ -32,6 +32,13 @@ class EntityLayer:
         for ent in doc.ents:
             if ent.label_ not in self._label_map:
                 continue
+            if ent.text.strip().isdigit():
+                continue
+            if "@" in ent.text:
+                continue
+            # A lone first name without a surname is not reliably a personal data finding.
+            if ent.label_ == "PRS" and len(ent.text.split()) < 2:
+                continue
             category, source = self._label_map[ent.label_]
             findings.append(Finding(
                 category=category,
