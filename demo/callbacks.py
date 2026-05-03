@@ -5,35 +5,34 @@ from __future__ import annotations
 import json
 import logging
 import threading
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional
-
 from collections import defaultdict
+from pathlib import Path
 
-from dash import Input, Output, State, callback, dash_table, dcc, html
+from dash import Input, Output, State, callback, ctx, dash_table, dcc, html
 
 from evaluation.dataset.loader import load_dataset
-from evaluation.report import Report
-from evaluation.runner import run_evaluation
+from evaluation.report import MechanismStats, Report
 from gdpr_classifier import Aggregator, Pipeline
+from gdpr_classifier.config import get_llm_provider
 from gdpr_classifier.core.classification import Classification
 from gdpr_classifier.core.finding import Finding
-from gdpr_classifier.layers.context import ContextLayer
+from gdpr_classifier.layers.article9 import Article9Layer
+from gdpr_classifier.layers.combination import CombinationLayer
 from gdpr_classifier.layers.entity import EntityLayer
+from gdpr_classifier.layers.llm.provider import LLMProviderError
 from gdpr_classifier.layers.pattern import PatternLayer
-from demo.layout import freetext_tab_layout
+from demo.layout import _DEMO_TEXTS, freetext_tab_layout
+from demo.snapshot_loader import SnapshotData, load_snapshot
 
 _LOG = logging.getLogger(__name__)
 
-# Project-root-relative fallback so the demo works regardless of CWD.
-_DEFAULT_DATA_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "tests"
-    / "data"
-    / "iteration_1"
-    / "test_dataset.json"
-)
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+_DATASET_PATHS = {
+    "iteration_1": _PROJECT_ROOT / "tests" / "data" / "iteration_1" / "test_dataset.json",
+    "article9": _PROJECT_ROOT / "tests" / "data" / "iteration_2" / "article9_dataset.json",
+    "combination": _PROJECT_ROOT / "tests" / "data" / "iteration_2" / "combination_dataset.json",
+}
 
 
 def _context_snippet(text: str, start: int, end: int, window: int = 20) -> str:
@@ -46,15 +45,22 @@ def _context_snippet(text: str, start: int, end: int, window: int = 20) -> str:
 
 
 def build_pipeline() -> Pipeline:
-    """Construct the demo's default three-layer pipeline."""
+    """Construct the demo's iteration 2 four-layer pipeline."""
+    provider = get_llm_provider("qwen2.5:7b-instruct")
     return Pipeline(
-        layers=[PatternLayer(), EntityLayer(), ContextLayer()],
+        layers=[
+            PatternLayer(),
+            EntityLayer(),
+            Article9Layer(provider),
+            CombinationLayer(provider),
+        ],
         aggregator=Aggregator(),
     )
 
 
 _FREETEXT_PIPELINE: Pipeline | None = None
 _FREETEXT_PIPELINE_LOCK = threading.Lock()
+
 
 def _get_freetext_pipeline() -> Pipeline:
     global _FREETEXT_PIPELINE
@@ -64,42 +70,20 @@ def _get_freetext_pipeline() -> Pipeline:
     return _FREETEXT_PIPELINE
 
 
-@dataclass(frozen=True)
-class EvaluationResult:
-    """Container for demo evaluation output."""
-
-    dataset: list
-    report: Report
-    data_path: Path
+_SNAPSHOT_CACHE: SnapshotData | None = None
+_SNAPSHOT_INITIALIZED: bool = False
+_SNAPSHOT_LOCK = threading.Lock()
 
 
-def evaluate_demo(data_path: Optional[str] = None) -> Optional[EvaluationResult]:
-    """Load the dataset and run evaluation, returning None on dataset-load failure."""
-    path = Path(data_path) if data_path else _DEFAULT_DATA_PATH
-    try:
-        dataset = load_dataset(str(path))
-    except (OSError, json.JSONDecodeError, ValueError):
-        _LOG.exception("Failed to load dataset (data_path=%s)", path)
-        return None
-    pipeline = build_pipeline()
-    report = run_evaluation(pipeline, dataset)
-    return EvaluationResult(dataset=dataset, report=report, data_path=path)
-
-
-_EVAL_CACHE: Optional[EvaluationResult] = None
-_EVAL_INITIALIZED: bool = False
-_EVAL_LOCK = threading.Lock()
-
-
-def _get_evaluation() -> Optional[EvaluationResult]:
-    """Return the cached evaluation result, running it exactly once (thread-safe)."""
-    global _EVAL_CACHE, _EVAL_INITIALIZED
-    if not _EVAL_INITIALIZED:
-        with _EVAL_LOCK:
-            if not _EVAL_INITIALIZED:
-                _EVAL_CACHE = evaluate_demo()
-                _EVAL_INITIALIZED = True
-    return _EVAL_CACHE
+def _get_snapshot() -> SnapshotData | None:
+    """Return the cached snapshot, loading it exactly once (thread-safe)."""
+    global _SNAPSHOT_CACHE, _SNAPSHOT_INITIALIZED
+    if not _SNAPSHOT_INITIALIZED:
+        with _SNAPSHOT_LOCK:
+            if not _SNAPSHOT_INITIALIZED:
+                _SNAPSHOT_CACHE = load_snapshot()
+                _SNAPSHOT_INITIALIZED = True
+    return _SNAPSHOT_CACHE
 
 
 # ---------------------------------------------------------------------------
@@ -168,6 +152,11 @@ _LAYER_COLUMNS = [
     {"name": "F1", "id": "f1"},
 ]
 
+_MECHANISM_COLUMNS = [
+    {"name": "Mekanism", "id": "mechanism"},
+    {"name": "Antal", "id": "count"},
+]
+
 _FP_COLUMNS = [
     {"name": "Källa", "id": "source"},
     {"name": "Matchad text", "id": "text_span"},
@@ -190,6 +179,14 @@ _TESTDATA_COLUMNS = [
     {"name": "Text", "id": "text"},
     {"name": "Förväntade fynd", "id": "expected"},
 ]
+
+_MECHANISM_DESCRIPTIONS = {
+    "article9": "Artikel 9-fynd hittat (känsliga uppgifter)",
+    "bypass": "Hög konfidens (>= 0.85), Mekanism 3 kringgicks",
+    "mechanism3": "Pusselbitseffekt med tillräckligt evidens",
+    "low": "Endast Artikel 4-fynd",
+    "none": "Inga fynd över sensitivity-tröskeln",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -241,6 +238,17 @@ def _layer_rows(report: Report) -> list[dict]:
     ]
 
 
+def _mechanism_rows(stats: MechanismStats) -> list[dict]:
+    labels = [
+        ("article9", stats.high_via_article9),
+        ("bypass", stats.medium_via_bypass),
+        ("mechanism3", stats.medium_via_mechanism3),
+        ("low", stats.low_count),
+        ("none", stats.none_count),
+    ]
+    return [{"mechanism": key, "count": count} for key, count in labels]
+
+
 def _fp_rows(report: Report) -> list[dict]:
     return [
         {
@@ -284,25 +292,16 @@ def _testdata_rows(dataset: list) -> list[dict]:
     ]
 
 
-def _evaluation_unavailable() -> html.Div:
-    return html.Div(
-        [
-            html.H2("Utvärdering misslyckades"),
-            html.P(
-                "Kunde inte köra utvärderingen. Kontrollera serverloggen för "
-                "detaljer och att testdatafilen finns.",
-            ),
-        ],
-    )
-
-
 # ---------------------------------------------------------------------------
-# Freetext helpers (Issue #43 / #44)
+# Freetext helpers
 # ---------------------------------------------------------------------------
 
 _SOURCE_COLORS: dict[str, str] = {
     "pattern": "orange",
     "entity": "#add8e6",
+    "article9": "#ffb6c1",
+    "context_signal": "#90ee90",
+    "context_kombination": "#dda0dd",
 }
 
 
@@ -326,26 +325,54 @@ def _resolve_overlaps(findings: list[Finding]) -> list[Finding]:
     return [max(cluster, key=lambda f: (f.confidence, -f.start)) for cluster in clusters]
 
 
-def build_highlighted_text(text: str, findings: list[Finding]) -> list:
-    """Build a list of html.Span components with colour-coded, annotated findings."""
-    winners = _resolve_overlaps(findings)
-    winners.sort(key=lambda f: f.start)
-    spans: list = []
-    cursor = 0
-    for f in winners:
-        if cursor < f.start:
-            spans.append(html.Span(text[cursor : f.start]))
-        layer = f.source.split(".")[0]
-        bg = _SOURCE_COLORS.get(layer, "#e0e0e0")
-        tooltip = (
-            f"Kategori: {f.category.value}, "
+def _get_layer_key(source: str) -> str:
+    """Map a finding's source field to a _SOURCE_COLORS lookup key."""
+    if source == "context.kombination":
+        return "context_kombination"
+    prefix = source.split(".")[0]
+    return "context_signal" if prefix == "context" else prefix
+
+
+def _build_finding_tooltip(f: Finding) -> str:
+    """Build source-specific tooltip text for a finding."""
+    if f.source == "context.kombination":
+        meta = f.metadata or {}
+        vp = meta.get("validation_path", "")
+        reasoning = meta.get("reasoning", "")
+        return (
+            f"Aggregat-fynd. Konfidens: {f.confidence:.0%}. "
+            f"Validation path: {vp}. Reasoning: {reasoning}"
+        )
+    if f.source.startswith("context."):
+        return (
+            f"Signal: {f.category.value}, "
             f"Källa: {f.source}, "
             f"Konfidens: {f.confidence:.0%}"
         )
+    return (
+        f"Kategori: {f.category.value}, "
+        f"Källa: {f.source}, "
+        f"Konfidens: {f.confidence:.0%}"
+    )
+
+
+def _render_findings_segment(
+    text: str, start: int, end: int, findings: list[Finding]
+) -> list:
+    """Render text[start:end] with highlighted inner findings.
+
+    findings must be non-overlapping and sorted by start, all within [start, end).
+    """
+    spans: list = []
+    cursor = start
+    for f in findings:
+        if cursor < f.start:
+            spans.append(html.Span(text[cursor : f.start]))
+        bg = _SOURCE_COLORS.get(_get_layer_key(f.source), "#e0e0e0")
         spans.append(
             html.Span(
                 text[f.start : f.end],
-                title=tooltip,
+                title=_build_finding_tooltip(f),
                 style={
                     "backgroundColor": bg,
                     "borderRadius": "3px",
@@ -355,8 +382,57 @@ def build_highlighted_text(text: str, findings: list[Finding]) -> list:
             )
         )
         cursor = f.end
-    if cursor < len(text):
-        spans.append(html.Span(text[cursor:]))
+    if cursor < end:
+        spans.append(html.Span(text[cursor:end]))
+    return spans
+
+
+def build_highlighted_text(text: str, findings: list[Finding]) -> list:
+    """Build a list of html.Span components with colour-coded, annotated findings.
+
+    Aggregate findings (context.kombination) render as outer wrapper spans containing
+    inner highlighted findings. Non-aggregate findings outside any aggregate span
+    render as flat highlighted spans. No findings are discarded.
+    """
+    aggregates = sorted(
+        [f for f in findings if f.source == "context.kombination"],
+        key=lambda f: f.start,
+    )
+    non_agg = [f for f in findings if f.source != "context.kombination"]
+    resolved = sorted(_resolve_overlaps(non_agg), key=lambda f: f.start)
+
+    if not aggregates:
+        return _render_findings_segment(text, 0, len(text), resolved)
+
+    spans: list = []
+    cursor = 0
+
+    for agg in aggregates:
+        # Render text and non-aggregate findings between cursor and aggregate start
+        between = [f for f in resolved if f.start >= cursor and f.end <= agg.start]
+        spans.extend(_render_findings_segment(text, cursor, agg.start, between))
+
+        # Non-aggregate findings fully contained within this aggregate span
+        inner = [f for f in resolved if f.start >= agg.start and f.end <= agg.end]
+        inner_content = _render_findings_segment(text, agg.start, agg.end, inner)
+
+        spans.append(
+            html.Span(
+                inner_content,
+                title=_build_finding_tooltip(agg),
+                style={
+                    "backgroundColor": _SOURCE_COLORS["context_kombination"],
+                    "borderRadius": "3px",
+                    "padding": "1px 2px",
+                    "cursor": "help",
+                },
+            )
+        )
+        cursor = agg.end
+
+    # Render remaining text and findings after the last aggregate
+    post = [f for f in resolved if f.start >= cursor]
+    spans.extend(_render_findings_segment(text, cursor, len(text), post))
     return spans
 
 
@@ -371,6 +447,9 @@ def build_summary(classification: Classification) -> html.Div:
     }
     level_bg = level_colors.get(level, "#95a5a6")
 
+    mechanism = classification.mechanism_used or "none"
+    mech_explanation = _MECHANISM_DESCRIPTIONS.get(mechanism, mechanism)
+
     per_category: dict[str, int] = defaultdict(int)
     per_layer: dict[str, int] = defaultdict(int)
     for f in classification.findings:
@@ -383,17 +462,17 @@ def build_summary(classification: Classification) -> html.Div:
     category_rows = [
         html.Tr(
             [
-                html.Td(cat, style=cell_style), 
-                html.Td(str(count), style=cell_style)
-                ]
+                html.Td(cat, style=cell_style),
+                html.Td(str(count), style=cell_style),
+            ]
         )
         for cat, count in sorted(per_category.items())
     ]
     layer_rows = [
         html.Tr(
             [
-                html.Td(layer, style=cell_style), 
-                html.Td(str(count), style=cell_style)
+                html.Td(layer, style=cell_style),
+                html.Td(str(count), style=cell_style),
             ]
         )
         for layer, count in sorted(per_layer.items())
@@ -412,8 +491,12 @@ def build_summary(classification: Classification) -> html.Div:
                     "fontWeight": "bold",
                     "padding": "4px 14px",
                     "borderRadius": "4px",
-                    "marginBottom": "16px",
+                    "marginBottom": "8px",
                 },
+            ),
+            html.Div(
+                f"Mekanism: {mechanism} ({mech_explanation})",
+                style={"marginBottom": "16px", "fontSize": "14px"},
             ),
             html.Div(
                 [
@@ -437,7 +520,11 @@ def build_summary(classification: Classification) -> html.Div:
                             if category_rows
                             else html.P("Inga fynd."),
                         ],
-                        style={"marginRight": "40px", "display": "inline-block", "verticalAlign": "top"},
+                        style={
+                            "marginRight": "40px",
+                            "display": "inline-block",
+                            "verticalAlign": "top",
+                        },
                     ),
                     html.Div(
                         [
@@ -478,7 +565,7 @@ def build_summary(classification: Classification) -> html.Div:
     Input("main-tabs", "value"),
 )
 def render_tab(tab: str) -> html.Div:
-    """Switch between report, testdata and freetext stub views."""
+    """Switch between report, testdata and freetext views."""
     if tab == "tab-report":
         return html.Div(
             [
@@ -493,19 +580,29 @@ def render_tab(tab: str) -> html.Div:
             ],
         )
     if tab == "tab-testdata":
-        result = _get_evaluation()
-        if result is None:
-            return _evaluation_unavailable()
-        rows = _testdata_rows(result.dataset)
-        display_name = result.data_path.name
+        try:
+            d1 = load_dataset(str(_DATASET_PATHS["iteration_1"]))
+            d2 = load_dataset(str(_DATASET_PATHS["article9"]))
+            d3 = load_dataset(str(_DATASET_PATHS["combination"]))
+        except (OSError, json.JSONDecodeError, ValueError):
+            _LOG.exception("Failed to load test datasets")
+            return html.Div(
+                [
+                    html.H2("Testdata"),
+                    html.P("Kunde inte läsa testdatafilerna. Kontrollera att filerna finns."),
+                ]
+            )
+        dataset = d1 + d2 + d3
+        rows = _testdata_rows(dataset)
         return html.Div(
             [
                 html.H2("Testdata"),
                 html.P(
-                    f"Visar {len(rows)} testfall från {display_name}.",
+                    f"Visar {len(rows)} testfall: {len(d1)} iteration-1, "
+                    f"{len(d2)} artikel-9, {len(d3)} kombination."
                 ),
                 _make_table("testdata-table", _TESTDATA_COLUMNS, rows),
-            ],
+            ]
         )
     if tab == "tab-freetext":
         return freetext_tab_layout()
@@ -518,20 +615,43 @@ def render_tab(tab: str) -> html.Div:
 )
 def update_report(verbose_values: list[str]) -> list:
     """Render the evaluation report tables based on the verbose toggle."""
-    result = _get_evaluation()
-    if result is None:
-        return [_evaluation_unavailable()]
+    snapshot = _get_snapshot()
+    if snapshot is None:
+        return [
+            html.Div(
+                [
+                    html.H3("Snapshot saknas"),
+                    html.P(
+                        "Snapshot saknas. Kör `python scripts/build_demo_snapshot.py` "
+                        "för att generera den."
+                    ),
+                ]
+            )
+        ]
 
-    report = result.report
+    report = snapshot.report
+    meta = snapshot.metadata
     verbose = "verbose" in (verbose_values or [])
 
+    ds = meta.get("dataset", {})
+    meta_div = html.Div(
+        f"Snapshot genererad: {meta.get('generated_at', '?')[:10]}, "
+        f"modell: {meta.get('model', '?')}, "
+        f"dataset: {ds.get('total_texts', '?')} texter, "
+        f"commit: {meta.get('git_commit', '?')[:8]}",
+        style={"marginBottom": "16px", "fontSize": "13px", "color": "#555"},
+    )
+
     children: list = [
+        meta_div,
         html.H3("Totala mätvärden"),
         _make_table("total-table", _TOTAL_COLUMNS, _total_rows(report)),
         html.H3("Per kategori"),
         _make_table("category-table", _CATEGORY_COLUMNS, _category_rows(report)),
         html.H3("Per lager"),
         _make_table("layer-table", _LAYER_COLUMNS, _layer_rows(report)),
+        html.H3("Per mekanism"),
+        _make_table("mechanism-table", _MECHANISM_COLUMNS, _mechanism_rows(report.per_mechanism)),
     ]
 
     if verbose:
@@ -558,6 +678,21 @@ def update_report(verbose_values: list[str]) -> list:
 
 
 @callback(
+    Output("freetext-input", "value"),
+    [Input(f"demo-text-btn-{i}", "n_clicks") for i in range(len(_DEMO_TEXTS))],
+    prevent_initial_call=True,
+)
+def fill_demo_text(*_n_clicks) -> str:
+    """Fill the freetext textarea with the clicked demo text."""
+    triggered_id = ctx.triggered_id
+    demo_keys = list(_DEMO_TEXTS.keys())
+    for i, key in enumerate(demo_keys):
+        if triggered_id == f"demo-text-btn-{i}":
+            return _DEMO_TEXTS[key]
+    return ""
+
+
+@callback(
     Output("freetext-result", "children"),
     Output("freetext-summary", "children"),
     Input("analyze-button", "n_clicks"),
@@ -570,6 +705,14 @@ def analyze_text(n_clicks: int, text: str | None) -> tuple:
         return [], []
     try:
         classification = _get_freetext_pipeline().classify(text)
+    except LLMProviderError:
+        _LOG.exception("Ollama unavailable during freetext analysis")
+        error_msg = html.Div(
+            "Ollama är inte tillgänglig. Starta Ollama (`ollama serve`) och "
+            "säkerställ att modellen `qwen2.5:7b-instruct` är pullad.",
+            style={"color": "red"},
+        )
+        return [error_msg], []
     except Exception:
         _LOG.exception("Pipeline failed during freetext analysis")
         error_msg = html.Div(
