@@ -150,7 +150,7 @@ def main() -> None:
         print(f"  [{i:2d}/{len(texts)}] {truncate(text, 60)}")
         results_a.append(classify_text(pipeline_a, text))
 
-    print(f"\nKörning B: StubCombinationLayer...")
+    print("\nKörning B: StubCombinationLayer...")
     results_b = []
     for i, text in enumerate(texts, 1):
         print(f"  [{i:2d}/{len(texts)}] {truncate(text, 60)}")
