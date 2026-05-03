@@ -245,6 +245,23 @@ Slutpunkten fastställdes vid omgång 3 per Beslut 33: ytterligare optimering be
 
 **Förändring mot baslinje (#75):** FP 272 → 123 (−149 falska positiva eliminerade). Recall bibehölls i praktiken: 88.41% → 89.27%.
 
+### Reproduktionskörning (2026-05-03, #80)
+
+En reproduktionskörning av samma pipeline-konfiguration (qwen2.5:7b-instruct, article9 v5, combination v4, aggregator med article9-containment-filter) genomfördes 2026-05-03 inom ramen för issue #80 (demo-snapshot). Resultatet:
+
+| Mätvärde | Värde |
+|---|---|
+| TP | 208 |
+| FP | 117 |
+| FN | 25 |
+| Precision | 64.00% |
+| Recall | 89.27% |
+| F1 | 74.55% |
+
+Recall och FN är identiska med #96:s slutpunkt. FP-räkningen skiljer med 6 fynd (123 → 117) och precision/F1 marginellt högre. Variationen ligger inom förväntad marginal för LLM-baserade pipelines, eftersom LLM-output inte är deterministisk även med temperatur 0. Reproduktionen bekräftar #96:s slutpunkt som stabil och utgör underlag för den demonstrationsversion som används i naturalistisk utvärdering med V1, V2 och V4.
+
+Reproduktionen är versionskontrollerad i `demo/snapshots/iteration_2_report.json` med commit-hash `49e00ce70985fa884cfa7f0287bae0f53a437c11` inbäddat i snapshot-metadatan, vilket möjliggör spårning till exakt pipeline-tillstånd vid körning.
+
 ### Per-kategori-noteringar
 
 - **`article4.namn`:** Störst enskild FP-reduktion. SpaCy PRS-fynd för enkla förnamn utan efternamn (t.ex. "Anna", "Lars") filtrerades via EntityLayer-filtret (Beslut 30).

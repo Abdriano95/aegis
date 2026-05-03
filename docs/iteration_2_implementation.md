@@ -108,7 +108,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Status | Blockeras av | Sessionspost |
 |---|---|---|---|---|
 | #79 (I-12) | Layer-protokollets utbytbarhet med stub-Layer | ✅ Klar | #72 | 2026-05-03 |
-| #80 (I-13) | Demo-uppdatering för Lager 3 och 4 | ⬜ Ej startad | #70, #72, #74 | - |
+| #80 (I-13) | Demo-uppdatering för Lager 3 och 4 | ✅ Klar | #70, #72, #74 | 2026-05-03 |
 
 ### Explorativt spår: Pipeline-precisionsförbättring
 
@@ -796,3 +796,41 @@ eller core-domänen.
 inte Category.KONTEXTUELLT_KANSLIG som nämndes i spec - se CombinationLayer rad 232).
 **Öppet/Nästa steg:** Kör stub_substitution.py mot Ollama för att fylla sektion 2 i
 iteration_2_layer_substitutability.md. #80 (Demo-uppdatering) är nästa issue i Kluster 6.
+
+### Session 2026-05-03 - Claude Code (Sonnet 4.6) - Issue #80
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Issue #80 (I-13) - Demo-uppdatering för Lager 3 och 4.
+
+**Ändrade filer:**
+- `demo/callbacks.py` - pipeline bytt till 4 lager, snapshot-baserad rapportflik,
+  nästlad HTML-rendering för aggregat-fynd, mechanism_used i summering,
+  Ollama-specifikt felmeddelande, demo-textknapp-callback
+- `demo/layout.py` - tre demo-textsknappar och _DEMO_TEXTS tillagda ovanför fritext-textarea
+- `demo/snapshot_loader.py` - ny modul, `SnapshotData`, `load_snapshot()`, `_rehydrate_report()`
+- `demo/snapshots/.gitkeep` - placeholder för snapshottskatalog
+- `scripts/build_demo_snapshot.py` - offline-skript för att generera snapshot
+- `tests/unit/test_snapshot_loader.py` - round-trip-test för snapshot-rehydrering
+
+**Gjort:**
+- Artefakt 1: build_demo_snapshot.py med Ollama-kontroll och inline progress-loop
+- Artefakt 2: snapshot_loader.py med SnapshotData, load_snapshot(), rehydrering av Report,
+  FindingS, LabeledFinding, Category-enum via Category(str-value)
+- Artefakt 3: build_pipeline() bytt till 4-lagerskonfiguration (Article9Layer + CombinationLayer),
+  _EVAL_CACHE/evaluate_demo() ersatt av _SNAPSHOT_CACHE/_get_snapshot()
+- Artefakt 4: update_report() laser fran snapshot, visar metadata-header + per-mekanism-tabell,
+  tab-testdata laddar 3 dataset-filer direkt
+- Artefakt 5: _SOURCE_COLORS utokad med article9/context_signal/context_kombination,
+  _resolve_overlaps behallen for icke-aggregat, build_highlighted_text() hanterar
+  context.kombination som yttre wrapper-span med inre fynd
+- Artefakt 5: build_summary() visar mechanism_used med svensk forklaring
+- Artefakt 6: _DEMO_TEXTS i layout.py, tre knappar i freetext_tab_layout(),
+  fill_demo_text() callback med ctx.triggered_id
+- Artefakt 7: LLMProviderError fangas separat med Ollama-specifikt felmeddelande
+
+**Beslut fattade:** Inga nya arkitektoniska beslut. Implementation foljer spec fran arkitekt-instansen.
+
+**Öppet/Nästa steg:**
+- Snapshot genereras manuellt av anvandaren: `python scripts/build_demo_snapshot.py`
+- Manuell verifiering av demon mot Ollama efter snapshot-generering
+- Commit: `git add ... && git commit -m "feat: uppdatera demo for iteration 2 lager (fixes #80)"`
