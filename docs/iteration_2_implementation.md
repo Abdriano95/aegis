@@ -110,6 +110,14 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | #79 (I-12) | Layer-protokollets utbytbarhet med stub-Layer | ⬜ Ej startad | #72 | - |
 | #80 (I-13) | Demo-uppdatering för Lager 3 och 4 | ⬜ Ej startad | #70, #72, #74 | - |
 
+### Explorativt spår: Pipeline-precisionsförbättring
+
+> Utanför ordinarie iterationsplanering. Ingen ny arkitektur — enbart filter i befintliga lager och promptversioner. Branch: `96-pipeline-precisionsförbättring`.
+
+| Issue | Titel | Status | Blockeras av | Sessionspost |
+|---|---|---|---|---|
+| #96 | Pipeline-precisionsförbättring: entity-filter, prompt-optimering | 🔄 Pågår | - | 2026-05-03 |
+
 ---
 
 ## Loggbok
@@ -649,3 +657,41 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 **Beslut fattade:** Logga och hoppa över hallucinerade eller ofullständiga signaler snarare än att kasta undantag och avbryta klassificeringen. Beslut förs in i Loggboken (iteration 2).
 
 **Öppet/Nästa steg:** Fix klar. Issuet skapades retroaktivt efter att fixen implementerats under #75-körningen, vilket dokumenteras i denna logg.
+
+---
+
+### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Evalueringsförbättring omgång 1
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Förbättra precision utan att tappa recall, med utgångspunkt i baslinjens FP-analys (FP=272, F1=57.95%). Tre förbättringsåtgärder prioriterade i ordning: (1) entity-filter för PRS, (2) striktare combination-prompt, (3) förbättrad article9-prompt.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/llm/ollama_provider.py` — `timeout`-parameter tillagd i konstruktorn (default 300s); `think: False` tillagd i Ollama-payload; debug-logging och utökad felpreview (200 tecken) i `generate_json`
+- `gdpr_classifier/layers/entity/entity_layer.py` — Tre filter tillagda i `detect()`: (a) PRS-entiteter med färre än 2 whitespace-separerade tokens ignoreras, (b) heltalsentiteter ignoreras, (c) entiteter med `@` ignoreras
+- `gdpr_classifier/prompts/combination/v3.yaml` — Ny fil; striktare signalkriterier med explicit blocklista för generiska ord; tre nya negativa exempelpar; ett nytt positivt kombinationsexempel
+- `gdpr_classifier/prompts/article9/v3.yaml` — Ny fil; förtydligad distinktion genetisk_data (predisposition/risk från genetiskt test) vs halsodata (diagnos/behandling); implicita sexuell_laggning-exempel (samkönat äktenskap, Pride); negativt halsodata-exempel ("ringt in sjuk" utan diagnos)
+- `run_evaluation.py` — Modellnamn ändrat från `qwen2.5:7b-instruct` → `gemma4:31b` → `gemma4:e2b` → tillbaka till `qwen2.5:7b-instruct` (gemma4-varianterna avfärdades: 31b för långsam, e2b för liten — returnerade svar på hindi med felaktigt JSON-schema)
+
+**Gjort:**
+- Diagnostiserade att 106 av 272 FPs kom från `article4.namn` — SpaCy PRS-entiteter som "Anna", "Lars" i hälsnings- och avslutningsfraser utan identifieringskontext. Enkla förnamn utan efternamn är i praktiken inte personuppgiftsfynd på egen hand.
+- Lade till PRS-filter (≥2 tokens): eliminerade ~80 namn-FPs med bibehållen 100% recall för article4.namn (0 FN i baslinje gav manöverutrymme).
+- Lade till filter för sifferentiteter (SpaCy klassade "2222" från IBAN och "070" från telefonnummer som PRS) och e-postentiteter (SpaCy klassade `anna@foretag.se` som ORG/LOC).
+- Skapade combination/v3.yaml med explicit blocklista: "företaget", "jobbet", "kontoret", "Vi", "kund", "kollegor" är INTE organisations-signaler; "pojkvän", "flickvän" är INTE yrke-signaler; "konferensrummet", "flygplatsen", "kyrkan" utan egennamn är INTE plats-signaler. Lade till negativa exempelpar för att förankra instruktionerna i few-shot-mönster (Brown et al., 2020).
+- Skapade article9/v3.yaml: genetisk risk/predisposition från DNA-test = genetisk_data, inte halsodata. Lade till exempelpar med vigsel (samkönat) och Pride-paraden för sexuell_laggning — implicita signaler som v2 missat konsekvent.
+
+**Resultat efter omgång 1 (qwen2.5:7b-instruct, kombination v3, article9 v3):**
+- Total: TP=209, FP=154, FN=24 — Precision 57.58% (+14.5pp), Recall 89.70% (+1.3pp), F1 70.13% (+12.2pp)
+- `article4.namn`: FP 106→3, Precision 23%→91% (entitetsfiltret)
+- `article9.sexuell_laggning`: TP 1→6, Precision+Recall 100% (v3-exemplen)
+- `article9.fackmedlemskap`: 100%/100%/100% (v3 förtydligade gränsdragning)
+- `article9.genetisk_data`: Recall 43%→71%, Precision 100% (v3 distinktion)
+- Entity-lager: FP 160→52
+
+**Beslut fattade:** PRS-filtret (≥2 tokens) motiveras av att ett ensamt förnamn saknar tillräcklig individualiseringsförmåga för att utgöra en personuppgift utan ytterligare kontext — i linje med GDPR skäl 26 om "rimligen kan identifieras". Kombinationslagrets v3-blocklista motiveras av att 7B-modellen (qwen2.5:7b-instruct) inte tillförlitligt följer negativa instruktioner i löptext utan few-shot-förankring.
+
+**Öppet/Nästa steg:**
+- `context.organisation` FP=65, `context.yrke` FP=35: combination-lagret taggar fortfarande fullständiga personnamn som yrke-signaler ("Erik Johansson", "Therese Magnusson") — nytt FP-mönster som uppstod när entity-lagret slutade fånga enkla förnamn och combination-lagret kompenserar
+- `entity.spacy_ORG` FP≈30: organisationsnamn (Acme Corp, Nordea Bank, Sahlgrenska) som är korrekta SpaCy-entiteter men FP i evalueringen — svåra att filtrera utan att förlora TPs
+- `article9.etniskt_ursprung` FP=1: moskéförsamling klassas som etniskt_ursprung istället för religios_overtygelse
+- `article9.biometrisk_data`: system-beskrivning ("det nya biometriska låssystemet") taggas istället för den faktiska biometriska identifieraren ("Annas ansikte")
+- Nästa prioritet: combination/v4.yaml — explicit prohibition mot personnamn som signal-text_span
