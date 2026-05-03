@@ -68,17 +68,16 @@ examples:
       {
         "individual_signals": [
           {"signal": "yrke", "text_span": "chef", "confidence": 0.95},
-          {"signal": "plats", "text_span": "Eskilstuna", "confidence": 0.99},
-          {"signal": "organisation", "text_span": "lagret", "confidence": 0.85}
+          {"signal": "plats", "text_span": "Eskilstuna", "confidence": 0.99}
         ],
         "combination": {
           "is_identifiable": true,
           "text_span": "chef på lagret i Eskilstuna",
           "confidence": 0.92,
-          "reasoning": "Kombinationen av rollen som chef på en specifik arbetsplats (lagret) i en specifik stad (Eskilstuna) gör med stor sannolikhet individen identifierbar för någon med lokalkännedom."
+          "reasoning": "Kombinationen av yrkesrollen (chef) och den specifika staden (Eskilstuna) gör individen identifierbar för någon med lokalkännedom. 'Lagret' är ett generiskt platsbeskrivande ord och utgör inte en giltig organisation-signal."
         }
       }
-    rationale: "Texten visar tydligt hur yrke, organisation och plats kombineras för att skapa identifierbarhet (pusselbitseffekten)."
+    rationale: "Texten visar tydligt hur yrke och plats kombineras för att skapa identifierbarhet (pusselbitseffekten). 'Lagret' är generiskt och extraheras inte som signal — det framgår av definitionen att generiska platsbeteckningar utan egennamn inte är giltiga signaler."
 
   - input: "Många jobbar som lärare i Stockholm."
     output: |
@@ -160,8 +159,7 @@ examples:
       {
         "individual_signals": [
           {"signal": "yrke", "text_span": "rektor", "confidence": 0.95},
-          {"signal": "plats", "text_span": "Umeå", "confidence": 0.99},
-          {"signal": "yrke", "text_span": "ekonomichef", "confidence": 0.95}
+          {"signal": "plats", "text_span": "Umeå", "confidence": 0.99}
         ],
         "combination": {
           "is_identifiable": true,

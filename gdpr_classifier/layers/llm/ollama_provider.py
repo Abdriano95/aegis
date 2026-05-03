@@ -88,7 +88,7 @@ class OllamaProvider:
         except json.JSONDecodeError as exc:
             raise LLMProviderError(
                 f"Ollama 'response' field is not valid JSON "
-                f"(length={len(raw)} chars, preview={raw[:200]!r})."
+                f"(length={len(raw)} chars)."
             ) from exc
 
         if not isinstance(result, dict):

@@ -660,7 +660,7 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 
 ---
 
-### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Issue [#96](https://github.com/Abdriano95/aegis/issues/96)Evalueringsförbättring omgång 1
+### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Issue [#96](https://github.com/Abdriano95/aegis/issues/96) Evalueringsförbättring omgång 1
 
 **Iteration:** 2 / v0.2.0-dev
 **Mål:** Förbättra precision utan att tappa recall, med utgångspunkt i baslinjens FP-analys (FP=272, F1=57.95%). Tre förbättringsåtgärder prioriterade i ordning: (1) entity-filter för PRS, (2) striktare combination-prompt, (3) förbättrad article9-prompt.
@@ -708,7 +708,7 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 **Gjort:**
 - Skapade combination/v4.yaml: behöll alla sex v3-exempel intakta; lade till ABSOLUT FÖRBUD-paragraf i task_instruction med konkreta namnexempel (Erik Johansson, Therese Magnusson, Lars, Anna); utökade blocklistan med fraser som inte är renodlade signaltyper; lade till kontrollsteg i reasoning_instructions ("är text_span ett personnamn?"); nytt exempelpar (exempel 7) visar rätt beteende
 - Skapade article9/v4.yaml: behöll alla nio v3-exempel; förtydligade etniskt_ursprung-definitionen med explicit VIKTIGT-not om att utländskt klingande namn inte utgör etniskt ursprung; utökade religios_overtygelse med "oavsett om personens namn antyder ett visst etniskt ursprung"; utökade biometrisk_data med extraktionsregel (biologisk datapunkt vs system) och fall utan namngiven person; lade till arbetsskada/matförgiftning under halsodata; fem nya exempelpar (exempel 10–14)
-- Verifierade att run_evaluation.py rad 15 är _MODEL = "qwen2.5:7b-instruct" — korrekt, ingen ändring behövdes
+- Verifierade att run_evaluation.py rad 15 är `_MODEL = "qwen2.5:7b-instruct"` — korrekt, ingen ändring behövdes
 
 **Resultat (qwen2.5:7b-instruct, combination v4, article9 v4):**
 - Total: TP=212, FP=144, FN=21 — Precision 59.55% (+1.97pp), Recall 90.99% (+1.29pp), F1 71.99% (+1.86pp)
