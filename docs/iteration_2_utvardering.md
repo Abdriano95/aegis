@@ -214,3 +214,43 @@ Vilka insikter från sessionsanalysen styr iteration 3:s inriktning? Koppla till
 ### Förankring i Loggboken
 
 Alla designinsikter med full motivering dokumenteras i Loggboken ("Loggbok - iteration 2"-fliken, Google Docs). Formuleringen av Generalized Outcomes sker i iteration 3 baserat på det samlade underlaget från iteration 1 och 2.
+
+---
+
+## Del 6: Kvantitativa mätvärden — Pipeline-precisionsförbättring (#96)
+
+Utöver den naturalistiska formativa utvärderingen med intressenter genomfördes inom #96 en kvantitativ mätning av pipelinens precision mot det automatiserade testdataset som etablerades i iteration 2. Mätningen är inte en FEDS-utvärdering utan ett komplement som ger iterationens artefakt en reproducerbar slutpunkt.
+
+### Bakgrund och omgångar
+
+Fyra omgångar av precisionsförbättring genomfördes inom #96. Utgångspunkten var baslinjen etablerad av #75 (Precision 55.35%, Recall 88.41%, F1 68.18%, FP=272). Förbättringsarbetet bedrevs med täta mät–analysera–justera-cykler:
+
+- **Omgång 0 (baslinje, #75):** TP=209, FP=272, FN=27 — Precision 43.46%, Recall 88.56%, F1 58.27%
+- **Omgång 1:** EntityLayer-filter för PRS-FPs (enkla förnamn, Beslut 30) — FP-reduktion mot omgång 0
+- **Omgång 2:** Prompt-optimering för article9-kategorierna — fortsatt FP-reduktion
+- **Omgång 3 (slutpunkt):** Aggregator-containment för article9-context-dubbeltaggning (Beslut 32) — se nedan
+
+Slutpunkten fastställdes vid omgång 3 per Beslut 33: ytterligare optimering bedömdes ge avtagande avkastning och riskerade att sänka Recall, vilket strider mot designprincipen Recall > precision.
+
+### Slutresultat — omgång 3
+
+| Mätvärde | Värde |
+|---|---|
+| TP | 208 |
+| FP | 123 |
+| FN | 25 |
+| Precision | 62.84% |
+| Recall | 89.27% |
+| F1 | 73.76% |
+
+**Förändring mot baslinje (#75):** FP 272 → 123 (−149 falska positiva eliminerade). Recall bibehölls i praktiken: 88.41% → 89.27%.
+
+### Per-kategori-noteringar
+
+- **`article4.namn`:** Störst enskild FP-reduktion. SpaCy PRS-fynd för enkla förnamn utan efternamn (t.ex. "Anna", "Lars") filtrerades via EntityLayer-filtret (Beslut 30).
+- **`context.organisation` och `context.yrke`:** FP-reduktion via promptjusteringar i omgång 2; kategorier som tidigare triggar på generella organisationsnamn och yrkestitel-liknande fraser.
+- **`article9.halsodata` och `article9.etniskt_ursprung`:** Kvarstående FP-källorna i omgång 3 — se `arkitektur.md` sektion 14.3 för detaljer och iteration 3-planering.
+
+### Kvarstående förbättringsområden
+
+Identifierade begränsningar som inte åtgärdades inom #96 förs vidare till iteration 3. Se `docs/arkitektur.md` sektion 14.3 (Kvarstående begränsningar) för fullständig förteckning med grundorsaker.

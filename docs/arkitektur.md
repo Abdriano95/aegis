@@ -714,7 +714,7 @@ Ska aggregatorn vikta fynd baserat på konfidens? I iteration 1 är alla fynd bi
 Kan en textbit tillhöra flera GDPR-kategorier samtidigt? Exempelvis ett namn som också avslöjar etniskt ursprung (Artikel 4 + Artikel 9). Nuvarande modell stöder detta genom att flera fynd kan rapporteras med överlappande span men olika kategorier.
 
 
-## 14. Kända begränsningar (iteration 1)
+## 14. Kända begränsningar (iteration 1 och 2)
 
 Utvärderingen på testdatat i iteration 1 identifierar ett antal falska positiva som inte är buggar i enskilda recognizers eller modeller, utan konsekvenser av hur lagren och deras komponenter interagerar. Begränsningarna grupperas nedan per grundorsak. Ingen av dem åtgärdas i iteration 1; varje block beskriver fenomenet, konkreta exempel från testdatat, rotorsak och planerad åtgärd.
 
@@ -736,7 +736,23 @@ Entity-lagret (SpaCy `sv_core_news_lg`) producerar i iteration 1:s utvärdering 
 
 Tre underkategorier av feldetekteringar observeras i testdatat. För det första klassar modellen isolerade tokens utan semantisk kontext felaktigt som entiteter; exempel är `"2222"` och `"070"` som labellas som `PRS` (person), samt `"Anna"` utan efternamn som labellas som `PRS`. För det andra klassas domännamn i e-postadresser som organisationer; `anna.svensson@foretag.se` och `lars.berg@privat.se` resulterar i `ORG`-fynd på domändelen. För det tredje klassar modellen numeriska sekvenser som platser i vissa kontexter; `"9001010009"` (ett personnummer utan avgränsare) labellas som `LOC`.
 
-Rotorsaken är att entity-lagret kör oberoende av pattern-lagret (avsnitt 4.1, 5) och saknar pre-filtrering av text som redan har identifierats av strukturerade recognizers. En e-postadress som pattern-lagret har fångat med `confidence=1.0` ses av entity-lagret som fri text, vilket öppnar för feldetektering av domännamn som organisation. Samma arkitektoniska problem som i 14.1 men med omvänd riktning: där 14.1 handlar om att ett lågkonfidens-fynd ligger inuti ett högkonfidens-fynd, handlar 14.2 om att ett nytt lågkonfidens-fynd produceras ovanpå ett redan identifierat högkonfidens-fynd. Planerad åtgärd i iteration 2 är densamma containment-regel som föreslås i 14.1, kompletterad med en pre-filtreringsmekanism som döljer redan-identifierade spans innan entity-lagret analyserar texten. Beslutet om vilken av dessa mekanismer som är primär tas utifrån intressentfeedback under demon.
+Rotorsaken är att entity-lagret kör oberoende av pattern-lagret (avsnitt 4.1, 5) och saknar pre-filtrering av text som redan har identifierats av strukturerade recognizers. En e-postadress som pattern-lagret har fångat med `confidence=1.0` ses av entity-lagret som fri text, vilket öppnar för feldetektering av domännamn som organisation. Samma arkitektoniska problem som i 14.1 men med omvänd riktning: där 14.1 handlar om att ett lågkonfidens-fynd ligger inuti ett högkonfidens-fynd, handlar 14.2 om att ett nytt lågkonfidens-fynd produceras ovanpå ett redan identifierat högkonfidens-fynd.
+
+**Åtgärd (iteration 2, Issue #96):** Två delproblem åtgärdades inom precisionsförbättringsarbetet. (1) SpaCy PRS-FPs för enkla förnamn utan efternamn (t.ex. "Anna", "Lars") filtrerades bort via ett tokenantalsfilter i EntityLayer: PRS-fynd med färre än två tokens utesluts ur fyndlistan (Beslut 30). Åtgärden eliminerade den största enskilda FP-källan i `article4.namn`. (2) Dubbeltaggning där ett article9-fynd och ett context-fynd täckte identiskt eller nästan identiskt span åtgärdades via en containment-regel i aggregatorn analogt med IBAN-telefon-regeln i 14.1: om ett article9-fynd och ett context-fynd delar span exakt, undertrycks context-fyndet (Beslut 32). Kvarstående begränsningar som inte hanterades förtecknas i 14.3 nedan.
+
+### 14.3 Kvarstående begränsningar (iteration 3)
+
+Följande begränsningar identifierades under #96 men åtgärdades inte. Varje block beskriver fenomenet, konkreta exempel från testdatat, grundorsak och planerad inriktning inför iteration 3.
+
+**article9.halsodata — vaga fraser:** Fraser som "sökt för samma besvär", "dina besvär" och "har ringt in sjuk" triggar konsekvent som FP trots att prompten innehåller explicita negativa instruktioner mot dem. Grundorsak: LLM-modellen ignorerar negativa instruktioner när den textuella likheten med hälsorelaterade fraser är hög. Inriktning iteration 3: few-shot-exempel med negativa instanser eller tröskeljustering på konfidensnivå.
+
+**article9.etniskt_ursprung — nordeuropeiska namn:** Namn med nordeuropeisk klang (t.ex. "Maja Hellström") klassas felaktigt som etniskt_ursprung av LLM-lagret. Grundorsak: modellen associerar onomastiska mönster med etnicitet utan semantisk kontext. Inriktning iteration 3: justering av prompt-definitionen med explicita negativa exempel på nordeuropeiska namn.
+
+**article9.religios_overtygelse — implicita FN:** Implicit kristet firande ("fira påsk i kyrkan") missas som FN trots att det ryms inom artikel 9-kategorin religiös övertygelse. Grundorsak: modellen detekterar explicit religionsutövning men inte kulturellt inbäddade firanden. Inriktning iteration 3: komplettera prompt med positiva exempel på implicit firande.
+
+**Containment-regelns räckvidd:** Den befintliga containment-regeln (14.1, 14.2) täcker enbart exakt inbäddade span. Span-mismatch-fall — t.ex. där article9-fynd täcker "IF Metall" och context-fynd täcker "Metall" — kvarstår som dubbeltaggning. Inriktning iteration 3: utöka containment-logiken med partiell överlappsdetektion eller toleransmarginal.
+
+**Entity-layer FPs (spacy_ORG, spacy_LOC):** FPs av typen `spacy_ORG` och `spacy_LOC` täcks varken av PRS-filtret (Beslut 30) eller article9-containment (Beslut 32). Kräver en separat filterstrategi i EntityLayer eller på aggregatornivå. Inriktning iteration 3: analysera ORG/LOC-FP-mönster och utvärdera om en blocklist- eller konfidensbaserad suppressionsregel är lämplig.
 
 
 ## 15. Referenser
