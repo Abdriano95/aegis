@@ -660,7 +660,7 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 
 ---
 
-### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Evalueringsförbättring omgång 1
+### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Issue [#96](https://github.com/Abdriano95/aegis/issues/96)Evalueringsförbättring omgång 1
 
 **Iteration:** 2 / v0.2.0-dev
 **Mål:** Förbättra precision utan att tappa recall, med utgångspunkt i baslinjens FP-analys (FP=272, F1=57.95%). Tre förbättringsåtgärder prioriterade i ordning: (1) entity-filter för PRS, (2) striktare combination-prompt, (3) förbättrad article9-prompt.
@@ -696,7 +696,7 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 - `article9.biometrisk_data`: system-beskrivning ("det nya biometriska låssystemet") taggas istället för den faktiska biometriska identifieraren ("Annas ansikte")
 - Nästa prioritet: combination/v4.yaml — explicit prohibition mot personnamn som signal-text_span
 
-### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Evalueringsförbättring omgång 2
+### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Issue [#96](https://github.com/Abdriano95/aegis/issues/96) Evalueringsförbättring omgång 2
 
 **Iteration:** 2 / v0.2.0-dev
 **Mål:** Reducera kvarvarande FPs i combination- och article9-lagren via nya promptversioner (v4). Tre åtgärder: (1) combination/v4 med explicit namnförbud, (2) article9/v4 med förtydligad kategorisering, (3) verifiering av _MODEL i run_evaluation.py.
@@ -723,3 +723,43 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 - `article9.halsodata` v5: begränsa tillbaka — "sökt för samma besvär", "dina besvär", "ringt in sjuk", vaga energi-/humörfraser är INTE halsodata; tydligare negativa exempelpar
 - `context.yrke` + `context.organisation` FP: qwen2.5:7b-instruct ignorerar blocklistan i löptext; few-shot-förankring räcker inte — troligen krävs filtreringssteg i kod (post-processing) eller tätare few-shot-täckning per FP-mönster
 - `context.organisation` dubbeltaggning: fackföreningar och religiösa org är article9-kategorier i datasetet; ett containment-filter i aggregatorn (liknande IBAN-telefon-regeln) som döljer context.organisation/yrke-fynd vars span överlappar article9.*-fynd skulle reducera dessa FPs utan promptändring
+
+---
+
+### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Issue [#96](https://github.com/Abdriano95/aegis/issues/96) Evalueringsförbättring omgång 3
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Reducera FPs ytterligare via (1) aggregator-filter för article9-överlapp (koändring) och (2) article9/v5 med strängare negativa halsodata-exempel. Baslinje: FP=144, FN=21, F1=71.99%, Precision=59.55%, Recall=90.99%.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — Refaktorering: `_apply_containment_rules()` delegerar nu till två privata helpers i sekvens. Ny metod `_remove_context_covered_by_article9()`: tar bort `context.organisation`- och `context.yrke`-fynd vars span är HELT täckta av ett `article9.*`-fynd i samma Classification. Befintlig IBAN-telefon-logik extraherad till `_remove_telefon_covered_by_iban()` utan beteendeförändring.
+- `gdpr_classifier/prompts/article9/v5.yaml` — Ny fil; behåller allt från v4; halsodata-negationen utökad med vaga fraser ("sökt för samma besvär", "dina besvär"), subjektiva humörobservationer ("verkar lite låg i energi") och yrkesroller på sjukhus; fem nya negativa exempelpar tillagda (sökt för besvär, dina besvär, låg i energi, ringt in sjuk extra exemplar, sjuksköterska på intensivvård).
+- `tests/unit/test_aggregator_article9_containment.py` — Ny fil; 6 enhetstester för den nya containment-regeln (komplett täckning → borttagen, ej överlappande → kvar, article4 ej påverkat, partiellt överlapp → kvar, yrke täckt → borttagen, HIGH sensitivity kvar efter filter).
+
+**Gjort:**
+- Refaktorerade `_apply_containment_rules` i aggregatorn till att anropa `_remove_telefon_covered_by_iban` följt av `_remove_context_covered_by_article9`. Beteendet för IBAN-telefon-regeln är oförändrat.
+- Ny `_remove_context_covered_by_article9`: samlar article9-fynd; för varje `Category.ORGANISATION`- och `Category.YRKE`-fynd kontrolleras om `a9.start <= ctx.start and ctx.end <= a9.end` (komplett täckning) — partiellt överlapp och article4 lämnas orörda.
+- Skapade article9/v5.yaml: kopierade v4 som bas, uppdaterade metadata och lade till 5 nya negativa exempelpar som riktar sig mot de 8 FP i halsodata-kategorin som uppstod i v4. Arbetsskada/matförgiftning-exempl bevarades utan ändringar.
+- Skapade 6 enhetstester som täcker alla 4 obligatoriska fall plus 2 extra (yrke + HIGH sensitivity).
+
+**Resultat (qwen2.5:7b-instruct, article9 v5, aggregator med article9-containment-filter):**
+- Total: TP=208, FP=123, FN=25 — Precision 62.84% (+3.29pp), Recall 89.27% (-1.72pp), F1 73.76% (+1.77pp)
+- FP -21 (144→123), FN +4 (21→25)
+- `context.organisation` FP=45 (ned från 60 i omgång 2, -15): aggregator-filtret fungerar men täcker bara fall där article9-spannet HELT innehåller org-spannet. Kvarvarande FPs: "IF Metall"/"Unionen" har andra span-gränser än article9-fyndet.
+- `context.yrke` FP=24 (ned från 29 i omgång 2, -5): mild förbättring; kvarstår yrkesroll-FPs som "Lars", "Johan", "leddes av", "protokollfördes av", "Projektledare", "flickvän"
+- `article9.halsodata` FP=4 (ned från 8, -4): v5 hjälpte mot vaga fraser men "sökt för samma besvär", "dina besvär" och "har ringt in sjuk" triggas FORTFARANDE trots negativa exempelpar — modellen följer inte prompten
+- `article9.halsodata` FN=2 (upp från 0): regression — "arbetsskada" missades (TP i omgång 2, FN i omgång 3; v5:s nya negativa text förvirrade modellen) och "operationen" missades
+- `article9.religios_overtygelse` FP=1, FN=1: "fira påsk i kyrkan" är FN (dataset-annotation anger det som religios_overtygelse, men modellen missar det); ny FP: "köpa böcker om religion" (inte religiöst utövande)
+- `article9.etniskt_ursprung` FP=1: "Maja Hellström" (ett uppenbart svenskt namn) klassas som etniskt_ursprung — uppenbar modellfel
+- `context.kombination` FP=5, FN=2: bl.a. falsk positiv på "skyddsombud för Byggnads" (ej kombination av personuppgifter)
+
+**Beslut fattade:** Aggregator-containment-filtret (beslut 22) bekräftas som effektivt (-15 FP i context.organisation). Prompt-negativa-exempelpar påverkar halsodata-FP marginellt men orsakar FN-regression. Loggas i Loggboken iteration 2 som beslut 22.
+
+**Status:** Avslutat. Omgång 4 pausad — resultatet (F1 73.76%) godkänt som slutpunkt för iteration 2:s precisionsförbättringsarbete. Kvarvarande förbättringsåtgärder förs in i iteration 3.
+
+**Inför iteration 3 — identifierade förbättringsområden (omgång 4, ej implementerade):**
+- `article9.halsodata` v6: reparera "arbetsskada"-regression (TP→FN från omgång 2 till 3). Lägg till explicit positivt exempelpar "angående din arbetsskada" → halsodata. v5:s negativa exempelpar om vaga besvär förvirrade modellen. "sökt för samma besvär", "dina besvär", "har ringt in sjuk" kvarstår som FP — modellen ignorerar negativa promptinstruktioner; kan kräva hårdare few-shot-förankring.
+- `article9.etniskt_ursprung` v*: lägg till negativt exempelpar för nordeuropeiskt namn (t.ex. "Maja Hellström") som visar att ett typiskt nordeuropeiskt namn inte är etniskt_ursprung.
+- `article9.religios_overtygelse` v*: lägg till positivt exempelpar för implicit kristet firande, t.ex. "fira påsk i kyrkan" → religios_overtygelse (FN i omgång 3).
+- `context.organisation`/`context.yrke` span-mismatch: aggregator-containment täcker bara exakt inbäddade span. Kvarvarande FPs (IF Metall, Unionen, Akademikerförbundet SSR) beror på att article9-fynd och context-fynd har olika span-gränser. Utökning till partiellt överlapp skulle ge fler träffar men riskerar nya FN.
+- Entity-layer FPs (spacy_ORG, spacy_LOC, spacy_PRS): FP=45, dominerande källa. Containment-filtret täcker inte entity-fynd. Kräver dedikerade entity-filter eller aggregator-regel för entity-article9-överlapp.

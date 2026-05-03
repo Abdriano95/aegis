@@ -51,15 +51,25 @@ class Aggregator:
     def _apply_containment_rules(
         self, findings: list[Finding],
     ) -> list[Finding]:
-        """Remove telefon findings that overlap with IBAN findings.
+        """Apply all containment rules in sequence.
 
-        IBAN requires mod97 checksum validation and is strictly more specific
-        than telefon regex matching.  A valid IBAN is never a phone number.
-        This rule only targets IBAN-telefon overlap; all other recognizer
-        combinations are left untouched.
+        Rule 1 — IBAN-telefon: remove telefon findings that overlap with IBAN
+        findings (IBAN is strictly more specific via mod97 checksum).
+
+        Rule 2 — article9-context: remove context.organisation and
+        context.yrke findings whose span is completely covered by an
+        article9.* finding. Fackföreningar och religiösa organisationer
+        detekteras korrekt av Article9Layer; a parallel context.organisation
+        finding on the same span is a false positive.
 
         See SSOT arkitektur.md §8 and §14.1 for motivation.
         """
+        filtered = self._remove_telefon_covered_by_iban(findings)
+        return self._remove_context_covered_by_article9(filtered)
+
+    def _remove_telefon_covered_by_iban(
+        self, findings: list[Finding],
+    ) -> list[Finding]:
         iban_findings = [
             f for f in findings if f.category == Category.IBAN
         ]
@@ -81,6 +91,33 @@ class Aggregator:
         return [
             f for idx, f in enumerate(findings)
             if idx not in telefon_to_remove
+        ]
+
+    def _remove_context_covered_by_article9(
+        self, findings: list[Finding],
+    ) -> list[Finding]:
+        article9_findings = [
+            f for f in findings if f.category.value.startswith("article9.")
+        ]
+        if not article9_findings:
+            return findings
+
+        _context_signal_categories = {Category.ORGANISATION, Category.YRKE}
+        to_remove: set[int] = set()
+        for idx, f in enumerate(findings):
+            if f.category not in _context_signal_categories:
+                continue
+            for a9 in article9_findings:
+                if a9.start <= f.start and f.end <= a9.end:
+                    to_remove.add(idx)
+                    break
+
+        if not to_remove:
+            return findings
+
+        return [
+            f for idx, f in enumerate(findings)
+            if idx not in to_remove
         ]
 
     def _find_overlaps(
