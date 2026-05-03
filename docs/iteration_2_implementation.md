@@ -695,3 +695,31 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 - `article9.etniskt_ursprung` FP=1: moskéförsamling klassas som etniskt_ursprung istället för religios_overtygelse
 - `article9.biometrisk_data`: system-beskrivning ("det nya biometriska låssystemet") taggas istället för den faktiska biometriska identifieraren ("Annas ansikte")
 - Nästa prioritet: combination/v4.yaml — explicit prohibition mot personnamn som signal-text_span
+
+### Session 2026-05-03 - Claude Code (Sonnet 4.6) — Evalueringsförbättring omgång 2
+
+**Iteration:** 2 / v0.2.0-dev
+**Mål:** Reducera kvarvarande FPs i combination- och article9-lagren via nya promptversioner (v4). Tre åtgärder: (1) combination/v4 med explicit namnförbud, (2) article9/v4 med förtydligad kategorisering, (3) verifiering av _MODEL i run_evaluation.py.
+
+**Ändrade filer:**
+- `gdpr_classifier/prompts/combination/v4.yaml` - Ny fil; explicit ABSOLUT FÖRBUD mot personnamn som text_span; utökad blocklista med fraser ("protokollfördes av", "leddes av", "fackföreningsmedlemmar", etc.); nytt exempelpar (Erik Johansson/Therese Magnusson) som visar att enbart yrkesroll/plats extraheras, aldrig personnamnet
+- `gdpr_classifier/prompts/article9/v4.yaml` - Ny fil; religios_overtygelse-definitionen utökad med explicit regel att moské/fredagsbön/kyrka alltid är religios_overtygelse oavsett personens namn; biometrisk_data-definitionen förtydligad (faktisk biologisk datapunkt, inte systemet); halsodata utökad med arbetsskada/matförgiftning; fem nya exempelpar (moské→religios_overtygelse, biometrisk system vs ansikte, fingeravtryck utan namngiven person, fredagsbönen, arbetsskada/matförgiftning)
+
+**Gjort:**
+- Skapade combination/v4.yaml: behöll alla sex v3-exempel intakta; lade till ABSOLUT FÖRBUD-paragraf i task_instruction med konkreta namnexempel (Erik Johansson, Therese Magnusson, Lars, Anna); utökade blocklistan med fraser som inte är renodlade signaltyper; lade till kontrollsteg i reasoning_instructions ("är text_span ett personnamn?"); nytt exempelpar (exempel 7) visar rätt beteende
+- Skapade article9/v4.yaml: behöll alla nio v3-exempel; förtydligade etniskt_ursprung-definitionen med explicit VIKTIGT-not om att utländskt klingande namn inte utgör etniskt ursprung; utökade religios_overtygelse med "oavsett om personens namn antyder ett visst etniskt ursprung"; utökade biometrisk_data med extraktionsregel (biologisk datapunkt vs system) och fall utan namngiven person; lade till arbetsskada/matförgiftning under halsodata; fem nya exempelpar (exempel 10–14)
+- Verifierade att run_evaluation.py rad 15 är _MODEL = "qwen2.5:7b-instruct" — korrekt, ingen ändring behövdes
+
+**Resultat (qwen2.5:7b-instruct, combination v4, article9 v4):**
+- Total: TP=212, FP=144, FN=21 — Precision 59.55% (+1.97pp), Recall 90.99% (+1.29pp), F1 71.99% (+1.86pp)
+- `article9.biometrisk_data`: TP=6, FP=0, FN=0 — 100%/100%/100% ✓ ("Annas ansikte" korrekt, systemet ej taggat)
+- `article9.religios_overtygelse`: TP=6, FP=0, FN=0 — 100%/100%/100% ✓ (moské→religios_overtygelse löst)
+- `article9.halsodata`: Recall 100% (FN=0) men FP=8, Precision 46.67% — v4:s bredare definition fångade FN men överkalibrerade mot vaga fraser ("sökt för samma besvär", "dina besvär", "Hon verkar lite låg i energi", "har ringt in sjuk" trots explicit exkludering)
+- `context.yrke` FP=29: explicit blocklistning i v4 hjälpte inte — "leddes av", "protokollfördes av", "fackföreningsmedlemmar", "Tack för att du tog upp det på mötet igår", "Lars", "Johan" kvarstår som FPs; modellen följer inte negativa instruktioner tillförlitligt
+- `context.organisation` FP=60: dominerar; fackföreningar (Unionen, Byggnads, Lärarförbundet) och religiösa organisationer dubbeltaggas — dataset annoterar dessa som article9.fackmedlemskap/religios_overtygelse, inte context.organisation
+
+**Beslut fattade:** Inga nya arkitekturbeslut. Promptversioner v4 är enbart promptoptimering inom befintlig arkitektur (inga kodändringar i lager eller aggregator).
+**Öppet/Nästa steg:**
+- `article9.halsodata` v5: begränsa tillbaka — "sökt för samma besvär", "dina besvär", "ringt in sjuk", vaga energi-/humörfraser är INTE halsodata; tydligare negativa exempelpar
+- `context.yrke` + `context.organisation` FP: qwen2.5:7b-instruct ignorerar blocklistan i löptext; few-shot-förankring räcker inte — troligen krävs filtreringssteg i kod (post-processing) eller tätare few-shot-täckning per FP-mönster
+- `context.organisation` dubbeltaggning: fackföreningar och religiösa org är article9-kategorier i datasetet; ett containment-filter i aggregatorn (liknande IBAN-telefon-regeln) som döljer context.organisation/yrke-fynd vars span överlappar article9.*-fynd skulle reducera dessa FPs utan promptändring
