@@ -834,3 +834,32 @@ iteration_2_layer_substitutability.md. #80 (Demo-uppdatering) är nästa issue i
 - Snapshot genereras manuellt av anvandaren: `python scripts/build_demo_snapshot.py`
 - Manuell verifiering av demon mot Ollama efter snapshot-generering
 - Commit: `git add ... && git commit -m "feat: uppdatera demo for iteration 2 lager (fixes #80)"`
+
+### Session 2026-05-04 - Claude Code (Sonnet 4.6) - Explorativ FP-rotorsaksanalys
+
+**Iteration:** 2 / v0.2.0 (post-iteration, ingen kodändring)
+**Mål:** Explorativ analys av kvarstående 117 FP:ar i `demo/snapshots/iteration_2_report.json` för att förstå rotorsakerna bakom FP:ar som misstänktes vara felaktiga (t.ex. "Nordea Bank" som `entity.spacy_ORG`, "Malmö" som `article4.adress`, "systemutvecklare" som `context.yrke`).
+
+**Ändrade filer:**
+- `docs/iteration_2_utvardering.md` — ny Del 7 med FP-rotorsaksanalys tillagd
+
+**Gjort:**
+
+Analyserade snapshot mot datasetten programmatiskt. För varje FP kontrollerades om ett expected-fynd med samma kategori och överlappande span existerade. Tre rotorsaker identifierades:
+
+1. **Kategori-kroch `article4.adress` / `context.plats`**: Kombinationsdatasetet labelar orter som `context.plats`; EntityLayer producerar `article4.adress` (LOC-mapping). Matcharen kräver exakt kategorimatch → 17 FP:ar av typen "Malmö", "Stockholm", "Borås" i kombinations-samplar. Är inte fel i iteration-1-datasetet utan ett designglapp i kombinationsdatasetet som täcker Lager 4-specifika expected utan grundläggande `article4.*`.
+
+2. **Saknade grundlabels i kombinationsdatasetet**: Kombinationsdatasetet har inga `article4.namn`-expected (expected_findings innehåller enbart `context.*` och `context.kombination`), men texterna innehåller namn som EntityLayer korrekt detekterar. Ger ~3 FP:ar av typen "Lars Eriksson".
+
+3. **CombinationLayer övergenerering av `context.yrke`**: 23 FP:ar fördelade på alla tre dataset. Undertyperna: (a) hallucineringar — verb/fraser som "leddes av", "eskaleras till bedrägerienheten"; (b) felaktig entitetstyp — namn som "Erik Johansson" klassas som yrke; (c) korrekt men olabeled — "systemutvecklare", "Projektledare" finns inte i iteration-1-datasettets expected.
+
+4. **Dubbeldetektion `context.organisation`** (11 FP:ar): CombinationLayer producerar `context.organisation` som individuell signal (combination_layer.py rad 125) parallellt med EntityLayer. Matcharens en-till-en-regel låter CombinationLayerens fynd (högre konfidens) kräva expected → TP; EntityLayerens fynd lämnas → FP. Inget dataset-fel — strukturellt matchningsproblem.
+
+**Hypotesprövning:** Hypotesen "iteration-1-datasetet saknar uppdaterade expected_findings" bekräftades INTE. Iteration-1-datasetet är korrekt labelat. Problemet sitter i kombinationsdatasetet (Rotorsak 1+2) och i CombinationLayerens prompt (Rotorsak 3).
+
+**Beslut fattade:** Inga implementationsbeslut. Analysen är underlag för iteration 3.
+
+**Öppet/Nästa steg (iteration 3-kandidater):**
+- Komplettera `combination_dataset.json` med `article4.adress`- och `article4.namn`-expected, ELLER utöka matcharen med kategori-alias för overlappande plats-kategorier.
+- Skärp CombinationLayerens prompt för `yrke`-signaler med negativa exempelpar mot verb och namnfraser.
+- Utred deduplicering av overlappande same-category-prediktioner i matcharen för att eliminera dubbeldetektions-FP:ar.

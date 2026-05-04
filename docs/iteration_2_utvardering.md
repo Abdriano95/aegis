@@ -271,3 +271,72 @@ Reproduktionen är versionskontrollerad i `demo/snapshots/iteration_2_report.jso
 ### Kvarstående förbättringsområden
 
 Identifierade begränsningar som inte åtgärdades inom #96 förs vidare till iteration 3. Se `docs/arkitektur.md` sektion 14.3 (Kvarstående begränsningar) för fullständig förteckning med grundorsaker.
+
+---
+
+## Del 7: FP-rotorsaksanalys — post-iteration 2 (2026-05-04)
+
+En explorativ rotorsaksanalys av de kvarstående 117 FP:arna genomfördes efter iteration 2:s avslut, baserad på `demo/snapshots/iteration_2_report.json`. Analysen undersökte varje FP i förhållande till datasettens `expected_findings` för att särskilja äkta detektionsfel från strukturella orsaker i evaluering och dataset-design.
+
+### Metod
+
+För varje FP kontrollerades om ett expected-fynd med (a) samma kategori och (b) överlappande textspan existerade i datasetet. Tre scenarion identifierades:
+
+- **Dubbeldetektion**: Expected finns och overlapperar — en annan prediktion har redan krävt expected-fyndet som TP (matcharen är en-till-en), och den aktuella prediktionen lämnas utan expected att matcha.
+- **Kategori-kroch**: Expected finns och overlapperar i text, men med annan kategori — matcharen kräver exakt kategorimatch, vilket ger FP trots korrekt detekterad entitet.
+- **Äkta FP**: Inget overlappande expected — prediktionen har ingen grund i datasetet.
+
+### Resultat per kategori
+
+| Kategori | Totalt FP | Dubbeldetektion | Kategori-krock | Äkta FP |
+|---|---|---|---|---|
+| `context.organisation` | 41 | 11 | 0 | 30 |
+| `context.yrke` | 23 | 0 | 0 | 23 |
+| `article4.adress` | 22 | 0 | 17 | 5 |
+| `context.plats` | 15 | 0 | 10 | 5 |
+| `article4.namn` | 3 | 0 | 0 | 3 |
+| `article9.halsodata` | 4 | 0 | 0 | 4 |
+| Övriga artikel 9 | 3 | 0 | 0 | 3 |
+| `context.kombination` | 6 | 0 | 0 | 6 |
+
+### Tre identifierade rotorsaker
+
+**Rotorsak 1 — Kategori-kroch `article4.adress` / `context.plats` (17 FP:ar)**
+
+Kombinationsdatasetet (`combination_dataset.json`) labelar ortsnamn som `context.plats`. EntityLayer mappar spaCy LOC → `article4.adress`. Matcharen kräver exakt kategorimatch, vilket skapar systematiska FP+FN-par för varje ort i kombinationsdatasetets texter:
+
+```
+Expected:     context.plats   "Malmö"   [combination_dataset]
+EntityLayer:  article4.adress "Malmö"   → FP  (fel kategori)
+Expected:     context.plats   "Malmö"   → FN  (ingen prediktion med rätt kategori)
+```
+
+Berörda samplar: 135–138, 141–144, 153–158. Alla orts- och platsreferenser i kombinationsdatasetet drabbas. Orsaken är att kombinationsdatasetet designades specifikt för att testa pusselbitseffekten (Lager 4) och labels-satte enbart `context.*`-kategorier — inte de grundläggande `article4.*`-kategorier som Lager 1+2 också producerar.
+
+**Rotorsak 2 — Saknade grundlabels i kombinationsdatasetet (3+ FP:ar)**
+
+Utöver ortskrocken saknar kombinationsdatasetet `article4.namn`-expected för namn som texterna faktiskt innehåller. EntityLayer (spaCy PRS → `article4.namn`) detekterar dessa korrekt men hittar inget expected att matcha:
+
+```
+Sample 134: "Professor Lars Eriksson, rektor på Hvitfeldtska..."
+  Expected:     [context.yrke, context.organisation, context.kombination]
+  EntityLayer:  article4.namn "Lars Eriksson"   → FP (saknar expected i datasetet)
+```
+
+**Rotorsak 3 — CombinationLayer övergenerering av `context.yrke`-signaler (23 FP:ar)**
+
+CombinationLayerens LLM producerar `context.yrke`-fynd i texter från alla tre dataset. Felen delas in i tre undertyper:
+
+- *Hallucineringar*: verb och fraser klassificeras som yrke — "leddes av", "protokollfördes av", "eskaleras till bedrägerienheten".
+- *Felaktig entitetstyp*: namn klassificeras som yrke — "Erik Johansson", "Lars Berg" (borde vara `article4.namn`).
+- *Korrekt men olabeled*: verkliga yrkestitlar som inte finns i expected — "systemutvecklare", "Projektledare" (iter1-datasetet labels-satte inte yrken för dessa texter).
+
+**Tilläggsnotering — Dubbeldetektion `context.organisation` (11 FP:ar)**
+
+EntityLayer och CombinationLayer detekterar oberoende samma organisationsnamn. Matcharen är en-till-en; CombinationLayerens signal (typiskt högre konfidens) kräver expected → TP; EntityLayerens fynd lämnas utan expected → FP. Dessa 11 FP:ar är inte fel i datasetet — de är ett strukturellt problem i hur matcharen hanterar redundanta detektioner från flera lager.
+
+### Slutsatser för iteration 3
+
+1. Kombinationsdatasetet behöver kompletteras med `article4.adress`- och `article4.namn`-expected för de texter som innehåller sådana entiteter. Alternativt: matcharen utökas till att acceptera kategori-alias (t.ex. `article4.adress` ≡ `context.plats` vid span-overlap).
+2. CombinationLayerens prompt behöver skärpas för `yrke`-signaler: tydligare negativa exempelpar som exkluderar verb, namnfraser och alltför generiska rollbeskrivningar.
+3. Dubbeldetektionsproblemet för `context.organisation` löses lämpligast via deduplicering av overlappande same-category-prediktioner i matcharen eller aggregatorn, inte i datasetet.
