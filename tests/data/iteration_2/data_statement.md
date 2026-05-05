@@ -17,7 +17,7 @@ Ej tillämpligt. Texterna är uteslutande syntetiskt genererade av en språkmode
 
 ## 4. Annotator Demographic
 
-Granskningen av de syntetiska kandidaterna har utförts av två annoterare: Abdulla Mehdi och Johanna Gull. Båda är svensktalande studenter på kandidatprogrammet Systemarkitektur vid Malmö universitet. De har ämneskunskap inom datavetenskap och grundläggande utbildning i GDPR-lagstiftningens definitioner av personuppgifter.
+Granskningen av de syntetiska kandidaterna har utförts av två annoterare: Abdulla Mehdi och Johanna Gull. Båda är svensktalande studenter på kandidatprogrammet Systemarkitektur vid Högskolan i Borås. De har ämneskunskap inom datavetenskap och grundläggande utbildning i GDPR-lagstiftningens definitioner av personuppgifter.
 
 ## 5. Speech Situation
 

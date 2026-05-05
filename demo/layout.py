@@ -16,7 +16,7 @@ _DEMO_TEXTS = {
         "Universitetssjukhuset."
     ),
     "Text 3 (Lager 4, pusselbitseffekt)": (
-        "Den nya VD:n på Hvitfeldtska gymnasiets musiklinje fick utmärkelsen "
+        "Den nya rektorn på Hvitfeldtska gymnasiets fick utmärkelsen "
         "i fjol efter sitt arbete med ensembleundervisning."
     ),
 }
