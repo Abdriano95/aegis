@@ -3,9 +3,9 @@
 Loads structured prompt definitions from versioned YAML files and assembles
 them into a deterministic prompt string suitable for LLM consumption.
 
-Assembly order follows Reynolds & McDonell (2021) component-structured
-prompts: task_instruction → context → reasoning_instructions → examples →
-output_format. system_prompt is kept separate for use as the LLMProvider
+Assembly order follows the component-based prompt construction described
+in Liu et al. (2023): task_instruction → context → reasoning_instructions
+→ examples → output_format. system_prompt is kept separate for use as the LLMProvider
 system_prompt parameter.
 
 Security: yaml.safe_load is used exclusively (never yaml.load) to prevent
@@ -20,7 +20,7 @@ When present, ``examples`` must be a list of dicts, each containing the
 keys ``input``, ``output``, and ``rationale``.
 
 References:
-    Reynolds & McDonell (2021): component-structured prompts
+    Liu et al. (2023): component-based prompt construction
     Brown et al. (2020): few-shot prompting with input-output examples
     Wei et al. (2022): chain-of-thought reasoning instructions
     Karras et al. (2025): structured JSON output format
@@ -257,7 +257,7 @@ def _validate(data: dict, path: Path) -> None:
 def _assemble(data: dict) -> str:
     """Assemble the prompt string in deterministic order.
 
-    Order (Reynolds & McDonell, 2021):
+    Order (component-based prompt construction, Liu et al., 2023):
     1. task_instruction (required)
     2. context (optional)
     3. reasoning_instructions (optional)

@@ -26,14 +26,14 @@ The ``assembled_prompt`` concatenates fields in deterministic order:
 task_instruction → context → reasoning_instructions → examples → output_format.
 ``system_prompt`` is kept separate for the LLMProvider system_prompt parameter.
 
-This order follows Reynolds & McDonell (2021) component-structured prompts:
-the model first receives the task, then supporting context, then reasoning
-structure, then concrete examples (Brown et al., 2020), and finally the
-expected output format (Karras et al., 2025).
+The order reflects component-based prompt construction as surveyed by
+Liu et al. (2023): the model first receives the task, then supporting
+context, then reasoning structure, then concrete examples (Brown et al.,
+2020), and finally the expected output format (Karras et al., 2025).
 
 References
 ----------
-- Reynolds & McDonell (2021): component-structured prompts
+- Liu et al. (2023): component-based prompt construction
 - Brown et al. (2020): few-shot prompting
 - Wei et al. (2022): chain-of-thought reasoning
 - Karras et al. (2025): structured JSON output

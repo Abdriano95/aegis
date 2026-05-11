@@ -30,7 +30,7 @@ metadata:
   author: "test"
   layer: "article9"
   source_citations:
-    - "Reynolds & McDonell (2021)"
+    - "Liu et al. (2023)"
   notes: "Test prompt."
 
 system_prompt: |
@@ -116,7 +116,7 @@ class TestLoadValidPrompt:
 
         assert prompt.metadata["version"] == "v1"
         assert prompt.metadata["layer"] == "article9"
-        assert "Reynolds & McDonell (2021)" in prompt.metadata["source_citations"]
+        assert "Liu et al. (2023)" in prompt.metadata["source_citations"]
 
     def test_system_prompt_extracted(self, tmp_path):
         _write_prompt(tmp_path, "article9", "v1", _VALID_YAML)

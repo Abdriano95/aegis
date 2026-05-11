@@ -7,13 +7,14 @@ metadata:
   author: "team"
   layer: "article9"
   source_citations:
-    - "Reynolds & McDonell (2021)"
+    - "Liu et al. (2023)"
     - "Brown et al. (2020)"
     - "Karras et al. (2025)"
   notes: "Initial placeholder. Faktisk prompt fylls i vid Issue #70 (Article9Layer)."
 
 system_prompt: |
-  PLACEHOLDER: Roll-instruktion enligt Reynolds & McDonell (2021).
+  PLACEHOLDER: Roll-instruktion enligt komponentbaserad prompt-struktur
+  (Liu et al., 2023).
   Definierar LLM:ens roll som GDPR-klassificerare med fokus på
   artikel 9-kategorier (särskilda kategorier av personuppgifter).
 

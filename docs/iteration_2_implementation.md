@@ -244,6 +244,8 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** base_dir-parameter istället för monkeypatch av _PROMPTS_DIR (dependency injection). pyyaml enbart i [llm]-grupp, inte [all]. Se Loggboken för full motivering.
 **Öppet/ Nästa steg:** Kluster 1 är komplett (#68 ✅, #69 ✅, #78 ✅). #70 (Article9Layer) och #72 (CombinationLayer) är fullt avblockerade. arkitektur.md sektion 10 behöver uppdateras med prompts/-katalogen (görs separat efter verifiering).
 
+> **Anmärkning 2026-05-11:** Reynolds & McDonell (2021) har retroaktivt ersatts med Liu et al. (2023) som referens i all kod och alla YAML-prompter, se commit-historiken.
+
 ### Session 2026-05-01 - Antigravity (Claude Opus 4.6) - Issue `#84`
 
 **Iteration:** 2 / v0.2.0-dev

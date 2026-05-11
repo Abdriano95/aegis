@@ -7,14 +7,15 @@ metadata:
   author: "team"
   layer: "combination"
   source_citations:
-    - "Reynolds & McDonell (2021)"
+    - "Liu et al. (2023)"
     - "Brown et al. (2020)"
     - "Wei et al. (2022)"
     - "Karras et al. (2025)"
   notes: "Initial placeholder. Faktisk prompt fylls i vid Issue #72 (CombinationLayer)."
 
 system_prompt: |
-  PLACEHOLDER: Roll-instruktion enligt Reynolds & McDonell (2021).
+  PLACEHOLDER: Roll-instruktion enligt komponentbaserad prompt-struktur
+  (Liu et al., 2023).
   Definierar LLM:ens roll som bedömare av indirekt identifierbarhet
   via pusselbitseffekten (GDPR skäl 26).
 
