@@ -121,26 +121,26 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Spår | Ansvarig | Status | Beroenden | Formaliseringskonsekvens |
 |---|---|---|---|---|---|---|
-| #– (I-1) | | | | ⬜ Ej startad | | |
-| #– (I-2) | | | | ⬜ Ej startad | | |
-| #– (I-3) | | | | ⬜ Ej startad | | |
-| #– (I-4) | | | | ⬜ Ej startad | | |
-| #– (I-5) | | | | ⬜ Ej startad | | |
-| #– (I-6) | | | | ⬜ Ej startad | | |
-| #– (I-7) | | | | ⬜ Ej startad | | |
-| #– (I-8) | | | | ⬜ Ej startad | | |
-| #– (I-9) | | | | ⬜ Ej startad | | |
-| #– (I-10) | | | | ⬜ Ej startad | | |
-| #– (I-11) | | | | ⬜ Ej startad | | |
-| #– (I-12) | | | | ⬜ Ej startad | | |
-| #– (I-13) | | | | ⬜ Ej startad | | |
-| #– (I-14) | | | | ⬜ Ej startad | | |
-| #– (I-15) | | | | ⬜ Ej startad | | |
-| #– (I-16) | | | | ⬜ Ej startad | | |
-| #– (I-17) | | | | ⬜ Ej startad | | |
-| #– (I-18) | | | | ⬜ Ej startad | | |
-| #– (I-19) | | | | ⬜ Ej startad | | |
-| #– (I-20) | | | | ⬜ Ej startad | | |
+| [#101](https://github.com/Abdriano95/aegis/issues/101) (I-1) | Promptskärpning för CombinationLayer context.yrke och context.organisation | A1 | Abdulla | ⬜ Ej startad | Inga | Stärker DP1 Rationale; 4.5.2 ska uppdateras. |
+| [#102](https://github.com/Abdriano95/aegis/issues/102) (I-2) | Matcher-aliasing för article4.adress och context.plats | A2 | Johanna | ⬜ Ej startad | Inga | 5.3 (arkitekturbeskrivning) uppdateras med aliasing-mekanism. |
+| [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ⬜ Ej startad | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
+| [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ⬜ Ej startad | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
+| [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ⬜ Ej startad | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
+| [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ⬜ Ej startad | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
+| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ⬜ Ej startad | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
+| [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
+| [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
+| [#110](https://github.com/Abdriano95/aegis/issues/110) (I-10) | Villkorad formulering av DP6 | B | Abdulla | ⬜ Ej startad | I-5, I-18 | Detta ÄR formaliseringsarbetet (DP6 i 5.5 eller observation i 4.4.3/6). |
+| [#111](https://github.com/Abdriano95/aegis/issues/111) (I-11) | Spårbarhetsmatris DP × iteration 1-2-empiri | B | Johanna | ⬜ Ej startad | I-9 | 5.4.4 eller bilaga får spårbarhetsmatris. |
+| [#112](https://github.com/Abdriano95/aegis/issues/112) (I-12) | Färdigställande av arkitekturkapitel 5.3 | B | Abdulla | ⬜ Ej startad | I-5 | Detta ÄR formaliseringsarbetet (5.3 slutförs). |
+| [#113](https://github.com/Abdriano95/aegis/issues/113) (I-13) | Reflektionsinslag i kapitel 4.4.3 och 6 | B | Gemensamt | ⬜ Ej startad | I-5, I-10, I-4, I-8 | Detta ÄR formaliseringsarbetet (4.4.3 och 6 reflektioner). |
+| [#114](https://github.com/Abdriano95/aegis/issues/114) (I-14) | Designcykel 3-avsnitten i kapitel 4.5 | B | Gemensamt | ⬜ Ej startad | I-1–I-6, I-18 | Detta ÄR formaliseringsarbetet (4.5 slutförs). |
+| [#115](https://github.com/Abdriano95/aegis/issues/115) (I-15) | Slutgiltig utvärderingssyntes i kapitel 5.4 | B | Johanna | ⬜ Ej startad | I-18 | Detta ÄR formaliseringsarbetet (5.4 slutförs). |
+| [#116](https://github.com/Abdriano95/aegis/issues/116) (I-16) | Kapitel 6 (Diskussion) inklusive 6.10 framtida arbete | B | Gemensamt | ⬜ Ej startad | I-1–I-15 | Detta ÄR formaliseringsarbetet (kapitel 6 slutförs). |
+| [#117](https://github.com/Abdriano95/aegis/issues/117) (I-17) | DC3-platshållarna genomgående i rapporten | B | Gemensamt | ⬜ Ej startad | I-18, I-5, I-6 | Detta ÄR formaliseringsarbetet (DC3-platshållare ifylls). |
+| [#118](https://github.com/Abdriano95/aegis/issues/118) (I-18) | Iteration 3:s naturalistiska utvärdering med V1, V2 och V4 | C | Gemensamt | ⬜ Ej startad | I-6, I-19 | Genererar input till I-15, I-17, I-10. |
+| [#119](https://github.com/Abdriano95/aegis/issues/119) (I-19) | Intervjuguide-revidering för iteration 3 | C | Gemensamt | ⬜ Ej startad | Inga | Styr I-18; ingen direkt rapportsektion. |
+| [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
 
 ---
 
@@ -217,3 +217,33 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Beslut fattade:** Inga arkitektoniska beslut. Stilval för det nya steget i arbetsflode.md följer befintliga steg.
 **Öppet/Nästa steg:** Inga.
+
+### Session 2026-05-11 - Claude Code (Opus 4.7) — issue-skapande
+
+**Iteration:** 3 / v0.3.0-dev
+**Mål:** Skapa 20 GitHub-issues för iteration 3 (I-1 till I-20) enligt specifikation från arkitekt-agenten, med korrekt body, labels, assignees och milestone-koppling, och uppdatera tabellen i denna fil med faktiska GitHub-nummer.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — tabellrader 122–143 ifyllda med #101–#120, titlar, spår, ansvariga, beroenden och formaliseringskonsekvens; denna sessionspost tillagd
+
+**Gjort:**
+- Skapat 10 nya labels i `Abdriano95/aegis`: `iteration-3`, `spar-A1`, `spar-A2`, `spar-A3`, `spar-A4`, `spar-B`, `spar-C`, `prio-hog`, `prio-medel`, `prio-lag`
+- Skapat milestone "iteration 3 / v0.3.0" (number=1)
+- Skapat 20 GitHub-issues #101 till #120 motsvarande I-1 till I-20, med fullständiga bodies (Beskrivning, Spår, Beroenden, Acceptanskriterier, Formaliseringskonsekvens, Förankring, Out of scope), labels, assignees och milestone-koppling enligt promptens spec
+- Uppdaterat tabellen rad 122–143 med faktiska issue-nummer (länkade till GitHub-URL), titlar, spår, ansvariga, beroenden i I-N-format och formaliseringskonsekvens i kort form
+- Issue-numren tilldelades monotont från #101 till #120 (I-N motsvarar #(100+N))
+
+**Mappning I-N → GitHub-issue:**
+- I-1 → #101, I-2 → #102, I-3 → #103, I-4 → #104, I-5 → #105
+- I-6 → #106, I-7 → #107, I-8 → #108, I-9 → #109, I-10 → #110
+- I-11 → #111, I-12 → #112, I-13 → #113, I-14 → #114, I-15 → #115
+- I-16 → #116, I-17 → #117, I-18 → #118, I-19 → #119, I-20 → #120
+
+**Beslut fattade:** Inga arkitektoniska beslut. Tre operativa antaganden bekräftades med användaren via AskUserQuestion innan implementationen:
+- Issues med "Gemensamt" som ansvarig (I-5, I-13, I-14, I-16, I-17, I-18, I-19) fick båda användarna (`Abdriano95` och `Jozelle`) som GitHub-assignees
+- Status-kolumnen behållen i tabellen och initierad med `⬜ Ej startad` för alla 20 rader
+- I-6 fick endast `Jozelle` som assignee (Abdullas granskningsansvar hanteras via PR-review, inte assignee-fältet)
+
+**Observerad avvikelse vid slutverifiering:** Sökning på `--label iteration-3` returnerade 21 issues istället för 20 — pre-existing issue #99 (`test_schema_error_invalid_signal fallerar på main`) bär också `iteration-3`-labeln men är inte kopplad till milestone "iteration 3 / v0.3.0". Detta är inte ett fel i denna sessions arbete (våra 20 issues #101–#120 har alla korrekt milestone, labels och assignees), men användaren kan vilja avgöra om #99 ska läggas till i milestonen som en bugg som ska adresseras under iteration 3.
+
+**Öppet/Nästa steg:** Iteration 3-arbetet kan starta. Per beroendekartan (rad 66–95) körs I-1, I-2, I-3, I-4 parallellt i V19, och I-19 påbörjas tidigt för att möjliggöra bokning av V20:s intervjusessioner. I-6 är iterationens sista konstruktionssteg per Beslut 41 och körs först när I-1 till I-5 är committade. Inga andra filer ändrade i denna session.
