@@ -142,6 +142,14 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#119](https://github.com/Abdriano95/aegis/issues/119) (I-19) | Intervjuguide-revidering för iteration 3 | C | Gemensamt | ⬜ Ej startad | Inga | Styr I-18; ingen direkt rapportsektion. |
 | [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
 
+### Separat buggfix (utanför iterationsplanen)
+
+Issue nedan bär `iteration-3`-labeln men ingår inte i de tjugo planerade arbetena (I-1 till I-20) och är inte kopplad till milestonen "iteration 3 / v0.3.0". Den dokumenteras separat för spårbarhet och hanteras sidoordnat under iterationen utan att räknas mot iterationens scope.
+
+| Issue | Titel | Ansvarig | Status | Anmärkning |
+|---|---|---|---|---|
+| [#99](https://github.com/Abdriano95/aegis/issues/99) | test_schema_error_invalid_signal fallerar på main: CombinationLayerError kastas inte vid okänt signal-värde | Gemensamt | ⬜ Ej startad | Pre-existing buggrapport från 2026-05-03; `CombinationLayer`:s schema-validering kastar inte `CombinationLayerError` vid okänt signal-värde utanför `{"yrke", "plats", "organisation"}`. Beslut om åtgärdsväg (validator-fix kontra test-justering) tas i Loggboken. |
+
 ---
 
 ## Loggbok
@@ -244,6 +252,8 @@ Lägg till en ny post längst ner. Använd följande mall:
 - Status-kolumnen behållen i tabellen och initierad med `⬜ Ej startad` för alla 20 rader
 - I-6 fick endast `Jozelle` som assignee (Abdullas granskningsansvar hanteras via PR-review, inte assignee-fältet)
 
-**Observerad avvikelse vid slutverifiering:** Sökning på `--label iteration-3` returnerade 21 issues istället för 20 — pre-existing issue #99 (`test_schema_error_invalid_signal fallerar på main`) bär också `iteration-3`-labeln men är inte kopplad till milestone "iteration 3 / v0.3.0". Detta är inte ett fel i denna sessions arbete (våra 20 issues #101–#120 har alla korrekt milestone, labels och assignees), men användaren kan vilja avgöra om #99 ska läggas till i milestonen som en bugg som ska adresseras under iteration 3.
+**Observerad avvikelse vid slutverifiering:** Sökning på `--label iteration-3` returnerade 21 issues istället för 20 — pre-existing issue #99 (`test_schema_error_invalid_signal fallerar på main`) bär också `iteration-3`-labeln men är inte kopplad till milestone "iteration 3 / v0.3.0". Detta är inte ett fel i denna sessions arbete (våra 20 issues #101–#120 har alla korrekt milestone, labels och assignees).
+
+**Uppföljning samma session:** På användarens begäran adderades en separat sektion "Separat buggfix (utanför iterationsplanen)" direkt efter huvudtabellen, som dokumenterar #99 i en mini-tabell med Anmärkning-kolumn. #99:s GitHub-milestone lämnades oförändrad — buggen hanteras sidoordnat under iteration 3 utan att räknas mot de tjugo planerade arbetena.
 
 **Öppet/Nästa steg:** Iteration 3-arbetet kan starta. Per beroendekartan (rad 66–95) körs I-1, I-2, I-3, I-4 parallellt i V19, och I-19 påbörjas tidigt för att möjliggöra bokning av V20:s intervjusessioner. I-6 är iterationens sista konstruktionssteg per Beslut 41 och körs först när I-1 till I-5 är committade. Inga andra filer ändrade i denna session.
