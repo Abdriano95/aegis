@@ -124,7 +124,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#101](https://github.com/Abdriano95/aegis/issues/101) (I-1) | Promptskärpning för CombinationLayer context.yrke och context.organisation | A1 | Abdulla | ✅ Klar 2026-05-12 | Inga | Stärker DP1 Rationale; 4.5.2 ska uppdateras. |
 | [#102](https://github.com/Abdriano95/aegis/issues/102) (I-2) | Matcher-aliasing för article4.adress och context.plats | A2 | Johanna | ✅ Klar (2026-05-12) | Inga | 5.3 (arkitekturbeskrivning) uppdateras med aliasing-mekanism. |
 | [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ✅ Klar (2026-05-12) | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
-| [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ⬜ Ej startad | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
+| [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ⬜ Ej startad | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
 | [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ⬜ Ej startad | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
 | [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ⬜ Ej startad | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
@@ -473,3 +473,77 @@ Båda körningarna genomfördes same-session på branch rebasad på origin/main 
 **Beslut fattade:** Revision av tidigare beslut 2026-05-12 (åtgärdsväg 1 → åtgärdsväg 2). Beslutsdokumentation i Loggboken (Google Docs, fliken "Loggbok - iteration 3"). Beslut 29:s scope utvidgas explicit till att omfatta enum-överträdelser av individuella signal-värden, inte enbart text_span-hallucinationer. Föregående sessions distinktion (schemafel vs. hallucination för enum) är överskriven av empirisk evidens.
 
 **Öppet/Nästa steg:** Förekomsten av 'person' som genererat signal-värde är empiriskt signal om prompt-lucka i CombinationLayer:s system prompt eller examples. Kandidat för prompt-revision i framtida iteration men inte i denna sessions scope. Markeras som öppen observation för iteration 3:s formaliseringsarbete. Pre-existing miljöfråga med `sv_core_news_lg` är åtgärdad och påverkar inte längre testkörningar.
+
+### Session 2026-05-12 - Claude Code (Opus 4.7) - I-4 Article9Layer v6-experiment, rollback till v5
+
+**Iteration:** 3 / v0.3.0-dev
+**Mål:** Promptförbättringar för Article9Layer:s tre underpresterande kategorier (halsodata, etniskt_ursprung, religios_overtygelse) per Beslut 33.
+
+**Utfall:** Negativ empiri. v6 inducerade strukturell regression i Article9Layer som helhet. Rollback till v5 genomförd. Det empiriska materialet bevaras som underlag för DP1 och rapportkapitel 6.5/6.7.
+
+**Ändrade filer:**
+- `gdpr_classifier/prompts/article9/v6.yaml` - skapad, sedan markerad experimentell i metadata (`status: "experimental"`, ny `notes` med rollback-pekare)
+- `gdpr_classifier/layers/article9/article9_layer.py` rad 27 - default `prompt_version` ändrades till "v6" och återställdes till "latest" efter rollback-beslutet (netto ingen ändring)
+- `scripts/build_demo_snapshot.py` rad 60 - `_DEFAULT_ARTICLE9_VERSION` ändrades till "v6" och återställdes till "v5" (netto ingen ändring)
+- `tests/unit/test_snapshot_loader.py` rad 54 - "article9"-metadata ändrades till "v6" och återställdes till "v5" (netto ingen ändring)
+- `docs/prompts_bilaga.md` - Article9Layer-sektionen utökad med v6-post markerad "experimentell, ej aktiv prompt"
+- `docs/iteration_3_implementation.md` - statusrad för #104 uppdaterad och denna sessionspost tillagd
+- `demo/snapshots/iteration_3_baseline_v5_reproduction.json` - same-session v5-reproduktion (genererad artefakt, bevaras)
+- `demo/snapshots/iteration_3_baseline_post_I4.json` - v6-körning (genererad artefakt, bevaras)
+
+**Gjort:**
+- Skapat v6.yaml enligt Beslut 33: utökade negativa exempel för halsodata (vaga humör- och energi-formuleringar), explicit negativa exempel för etniskt_ursprung (nordeuropeiska personnamn), positiva exempel för implicit kristet firande (julotta, dop, konfirmation) i religios_overtygelse. Utökade reasoning_instructions enligt Wei et al. (2022) med kort steg-för-steg-resoning. source_citations: Liu et al. (2023), Brown et al. (2020), Wei et al. (2022), Karras et al. (2025). decision_ref: Beslut 44.
+- Bumpat tre pinningar till "v6": Article9Layer.__init__ default, build_demo_snapshot.py `_DEFAULT_ARTICLE9_VERSION`, test_snapshot_loader.py metadata
+- Kört pytest: 178/178 passerade
+- Genererat same-session v5-reproduktion-snapshot på commit `164a6fe`
+- Genererat v6-snapshot same-session på samma commit
+- Beräknat per-kategori-mätvärden från båda snapshots
+- Identifierat strukturell regression i Article9Layer som helhet (total FP 7 till 14) plus sidoeffekter i sexuell_laggning (recall -33.3 pp) och genetisk_data (recall -14.3 pp)
+- Returnerat resultat och rotorsaksanalys till arkitekt-agenten för granskning
+- Genomfört rollback efter arkitekt-godkännande: återställt tre pinningar, markerat v6.yaml som experimentell i metadata (`status` och `notes`-uppdatering), uppdaterat dokumentation (prompts_bilaga.md, denna fil)
+
+**Mätvärden (qwen2.5:7b-instruct, 159 texter, 2026-05-12, same-session på commit `164a6fe`):**
+
+| Kategori | v5-reproduktion TP/FP/FN | v6 TP/FP/FN | ΔFP | ΔRecall pp |
+|---|---|---|---|---|
+| article9.halsodata | 6/4/1 | 7/5/0 | +1 | +14.3 |
+| article9.etniskt_ursprung | 0/1/0 | 0/0/0 | -1 | 0 |
+| article9.religios_overtygelse | 5/1/1 | 6/5/0 | +4 | +16.7 |
+| article9.biometrisk_data | 6/1/0 | 6/2/0 | +1 | 0 |
+| article9.genetisk_data | 5/0/2 | 4/2/3 | +2 | -14.3 |
+| article9.sexuell_laggning | 4/0/2 | 2/0/4 | 0 | -33.3 |
+| article9.fackmedlemskap | 5/0/1 | 5/0/1 | 0 | 0 |
+| article9.politisk_asikt | 6/0/0 | 6/0/0 | 0 | 0 |
+| Article9Layer total | 37/7/0 | 36/14/0 | +7 | 0 |
+| Pipeline total | 214/93/19 | 213/99/20 | +6 | -0.4 |
+
+**Baseline-anomali mot Johannas post-I-3-baseline:** v5-reproduktion TP=214/FP=93/FN=19 vs Johannas committade TP=212/FP=97/FN=21. Inom 4 FP totalt. Ingen sekundär anomali att dokumentera.
+
+**Rotorsaksanalys:**
+
+Tre mekanismer förklarar regressionen.
+
+1. Övergeneralisering av implicit kristet firande. v6:s positiva exempel (julotta, dop, konfirmation) fick modellen att klassificera sekulärt firande (jul, midsommar) som religios_overtygelse trots explicit negativ regel i task_instruction. Konkret observation: v6 FP "firandet av jul och midsommar" i text utan kyrklig kontext, vilket v5 korrekt avstod från att klassificera.
+
+2. Kategorikonfusion mellan religios_overtygelse och sexuell_laggning. Tillägget av "kyrklig vigsel" i religios_overtygelse-listan tippade modellen att klassificera samkönad vigsel som religiös. Konkreta observationer: "Johan + Marcus vigsel", "hennes fru Lisa" och "Pride-paraden" klassades alla som religios_overtygelse i v6, vilket v5 korrekt klassat som sexuell_laggning. Detta är primärorsaken till -33.3 pp recall i sexuell_laggning.
+
+3. Kategorikonfusion mellan halsodata och genetisk_data. Den utökade CoT-resoningen i reasoning_instructions tippade gränsfall mot halsodata istället för genetisk_data. Konkreta observationer: "han har en högre risk att utveckla Parkinsons sjukdom än genomsnittet" och "genetiska testet som du beställde" klassades som halsodata i v6, trots att v5 korrekt klassat dem som genetisk_data per v5:s explicita exempel.
+
+**Acceptanskriterier:**
+- DoD-2a halsodata FP-reduktion: MISSLYCKAT (4 till 5 FP, +1)
+- DoD-2b etniskt_ursprung FP-reduktion: UPPFYLLT (1 till 0)
+- DoD-2c religios_overtygelse recall: UPPFYLLT (83.3 till 100 procent, +16.7 pp), men till priset av +4 FP i samma kategori och -33.3 pp recall i sexuell_laggning som sidoeffekt
+
+**Beslut:** Rollback till v5 som aktiv prompt. v6 bevaras som experimentell artefakt med metadata-markering (`status: "experimental"` och utökad `notes` med pekare till denna sessionspost). Formaliserat som Beslut 48 i Loggboken iteration 3.
+
+**Koppling till tidigare beslut:** v6:s utfall bekräftar empiriskt Beslut 33:s prediktion att modellen ignorerar negativa promptinstruktioner konsekvent när få-shot-mönstret kolliderar med textuell likhet. Beslut 48 formaliserar att fortsatt promptarbete inom samma metodik avslutas för dessa kategorier; framtida förbättringar kräver ny metodik snarare än fler iterationer av samma slag.
+
+**Formaliseringskonsekvens (per Beslut 33 och Beslut 48):** Det empiriska materialet bidrar till DP1 (Designprincip 1) som evidens för att prompt-engineering ensam är otillräcklig för kategoriska gränsdragningsproblem hos 7B-modeller. AEGIS-rapportens kapitel 4.5.2 (designcykel 3:s konstruktion) ska beskriva experimentet inklusive negativt utfall som del av iteration 3:s designarbete. Kapitel 6.5 eller 6.7 ska reflektera över modellens hantering av negativa instruktioner med v6:s utfall som empirisk illustration. Rapportarbetet utförs utanför agent-flödet av Abdulla och Johanna.
+
+**Bevarade artefakter:**
+- `gdpr_classifier/prompts/article9/v6.yaml` (markerad experimentell i metadata)
+- `demo/snapshots/iteration_3_baseline_v5_reproduction.json`
+- `demo/snapshots/iteration_3_baseline_post_I4.json`
+- `docs/prompts_bilaga.md` v6-post med pekare hit
+
+**Öppet/Nästa steg:** Beslut 48 skapas manuellt av användaren i Loggboken iteration 3 (Google Docs) parallellt med denna commit. Kommitthash i `docs/prompts_bilaga.md` v6-postens "Kommitthash"-fält är platshållare och uppdateras i en follow-up-docs-commit direkt efter huvud-commit. Eventuella framtida förbättringar av Article9Layer:s underpresterande kategorier kräver ny metodik (arkitektonisk förändring, modellbyte, hybrid-approach), inte fortsatt prompt-iteration inom samma ramverk.

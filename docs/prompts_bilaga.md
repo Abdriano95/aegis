@@ -80,8 +80,35 @@ spårbarheten kräver det utöver kodhistoriken.
 
 ## Article9Layer
 
-Posterna fylls i när artikel 9-prompten revideras (issue
-[#104](https://github.com/Abdriano95/aegis/issues/104), I-4). Den aktuella
-v5-versionen av Article9Layer ligger under
-[`gdpr_classifier/prompts/article9/`](../gdpr_classifier/prompts/article9/) och
-dokumenteras i sin YAML-metadata.
+### v6 (experimentell, ej aktiv prompt)
+
+- **Fil:** [`gdpr_classifier/prompts/article9/v6.yaml`](../gdpr_classifier/prompts/article9/v6.yaml)
+- **Datum:** 2026-05-12
+- **Kommitthash:** d500b950b76fc64ac11eef8f52c94ae67ed5ccac
+- **Iteration:** 3 / v0.3.0-dev
+- **Issue:** [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4)
+- **Designbeslut:** Beslut 48 (Loggbok iteration 3) - rollback. Tidigare designintention enligt Beslut 33 (Loggbok iteration 2) och Beslut 44 (Loggbok iteration 3, prompt-konstruktionsmetod).
+- **Designintention (vad v6 skulle uppnå):** Per Beslut 33 utpekade iteration 2:s utvärdering tre Article9Layer-kategorier som underpresterande: `halsodata` (vaga formuleringar triggade FP), `etniskt_ursprung` (nordeuropeiska personnamn felklassades som etnisk markör), `religios_overtygelse` (implicit kristet firande missades i recall). v6 förstärkte negativa exempel för halsodata, lade till nordeuropeiska namn som negativa exempel för etniskt_ursprung, och introducerade positiva exempel för implicit kristet firande (julotta, dop, konfirmation) i religios_overtygelse. Reasoning_instructions utökades med kort steg-för-steg-resoning per Wei et al. (2022).
+- **Empiriskt utfall (qwen2.5:7b-instruct, 159 texter, 2026-05-12, same-session jämförelse mot v5-reproduktion på commit `164a6fe`):**
+
+  | Kategori | v5-reproduktion TP/FP/FN | v6 TP/FP/FN | ΔFP | ΔRecall pp |
+  |---|---|---|---|---|
+  | article9.halsodata | 6/4/1 | 7/5/0 | +1 | +14.3 |
+  | article9.etniskt_ursprung | 0/1/0 | 0/0/0 | -1 | 0 |
+  | article9.religios_overtygelse | 5/1/1 | 6/5/0 | +4 | +16.7 |
+  | article9.sexuell_laggning (sidoeffekt) | 4/0/2 | 2/0/4 | 0 | -33.3 |
+  | article9.genetisk_data (sidoeffekt) | 5/0/2 | 4/2/3 | +2 | -14.3 |
+  | Article9Layer total | 37/7/0 | 36/14/0 | +7 | 0 |
+
+  Article9Layer:s totala FP fördubblades (7 till 14) trots att etniskt_ursprung:s enda FP eliminerades och recall för halsodata och religios_overtygelse förbättrades. Kategorikonfusion mellan religios_overtygelse och sexuell_laggning (utlöst av "kyrklig vigsel"-tillägget) samt mellan halsodata och genetisk_data (utlöst av öppen CoT-resoning) driver regressionen.
+- **Snapshots:**
+  - [`demo/snapshots/iteration_3_baseline_v5_reproduction.json`](../demo/snapshots/iteration_3_baseline_v5_reproduction.json) - same-session v5-reproduktion
+  - [`demo/snapshots/iteration_3_baseline_post_I4.json`](../demo/snapshots/iteration_3_baseline_post_I4.json) - v6-körning
+- **Pekare:** Se sessionspost 2026-05-12 i [`docs/iteration_3_implementation.md`](iteration_3_implementation.md) för fullständig rotorsaksanalys och formaliseringskonsekvenser.
+- **Status:** Inte aktiv produktionsprompt. Article9Layer använder v5 som default.
+
+### v5 (aktiv)
+
+Article9Layer:s aktiva produktionsprompt är v5, dokumenterad i sin YAML-metadata under
+[`gdpr_classifier/prompts/article9/v5.yaml`](../gdpr_classifier/prompts/article9/v5.yaml).
+Retroaktiv bilagepost för v5 kan tillfogas av framtida issue om spårbarheten kräver det.
