@@ -84,7 +84,7 @@ spårbarheten kräver det utöver kodhistoriken.
 
 - **Fil:** [`gdpr_classifier/prompts/article9/v6.yaml`](../gdpr_classifier/prompts/article9/v6.yaml)
 - **Datum:** 2026-05-12
-- **Kommitthash:** `<HASH_TBD>`
+- **Kommitthash:** d500b950b76fc64ac11eef8f52c94ae67ed5ccac
 - **Iteration:** 3 / v0.3.0-dev
 - **Issue:** [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4)
 - **Designbeslut:** Beslut 48 (Loggbok iteration 3) - rollback. Tidigare designintention enligt Beslut 33 (Loggbok iteration 2) och Beslut 44 (Loggbok iteration 3, prompt-konstruktionsmetod).
