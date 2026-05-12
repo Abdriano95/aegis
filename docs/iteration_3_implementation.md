@@ -148,7 +148,7 @@ Issue nedan bär `iteration-3`-labeln men ingår inte i de tjugo planerade arbet
 
 | Issue | Titel | Ansvarig | Status | Anmärkning |
 |---|---|---|---|---|
-| [#99](https://github.com/Abdriano95/aegis/issues/99) | test_schema_error_invalid_signal fallerar på main: CombinationLayerError kastas inte vid okänt signal-värde | Gemensamt | ✅ Klar (2026-05-12) | Pre-existing buggrapport från 2026-05-03; `CombinationLayer`:s schema-validering kastar inte `CombinationLayerError` vid okänt signal-värde utanför `{"yrke", "plats", "organisation"}`. Åtgärdsväg 1 (validator-fix) implementerad enligt Loggbok – iteration 3. |
+| [#99](https://github.com/Abdriano95/aegis/issues/99) | test_schema_error_invalid_signal fallerar på main: CombinationLayerError kastas inte vid okänt signal-värde | Gemensamt | ⬜ Ej startad | Pre-existing buggrapport från 2026-05-03; `CombinationLayer`:s schema-validering kastar inte `CombinationLayerError` vid okänt signal-värde utanför `{"yrke", "plats", "organisation"}`. Beslut om åtgärdsväg (validator-fix kontra test-justering) tas i Loggboken. |
 
 ---
 
