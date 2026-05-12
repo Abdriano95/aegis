@@ -122,7 +122,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Spår | Ansvarig | Status | Beroenden | Formaliseringskonsekvens |
 |---|---|---|---|---|---|---|
 | [#101](https://github.com/Abdriano95/aegis/issues/101) (I-1) | Promptskärpning för CombinationLayer context.yrke och context.organisation | A1 | Abdulla | ⬜ Ej startad | Inga | Stärker DP1 Rationale; 4.5.2 ska uppdateras. |
-| [#102](https://github.com/Abdriano95/aegis/issues/102) (I-2) | Matcher-aliasing för article4.adress och context.plats | A2 | Johanna | ⬜ Ej startad | Inga | 5.3 (arkitekturbeskrivning) uppdateras med aliasing-mekanism. |
+| [#102](https://github.com/Abdriano95/aegis/issues/102) (I-2) | Matcher-aliasing för article4.adress och context.plats | A2 | Johanna | ✅ Klar (2026-05-12) | Inga | 5.3 (arkitekturbeskrivning) uppdateras med aliasing-mekanism. |
 | [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ⬜ Ej startad | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ⬜ Ej startad | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ⬜ Ej startad | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
@@ -257,3 +257,88 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Uppföljning samma session:** På användarens begäran adderades en separat sektion "Separat buggfix (utanför iterationsplanen)" direkt efter huvudtabellen, som dokumenterar #99 i en mini-tabell med Anmärkning-kolumn. #99:s GitHub-milestone lämnades oförändrad — buggen hanteras sidoordnat under iteration 3 utan att räknas mot de tjugo planerade arbetena.
 
 **Öppet/Nästa steg:** Iteration 3-arbetet kan starta. Per beroendekartan (rad 66–95) körs I-1, I-2, I-3, I-4 parallellt i V19, och I-19 påbörjas tidigt för att möjliggöra bokning av V20:s intervjusessioner. I-6 är iterationens sista konstruktionssteg per Beslut 41 och körs först när I-1 till I-5 är committade. Inga andra filer ändrade i denna session.
+
+### Session 2026-05-12 - Claude Code (Opus 4.7) — Issue #99
+
+**Iteration:** 3 / v0.3.0-dev
+**Mål:** Issue #99 — Åtgärda fallande test `test_schema_error_invalid_signal` genom att lägga till strikt enum-validering av `signal`-värdet i CombinationLayer.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/combination/combination_layer.py` — Ersatte log-and-skip vid okänt signal-värde med `raise CombinationLayerError`. Schemafel hanteras strikt; hallucinationer kvarstår med tolerant hantering enligt Beslut 29.
+- `docs/iteration_3_implementation.md` — Statusuppdatering #99 (⬜ Ej startad → 🔄 Pågår vid sessionsstart → ✅ Klar 2026-05-12 vid sessionsslut) samt denna sessionspost.
+
+**Gjort:**
+- Identifierade att aktuell implementation (rad 106–112 i `combination_layer.py`) behandlade okänt enum-värde som hallucination (log-and-skip), vilket är fel kategorisering enligt Beslut 22 och Beslut 29:s avgränsning. Okänt enum-värde är schemafel, inte hallucination.
+- Lade till `raise CombinationLayerError` med deskriptivt felmeddelande som följer befintlig konvention för schemafel i samma fil (jämför rad 118 `Invalid confidence value: ...` och rad 122 `Confidence must be a finite float ...`).
+- Verifierade att riktade testet `test_schema_error_invalid_signal` nu passerar.
+- Verifierade att samtliga 10 tester i CombinationLayer-suiten passerar, inklusive Beslut 29:s fyra hallucinationstester (`test_differentiated_validation_hallucinated_individual`, `test_differentiated_validation_reconstructed_combination`, `test_differentiated_validation_dropped_combination`, `test_differentiated_validation_normalized_whitespace`).
+- Verifierade full test-suite: 164/165 tester passerar. Det enda failet (`tests/integration/test_end_to_end.py::test_end_to_end_pipeline_evaluation`) är `OSError: [E050] Can't find model 'sv_core_news_lg'` — en pre-existing miljöfråga (saknad spaCy svenska NER-modell i lokal venv), inte en regression från denna ändring. Felet ligger i NER-lagrets modell­laddning och är orelaterat till `CombinationLayer.detect()`.
+
+**Beslut fattade:** Implementation enligt åtgärdsväg 1 i issue #99 (validator-fix, ej test-justering). Beslutsdokumentation i Loggboken (Google Docs, fliken "Loggbok – iteration 3"). Distinktion mot Beslut 29: schemafel (ogiltigt enum, saknad nyckel, fel typ på fält) → strikt validering; hallucination (text_span hittas inte) och ofullständig per-signal-output (saknade fält i enskild post) → tolerant skip enligt Beslut 29.
+
+**Öppet/Nästa steg:** Inga. Issue #99 stängs efter användarens manuella git-commit och push enligt CLAUDE.md sektion 4 steg 8. Pre-existing miljöfråga med `sv_core_news_lg` ligger utanför denna sessions scope och kvarstår.
+
+### Session 2026-05-12 - Manuell - README.md spaCy-modell-dokumentation
+
+**Iteration:** 3 / v0.3.0-dev (utanför iterationsplanens 20 planerade arbeten)
+**Mål:** Komplettera README.md:s Miljösetup-sektion med nedladdning av spaCy-modellen `sv_core_news_lg`.
+
+**Ändrade filer:**
+- `README.md` - Lade till `python -m spacy download sv_core_news_lg` i Miljösetup-kodblocket och ett textstycke som förklarar modellberoendet för EntityLayer.
+
+**Gjort:**
+- Identifierade luckan i README:s setup-instruktioner som orsakade `OSError: [E050]` under issue #99-sessionen 2026-05-12.
+- Lade till nedladdningssteget mellan `pip install` och `pytest --co -q`.
+- Lade till textförklaring av modellberoendet med referens till EntityLayer (Lager 2).
+
+**Beslut fattade:** Inga arkitektoniska beslut. Ren dokumentationsfix.
+
+**Öppet/Nästa steg:** Inga.
+
+### Session 2026-05-12 - Claude Code (Opus 4.7) — Issue #102 (I-2)
+
+**Iteration:** 3 / v0.3.0-dev
+**Mål:** Issue #102 — Implementera matcher-aliasing mellan `article4.adress` och `context.plats` i evaluation/matcher.py för att lösa Rotorsak 1 från FP-rotorsaksanalysen 2026-05-04.
+
+**Ändrade filer:**
+- `evaluation/matcher.py` — Modul-konstant `CATEGORY_ALIASES` (frozenset av frozensets), hjälpfunktion `_are_aliased`, tvåpass-loop i `match()` (Pass 1 exakt → Pass 2 alias), uppdaterad docstring med ny regel 1b.
+- `tests/unit/test_matcher.py` — 6 nya enhetstester: 4 obligatoriska (alias båda riktningar, exakt-företräde med båda orderingar, ej alias för obesläktade) + 2 robusthet (symmetri, alias-stjäl-inte-från-exakt).
+- `docs/arkitektur.md` — Ny underrubrik 9.2.1 "Matcher-aliasing för kategorikrock" inom sektion 9.2 (efter Aggregering, före 9.3).
+- `docs/iteration_3_implementation.md` — Statusuppdatering #102 (⬜ Ej startad → 🔄 Pågår vid sessionsstart → ✅ Klar 2026-05-12 vid sessionsslut) samt denna sessionspost.
+
+**Gjort:**
+- Statusuppdatering till 🔄 Pågår som första edit före kodändringar.
+- Implementerade `CATEGORY_ALIASES = frozenset({frozenset({Category.ADRESS, Category.PLATS})})` på modulnivå för triviall framtida utökning.
+- Implementerade `_are_aliased(a, b)` med self-aliasing → False (exakt-fall fångas redan av Pass 1) och robusthet mot okända kategorier via frozenset-membership.
+- Restrukturerade `match()`:s inner-loop till tvåpass per prediktion: Pass 1 exakt-match (oförändrat beteende), Pass 2 alias-match endast om Pass 1 inte fann något. Confidence-sortering, `id(e)`-tracking och en-till-en-claiming oförändrade.
+- 6 nya tester gröna; alla 6 befintliga matcher-tester orörda och gröna (12/12 i `test_matcher.py`).
+- Hela testsviten grön: 171 passed, 0 failed (`pytest tests/`).
+- SSOT-uppdatering 9.2.1 dokumenterar aliasstrukturen, tvåpass-logiken, motiveringen (Rotorsak 1) och hänvisning till Loggboken iteration 3.
+
+**Avvikelse från issue-spec:** Issue-specen refererade till `Category.KONTEXTUELLT_PLATS`. Det faktiska enum-namnet i `gdpr_classifier/core/category.py` är `Category.PLATS` (string-värde `"context.plats"`). Implementationen använder det faktiska namnet enligt spec-instruktionen ("Om enum-värdet för `context.plats` har annat namn, använd det faktiska namnet och notera det i sessionsloggen").
+
+**Designval (utöver spec):**
+- `aliased_matches`-fält i `MatchResult` skippades. Information härledbar post-hoc via `p.category == e.category` på `true_positives`. Undviker mutable-list-default på `frozen=True` dataclass.
+- SSOT-placering: ny underrubrik 9.2.1 inom sektion 9.2 (samlat med övrig matcher-dokumentation) snarare än egen sektion 9.6.
+- `_are_aliased` returnerar False vid self-aliasing — exakt-fallet hanteras redan av Pass 1.
+
+**Beslut fattade:** Aliasing på evaluation-sidan istället för dataset-fix eller EntityLayer-mapping-fix (lösning på Rotorsak 1). Beslut 11 om LOC → ADRESS-mappning står kvar. Designbeslut för aliasing-mekanismen förs in i Loggboken iteration 3 av Johanna utanför agent-flödet.
+
+**Formaliseringskonsekvens (per Beslut 42):** AEGIS-rapportens kapitel 5.3 (arkitekturbeskrivning) behöver uppdateras med aliasing-mekanismen i utvärderingsramverket. Hanteras av Abdulla och Johanna utanför agent-flödet.
+
+**Uppföljning samma session — baslinjemätning efter merge av main:** Initial körning av `python run_evaluation.py` blockerades av en separat runtime-bugg i CombinationLayer (LLM returnerar signal-värdet `'person'` som ej fanns i tillåten mängd `{organisation, plats, yrke}`, vilket den strikta validatorn från issue #99 kastade error på). Användaren reverterade #99-fixen i main (PR #123 / commit 301b8cf) så att okänt signal-värde åter behandlas tolerant som hallucination. Main mergades in i denna branch (mergecommit dc25fc7) varpå evaluationen kunde köras. Notera: detta återintroducerar buggen som issue #99 var avsedd att fixa — `test_schema_error_invalid_signal` fallerar nu på branchen som väntat, övriga 170 tester gröna inklusive samtliga 12 matcher-tester.
+
+**Ny baslinje (2026-05-12, post-aliasing, qwen2.5:7b-instruct):**
+- Total: TP 212, FP 113, FN 21
+- Precision: **65.23%** (iter 2: 64.00%, Δ +1.23 pp)
+- Recall: **90.99%** (iter 2: 89.27%, Δ +1.72 pp)
+- F1: **75.99%** (iter 2: 74.55%, Δ +1.44 pp)
+- FP-räkning: 113 (iter 2: 117, Δ −4)
+
+**Per-kategori utfall för aliasparet:**
+- `context.plats`: TP 14, FP 8, FN 0 — 100% recall, alias-matchningen fungerar end-to-end
+- `article4.adress`: TP 14, FP 30, FN 1 — fortfarande hög FP-räkning, indikerar att Rotorsak 1 inte var hela förklaringen för adress-FP
+
+**Reflektion:** FP-reduktionen blev mindre än prognostiserade ≈17 (faktiskt −4). Sannolika orsaker: (1) LLM-utfall är icke-deterministiskt mellan körningar; (2) main har förändrats sedan iter 2:s slutmätning; (3) en del av iter 2:s adress-FP berodde sannolikt på andra rotorsaker än kategorikrock. Alla tre primära metrics rör sig dock i rätt riktning, vilket validerar att aliasingen löser den specifika kategori-mappnings-asymmetrin utan regression. Vidare FP-reduktion förväntas från I-1 (CombinationLayer-prompt) och I-3 (aggregator-deduplicering).
+
+**Öppet/Nästa steg:** Inga för #102. Loggboken iteration 3 uppdateras av Johanna med designbeslutet och baslinje-deltat. AEGIS-rapportens kapitel 5.3 uppdateras enligt formaliseringskonsekvens-noten ovan. Issue #99 kvarstår som öppen fråga (revertad fix → ursprungsbuggen aktiv igen) — separat handling utanför denna session.

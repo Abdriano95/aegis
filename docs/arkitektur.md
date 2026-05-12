@@ -491,6 +491,29 @@ Utvärderingen följer FEDS (Venable, Pries-Heje & Baskerville, 2016) med artifi
 
 **Aggregering:** Metriker rapporteras totalt, per GDPR-kategori, per lager och per mekanism (möjligt tack vare `Finding.source` och `Classification.mechanism_used`).
 
+#### 9.2.1 Matcher-aliasing för kategorikrock
+
+Vissa kategoripar är semantiskt och spannivåmässigt ekvivalenta även om
+namnen skiljer sig — typfallet är `article4.adress` (EntityLayer mappar
+spaCy LOC → ADRESS) mot `context.plats` (kombinationsdatasetets label för
+ortsnamn). Matcharen tillämpar en aliasstruktur `CATEGORY_ALIASES` (frozenset
+av frozensets) som tillåter kategoripar att matcha varandra på spannivå.
+
+**Tvåpass-logik per prediktion:**
+1. Pass 1: exakt kategori-match (oförändrat beteende).
+2. Pass 2: alias-match endast om Pass 1 inte fann något.
+
+Exakt-match har strikt företräde per prediktion. Predikationernas sortering
+på confidence (desc) bibehålls. TP räknas under fasit-fyndets kategori
+(LabeledFinding), vilket innebär att alias-matchningar bidrar till recall
+under förväntad kategori utan att förändra metric-aggregeringen.
+
+Motivering: Rotorsak 1 från FP-rotorsaksanalysen 2026-05-04 (se
+`iteration_2_utvardering.md` Del 7). Lösningen ligger på evaluation-sidan
+för att inte påverka klassificeringens runtime-beteende (Beslut 11 om LOC
+→ ADRESS-mappning står kvar). Designbeslut för aliasing-mekanismen förs in
+i Loggboken iteration 3 av Johanna utanför agent-flödet.
+
 ### 9.3 Utvärderingsdatamodell
 
 ```python
