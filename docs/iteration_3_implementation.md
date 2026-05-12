@@ -123,7 +123,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 |---|---|---|---|---|---|---|
 | [#101](https://github.com/Abdriano95/aegis/issues/101) (I-1) | Promptskärpning för CombinationLayer context.yrke och context.organisation | A1 | Abdulla | ⬜ Ej startad | Inga | Stärker DP1 Rationale; 4.5.2 ska uppdateras. |
 | [#102](https://github.com/Abdriano95/aegis/issues/102) (I-2) | Matcher-aliasing för article4.adress och context.plats | A2 | Johanna | ✅ Klar (2026-05-12) | Inga | 5.3 (arkitekturbeskrivning) uppdateras med aliasing-mekanism. |
-| [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ⬜ Ej startad | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
+| [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ✅ Klar (2026-05-12) | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ⬜ Ej startad | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ⬜ Ej startad | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
 | [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ⬜ Ej startad | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
@@ -342,3 +342,47 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Reflektion:** FP-reduktionen blev mindre än prognostiserade ≈17 (faktiskt −4). Sannolika orsaker: (1) LLM-utfall är icke-deterministiskt mellan körningar; (2) main har förändrats sedan iter 2:s slutmätning; (3) en del av iter 2:s adress-FP berodde sannolikt på andra rotorsaker än kategorikrock. Alla tre primära metrics rör sig dock i rätt riktning, vilket validerar att aliasingen löser den specifika kategori-mappnings-asymmetrin utan regression. Vidare FP-reduktion förväntas från I-1 (CombinationLayer-prompt) och I-3 (aggregator-deduplicering).
 
 **Öppet/Nästa steg:** Inga för #102. Loggboken iteration 3 uppdateras av Johanna med designbeslutet och baslinje-deltat. AEGIS-rapportens kapitel 5.3 uppdateras enligt formaliseringskonsekvens-noten ovan. Issue #99 kvarstår som öppen fråga (revertad fix → ursprungsbuggen aktiv igen) — separat handling utanför denna session.
+
+### Session 2026-05-12 - Claude Code (Opus 4.7) — Issue #103 (I-3)
+
+**Iteration:** 3 / v0.3.0-dev
+**Mål:** Issue #103 — Aggregator-deduplicering för same-category overlap över lager. Lösa Tilläggsorsaken från FP-rotorsaksanalysen 2026-05-04: EntityLayer och CombinationLayer producerar parallella `context.organisation`-fynd på samma span, vilket matcharens en-till-en-logik räknar som dubbeldetektion (11 FP).
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — Imports `defaultdict` och `dataclasses.replace`. Ny privat metod `_deduplicate_same_category_overlap` (post-containment, pre-overlaps). `aggregate()` anropar metoden mellan `_apply_containment_rules` och `_find_overlaps`.
+- `tests/unit/test_aggregator_deduplication.py` (ny) — Sju enhetstester: same-category overlap, disjoint spans, cross-category overlap, tiebreaker vid lika confidence, kedjad pairwise overlap, transitiv kedja utan A–C-överlapp, sensitivity-invariant.
+- `docs/arkitektur.md` — Pseudokoden för `aggregate()` i sektion 8 inkluderar nu dedup-steget. Ny fet-bullet "Containment-regel: same-category dedup (Issue #103, iteration 3)" mellan IBAN-telefon-bulleten och Konfigurerbara trösklar.
+- `docs/iteration_3_implementation.md` — Statusuppdatering #103 (⬜ Ej startad → 🔄 Pågår vid sessionsstart → ✅ Klar 2026-05-12 vid sessionsslut) samt denna sessionspost.
+- `demo/snapshots/iteration_3_baseline_post_I3.json` (ny) — Demo-snapshot från `scripts/build_demo_snapshot.py` med post-I-3-baslinjen.
+
+**Gjort:**
+- Statusuppdatering till 🔄 Pågår som första edit före kodändringar.
+- Implementerade `_deduplicate_same_category_overlap` enligt plan: gruppering per kategori via `defaultdict`, stabil sortering på confidence desc, pairwise span-overlap-jämförelse (`a.start < b.end and b.start < a.end` — samma formel som `_find_overlaps`), `to_remove` + `sources_to_propagate` som ackumulatorer. Source-propagering till `metadata["deduplicated_sources"]` via `dataclasses.replace` (Finding är frozen).
+- Integrerade dedup-steget i `aggregate()` efter containment och före `_find_overlaps` så same-category-par försvinner från både `Classification.findings` och `overlapping_findings`.
+- 7 nya tester gröna. Befintliga aggregator-tester orörda: `test_aggregator_containment.py` (7), `test_aggregator_article9_containment.py` (6), `test_aggregator_combination.py` (9) — 22/22 gröna.
+- Full testsvit: 177/178 passerar. Det enda failet är `test_combination_layer.py::test_schema_error_invalid_signal` — exakt den pre-existerande CombinationLayer-valideringsbuggen som blockade I-2 (efter Issue #99-revert i main). Failet rör inte aggregator-koden.
+- SSOT-uppdatering i sektion 8: pseudokoden visar dedup-steget; ny fet-bullet dokumenterar mekanism, tiebreaker, source-propagering, motivering (Tilläggsorsak), konsekvens för `overlapping_findings`, avgränsning mot cross-category-dedup och hänvisning till Loggboken iteration 3.
+- Ny demo-snapshot genererad via `scripts/build_demo_snapshot.py --output iteration_3_baseline_post_I3.json` (Ollama, qwen2.5:7b-instruct, 159 texter). Sparad till `demo/snapshots/`.
+
+**Designval (utöver spec):**
+- Pairwise-semantik vid transitiv kedja: när A (högsta confidence) konsumerar B men A–C inte överlappar bevaras C. Detta dokumenterades explicit i SSOT-bulleten och täcks av `test_chain_overlap_transitive_without_AC_overlap`.
+- SSOT-placering: fet-bullet matchar mönstret för "Containment-regel: IBAN-telefon-överlapp"-bulleten istället för att introducera ny underrubriksnumrering (8.1/8.2). Konsistent med befintlig struktur i sektion 8.
+
+**Beslut fattade:** Same-category dedup som lösning på Tilläggsorsaken (parallell `context.organisation`-detektion från EntityLayer och CombinationLayer). Cross-category-dedup (CATEGORY_ALIASES-baserad ADRESS+PLATS-sammanslagning) avgränsad som potentiell egen issue. Full motivering förs in i Loggboken iteration 3 av Johanna utanför agent-flödet.
+
+**Formaliseringskonsekvens (per Beslut 42):** AEGIS-rapportens kapitel 5.3 (arkitekturbeskrivning) behöver uppdateras med dedup-mekanismen som arkitekturellt komplement till containment-reglerna. Aggregeras med I-2:s motsvarande flagga. Hanteras av Abdulla och Johanna utanför agent-flödet.
+
+**Ny baslinje (2026-05-12, post-I-3, qwen2.5:7b-instruct, 159 texter):**
+- Total: TP 212, FP 97, FN 21
+- Precision: **68.61%** (post-I-2: 65.23%, Δ +3.38 pp)
+- Recall: **90.99%** (post-I-2: 90.99%, oförändrad)
+- F1: **78.23%** (post-I-2: 75.99%, Δ +2.24 pp)
+- FP-räkning: 97 (post-I-2: 113, Δ −16)
+
+**Per-kategori utfall (post-I-2 → post-I-3):**
+- `context.organisation`: TP 23/23, FP 38 → 22, FN 4/4 — Precision 37.70% → 51.11%. 16 FP eliminerade utan att röra TP eller recall, exakt det förväntade utfallet.
+- `context.plats`, `context.yrke`, `article4.adress`, `article4.namn`: identiska TP/FP/FN. Inga övriga kategorier påverkade — bekräftar same-category-avgränsning.
+
+**Reflektion:** FP-reduktionen blev 16 (faktiskt utfall) mot prognostiserade ≈11 i issue-specen. Skillnaden förklaras sannolikt av att aktuell baseline efter #99 och I-2 är annorlunda än 2026-05-04-snapshotten, och av icke-determinism i LLM-utfall mellan körningar. Avgörande: all reduktion kom från `context.organisation` och recall förblev exakt 90.99% — dedup-mekanismen löser det strukturella problemet rent (ingen TP-konsumtion, ingen kategori-leakage). Vidare FP-reduktion förväntas från I-1 (prompt-skärpning context.organisation/yrke) och eventuell framtida cross-category-dedup.
+
+**Öppet/Nästa steg:** Inga för #103. Loggboken iteration 3 uppdateras av Johanna med designbeslutet och baslinje-deltat. AEGIS-rapportens kapitel 5.3 uppdateras enligt formaliseringskonsekvens-noten. Issue #99-buggen (revertad i main) kvarstår — påverkar inte denna issue men noteras för spårbarhet.

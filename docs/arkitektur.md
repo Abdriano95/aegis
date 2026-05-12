@@ -372,6 +372,7 @@ class Aggregator:
         active_layers: list[str]
     ) -> Classification:
         filtered = self._apply_containment_rules(findings)
+        filtered = self._deduplicate_same_category_overlap(filtered)
         overlaps = self._find_overlaps(filtered)
         sensitivity, mechanism = self._determine_sensitivity(filtered)
         return Classification(
@@ -452,6 +453,18 @@ class Aggregator:
 `_apply_containment_rules` filtrerar bort telefonnummer-fynd (`Category.TELEFONNUMMER`) vars span överlappar med ett IBAN-fynd (`Category.IBAN`). Motivering: IBAN-recognizern kräver mod97-kontrollsiffervalidering och har `confidence=1.0`; den är strikt mer specifik än telefon-recognizerns regex-matchning (`confidence=0.9`). Ett giltigt IBAN är aldrig ett telefonnummer. Regeln löser det cross-recognizer-överlapp som dokumenterades i avsnitt 14.1.
 
 Regeln appliceras *före* `_find_overlaps` och `_determine_sensitivity` så att borttagna telefon-fynd inte förekommer i `Classification.findings` eller `overlapping_findings`. Enbart IBAN-telefon-överlapp hanteras; andra recognizer-kombinationer lämnas opåverkade.
+
+**Containment-regel: same-category dedup (Issue #103, iteration 3):**
+
+`_deduplicate_same_category_overlap` körs efter `_apply_containment_rules` och före `_find_overlaps`. När två fynd har samma `category` och överlappande span (`a.start < b.end and b.start < a.end`) behålls det med högst confidence och det andra tas bort. Vid lika confidence behålls det fynd som kommer först i input-listan (stabil ordning) — beteendet är deterministiskt och privilegierar inte något lager.
+
+Borttaget fynds `source` propageras till det behållna fyndets `metadata["deduplicated_sources"]` (lista av strings). `Finding`-typdefinitionen är oförändrad: källfältet förblir `str` och spårbarheten flyttas till metadata. Vid kedjad pairwise-överlapp (A–B, A–C båda överlappar A) propageras båda borttagna fyndens sources till A:s metadata; transitiv kedja utan A–C-överlapp lämnar C oförändrad.
+
+Motivering: FP-rotorsaksanalysens Tilläggsnotering 2026-05-04 (`docs/iteration_2_utvardering.md` Del 7) — EntityLayer (Beslut 11) och CombinationLayer (per `combination_annotation_guidelines.md`) producerar parallella `context.organisation`-fynd på samma span. Matcharens en-till-en-logik räknade detta som dubbeldetektion och rapporterade EntityLayer-fyndet som FP utan grund i datasetet (11 FP under `context.organisation`). Same-category-dedup eliminerar denna strukturella redundans innan matcharen konsumerar `classification.findings`.
+
+Konsekvens för `overlapping_findings`: same-category-par försvinner från listan (förväntat — fynden mergeras). Cross-category-par (ADRESS+PLATS, NAMN+ORG i adresssträngar etc.) bevaras oförändrat.
+
+Avgränsning: cross-category-dedup via `CATEGORY_ALIASES` (ADRESS+PLATS-sammanslagning) ligger utanför scope och kan utvärderas som framtida issue baserat på baseline-mätningen efter I-3. Full motivering till same-category-lösningen finns i Loggboken iteration 3.
 
 **Konfigurerbara trösklar (Beslut 20, Loggbok iteration 2):**
 
