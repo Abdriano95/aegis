@@ -277,3 +277,20 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Implementation enligt åtgärdsväg 1 i issue #99 (validator-fix, ej test-justering). Beslutsdokumentation i Loggboken (Google Docs, fliken "Loggbok – iteration 3"). Distinktion mot Beslut 29: schemafel (ogiltigt enum, saknad nyckel, fel typ på fält) → strikt validering; hallucination (text_span hittas inte) och ofullständig per-signal-output (saknade fält i enskild post) → tolerant skip enligt Beslut 29.
 
 **Öppet/Nästa steg:** Inga. Issue #99 stängs efter användarens manuella git-commit och push enligt CLAUDE.md sektion 4 steg 8. Pre-existing miljöfråga med `sv_core_news_lg` ligger utanför denna sessions scope och kvarstår.
+
+### Session 2026-05-12 - Manuell - README.md spaCy-modell-dokumentation
+
+**Iteration:** 3 / v0.3.0-dev (utanför iterationsplanens 20 planerade arbeten)
+**Mål:** Komplettera README.md:s Miljösetup-sektion med nedladdning av spaCy-modellen `sv_core_news_lg`.
+
+**Ändrade filer:**
+- `README.md` - Lade till `python -m spacy download sv_core_news_lg` i Miljösetup-kodblocket och ett textstycke som förklarar modellberoendet för EntityLayer.
+
+**Gjort:**
+- Identifierade luckan i README:s setup-instruktioner som orsakade `OSError: [E050]` under issue #99-sessionen 2026-05-12.
+- Lade till nedladdningssteget mellan `pip install` och `pytest --co -q`.
+- Lade till textförklaring av modellberoendet med referens till EntityLayer (Lager 2).
+
+**Beslut fattade:** Inga arkitektoniska beslut. Ren dokumentationsfix.
+
+**Öppet/Nästa steg:** Inga.
