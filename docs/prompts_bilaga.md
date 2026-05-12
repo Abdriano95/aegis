@@ -19,7 +19,7 @@ versioner (v1-v4) kan fyllas i av framtida issues om så önskas.
 
 - **Fil:** [`gdpr_classifier/prompts/combination/v5.yaml`](../gdpr_classifier/prompts/combination/v5.yaml)
 - **Datum:** 2026-05-12
-- **Kommitthash:** _sätts vid commit; uppdateras tillsammans med filen_
+- **Kommitthash:** b1d061abc4335ff7c9f084e0bd2ad4d199c59838
 - **Iteration:** 3 / v0.3.0-dev
 - **Issue:** [#101](https://github.com/Abdriano95/aegis/issues/101) (I-1)
 - **Designbeslut:** Beslut 42 (Loggbok iteration 3)
