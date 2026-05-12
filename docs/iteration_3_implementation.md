@@ -148,7 +148,7 @@ Issue nedan bär `iteration-3`-labeln men ingår inte i de tjugo planerade arbet
 
 | Issue | Titel | Ansvarig | Status | Anmärkning |
 |---|---|---|---|---|
-| [#99](https://github.com/Abdriano95/aegis/issues/99) | test_schema_error_invalid_signal fallerar på main: CombinationLayerError kastas inte vid okänt signal-värde | Gemensamt | ⬜ Ej startad | Pre-existing buggrapport från 2026-05-03; `CombinationLayer`:s schema-validering kastar inte `CombinationLayerError` vid okänt signal-värde utanför `{"yrke", "plats", "organisation"}`. Beslut om åtgärdsväg (validator-fix kontra test-justering) tas i Loggboken. |
+| [#99](https://github.com/Abdriano95/aegis/issues/99) | test_schema_error_invalid_signal fallerar på main: CombinationLayerError kastas inte vid okänt signal-värde | Gemensamt | ✅ Klar 2026-05-12 (reviderad) | Pre-existing buggrapport från 2026-05-03. Första fixen (åtgärdsväg 1, strikt validering) underkändes empiriskt av evaluation-körning 2026-05-12 (LLM producerade 'person' → CombinationLayerError avbröt pipelinen). Reverterad i main via PR #123. Reviderad samma dag till åtgärdsväg 2: testet omskrivet till `test_invalid_signal_value_is_skipped` som specificerar tolerant skip enligt Beslut 29 (scope utvidgat till enum-överträdelser). Kod oförändrad efter PR #123-revert. Revisionsbeslut i Loggboken iteration 3. |
 
 ---
 
@@ -386,3 +386,25 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Reflektion:** FP-reduktionen blev 16 (faktiskt utfall) mot prognostiserade ≈11 i issue-specen. Skillnaden förklaras sannolikt av att aktuell baseline efter #99 och I-2 är annorlunda än 2026-05-04-snapshotten, och av icke-determinism i LLM-utfall mellan körningar. Avgörande: all reduktion kom från `context.organisation` och recall förblev exakt 90.99% — dedup-mekanismen löser det strukturella problemet rent (ingen TP-konsumtion, ingen kategori-leakage). Vidare FP-reduktion förväntas från I-1 (prompt-skärpning context.organisation/yrke) och eventuell framtida cross-category-dedup.
 
 **Öppet/Nästa steg:** Inga för #103. Loggboken iteration 3 uppdateras av Johanna med designbeslutet och baslinje-deltat. AEGIS-rapportens kapitel 5.3 uppdateras enligt formaliseringskonsekvens-noten. Issue #99-buggen (revertad i main) kvarstår — påverkar inte denna issue men noteras för spårbarhet.
+
+### Session 2026-05-12 - Claude Code (Opus 4.7) — Issue #99 (revision)
+
+**Iteration:** 3 / v0.3.0-dev
+**Mål:** Revidera tidigare fix för #99 från åtgärdsväg 1 (strikt validering) till åtgärdsväg 2 (tolerant skip) efter empirisk feedback från evaluation-körning 2026-05-12 där LLM producerade signal-värdet 'person' och triggade `CombinationLayerError` som avbröt pipelinen.
+
+**Ändrade filer:**
+- `tests/unit/test_combination_layer.py` — Omdöpte och omskrev `test_schema_error_invalid_signal` till `test_invalid_signal_value_is_skipped`. Testet specificerar nu tolerant skip-beteende enligt Beslut 29 och 2026-05-12-revisionsbeslutet. Använder det empiriska felvärdet 'person' som regressionstest mot produktionsfelet.
+- `gdpr_classifier/layers/combination/combination_layer.py` — Ingen ändring i denna session; verifierades vara i log-and-skip-tillstånd (rad 106-112) efter PR #123 / commit 301b8cf (revert av föregående sessions fix). Listas som verifierad fil för spårbarhet.
+- `docs/iteration_3_implementation.md` — Statusuppdatering #99 (⬜ Ej startad → ✅ Klar 2026-05-12 (revideras) vid sessionsstart → ✅ Klar 2026-05-12 (reviderad) vid sessionsslut) samt denna sessionspost. Anmärknings-kolumnen utökad med revisionssammanfattning.
+
+**Gjort:**
+- Identifierade rotorsak till evaluation-krasch 2026-05-12: LLM producerade signal-värdet 'person', semantiskt rimligt men oauktoriserat och överlappande med Lager 2:s NER-scope.
+- Reviderade beslut 2026-05-12 om åtgärdsväg 1. Empirin underkänner den teoretiska distinktionen mellan schemafel och hallucination för enum-överträdelser. Reviderat beslut: enum-överträdelse av individuella signal-värden är empiriskt en hallucinationsklass och hanteras enligt Beslut 29.
+- Verifierade att `combination_layer.py` rad 106-112 redan var i log-and-skip-tillstånd efter PR #123. Ingen kodändring krävdes.
+- Skrev om testet enligt revisionsbeslutet. Testet använder `text = "Min chef i Eskilstuna."` (samma text som `test_differentiated_validation_hallucinated_individual` för symmetri med Beslut 29:s testbatteri) och två signaler: `'yrke'/"chef"` (giltigt, behålls) och `'person'/"Anna"` (okänt enum, skippas tyst). Antagande verifierat: enum-check (rad 106) körs före text_span-validering (rad 128), så `'person'`-signalen skippas på enum-grunden innan span-check körs — `"Anna"`-spanet behöver inte finnas i texten.
+- Verifierade hela test-suiten: 178/178 tester gröna (inklusive Beslut 29:s fyra `test_differentiated_validation_*`-tester och det nya `test_invalid_signal_value_is_skipped`). Notera: även det tidigare miljö-blockade `tests/integration/test_end_to_end.py::test_end_to_end_pipeline_evaluation` passerar nu — `sv_core_news_lg`-modellen är installerad i den lokala venv efter README-fixen 2026-05-12.
+- Verifierade `python run_evaluation.py`: körningen avslutades med exit code 0 utan `CombinationLayerError`. Findings-rapporten visar normal output över alla lager. Acceptanskriterium 6 (pipeline kan köras till slut) uppfyllt — testet är dock det definitiva regressionsskyddet eftersom LLM-utfall är icke-deterministiska och `'person'`-värdet inte garanterat reproduceras varje körning.
+
+**Beslut fattade:** Revision av tidigare beslut 2026-05-12 (åtgärdsväg 1 → åtgärdsväg 2). Beslutsdokumentation i Loggboken (Google Docs, fliken "Loggbok - iteration 3"). Beslut 29:s scope utvidgas explicit till att omfatta enum-överträdelser av individuella signal-värden, inte enbart text_span-hallucinationer. Föregående sessions distinktion (schemafel vs. hallucination för enum) är överskriven av empirisk evidens.
+
+**Öppet/Nästa steg:** Förekomsten av 'person' som genererat signal-värde är empiriskt signal om prompt-lucka i CombinationLayer:s system prompt eller examples. Kandidat för prompt-revision i framtida iteration men inte i denna sessions scope. Markeras som öppen observation för iteration 3:s formaliseringsarbete. Pre-existing miljöfråga med `sv_core_news_lg` är åtgärdad och påverkar inte längre testkörningar.
