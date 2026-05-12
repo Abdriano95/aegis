@@ -148,7 +148,7 @@ Issue nedan bär `iteration-3`-labeln men ingår inte i de tjugo planerade arbet
 
 | Issue | Titel | Ansvarig | Status | Anmärkning |
 |---|---|---|---|---|
-| [#99](https://github.com/Abdriano95/aegis/issues/99) | test_schema_error_invalid_signal fallerar på main: CombinationLayerError kastas inte vid okänt signal-värde | Gemensamt | ✅ Klar (2026-05-12) | Pre-existing buggrapport från 2026-05-03; `CombinationLayer`:s schema-validering kastar inte `CombinationLayerError` vid okänt signal-värde utanför `{"yrke", "plats", "organisation"}`. Åtgärdsväg 1 (validator-fix) implementerad enligt Loggbok – iteration 3. |
+| [#99](https://github.com/Abdriano95/aegis/issues/99) | test_schema_error_invalid_signal fallerar på main: CombinationLayerError kastas inte vid okänt signal-värde | Gemensamt | ⬜ Ej startad | Pre-existing buggrapport från 2026-05-03; `CombinationLayer`:s schema-validering kastar inte `CombinationLayerError` vid okänt signal-värde utanför `{"yrke", "plats", "organisation"}`. Beslut om åtgärdsväg (validator-fix kontra test-justering) tas i Loggboken. |
 
 ---
 
@@ -257,40 +257,3 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Uppföljning samma session:** På användarens begäran adderades en separat sektion "Separat buggfix (utanför iterationsplanen)" direkt efter huvudtabellen, som dokumenterar #99 i en mini-tabell med Anmärkning-kolumn. #99:s GitHub-milestone lämnades oförändrad — buggen hanteras sidoordnat under iteration 3 utan att räknas mot de tjugo planerade arbetena.
 
 **Öppet/Nästa steg:** Iteration 3-arbetet kan starta. Per beroendekartan (rad 66–95) körs I-1, I-2, I-3, I-4 parallellt i V19, och I-19 påbörjas tidigt för att möjliggöra bokning av V20:s intervjusessioner. I-6 är iterationens sista konstruktionssteg per Beslut 41 och körs först när I-1 till I-5 är committade. Inga andra filer ändrade i denna session.
-
-### Session 2026-05-12 - Claude Code (Opus 4.7) — Issue #99
-
-**Iteration:** 3 / v0.3.0-dev
-**Mål:** Issue #99 — Åtgärda fallande test `test_schema_error_invalid_signal` genom att lägga till strikt enum-validering av `signal`-värdet i CombinationLayer.
-
-**Ändrade filer:**
-- `gdpr_classifier/layers/combination/combination_layer.py` — Ersatte log-and-skip vid okänt signal-värde med `raise CombinationLayerError`. Schemafel hanteras strikt; hallucinationer kvarstår med tolerant hantering enligt Beslut 29.
-- `docs/iteration_3_implementation.md` — Statusuppdatering #99 (⬜ Ej startad → 🔄 Pågår vid sessionsstart → ✅ Klar 2026-05-12 vid sessionsslut) samt denna sessionspost.
-
-**Gjort:**
-- Identifierade att aktuell implementation (rad 106–112 i `combination_layer.py`) behandlade okänt enum-värde som hallucination (log-and-skip), vilket är fel kategorisering enligt Beslut 22 och Beslut 29:s avgränsning. Okänt enum-värde är schemafel, inte hallucination.
-- Lade till `raise CombinationLayerError` med deskriptivt felmeddelande som följer befintlig konvention för schemafel i samma fil (jämför rad 118 `Invalid confidence value: ...` och rad 122 `Confidence must be a finite float ...`).
-- Verifierade att riktade testet `test_schema_error_invalid_signal` nu passerar.
-- Verifierade att samtliga 10 tester i CombinationLayer-suiten passerar, inklusive Beslut 29:s fyra hallucinationstester (`test_differentiated_validation_hallucinated_individual`, `test_differentiated_validation_reconstructed_combination`, `test_differentiated_validation_dropped_combination`, `test_differentiated_validation_normalized_whitespace`).
-- Verifierade full test-suite: 164/165 tester passerar. Det enda failet (`tests/integration/test_end_to_end.py::test_end_to_end_pipeline_evaluation`) är `OSError: [E050] Can't find model 'sv_core_news_lg'` — en pre-existing miljöfråga (saknad spaCy svenska NER-modell i lokal venv), inte en regression från denna ändring. Felet ligger i NER-lagrets modell­laddning och är orelaterat till `CombinationLayer.detect()`.
-
-**Beslut fattade:** Implementation enligt åtgärdsväg 1 i issue #99 (validator-fix, ej test-justering). Beslutsdokumentation i Loggboken (Google Docs, fliken "Loggbok – iteration 3"). Distinktion mot Beslut 29: schemafel (ogiltigt enum, saknad nyckel, fel typ på fält) → strikt validering; hallucination (text_span hittas inte) och ofullständig per-signal-output (saknade fält i enskild post) → tolerant skip enligt Beslut 29.
-
-**Öppet/Nästa steg:** Inga. Issue #99 stängs efter användarens manuella git-commit och push enligt CLAUDE.md sektion 4 steg 8. Pre-existing miljöfråga med `sv_core_news_lg` ligger utanför denna sessions scope och kvarstår.
-
-### Session 2026-05-12 - Manuell - README.md spaCy-modell-dokumentation
-
-**Iteration:** 3 / v0.3.0-dev (utanför iterationsplanens 20 planerade arbeten)
-**Mål:** Komplettera README.md:s Miljösetup-sektion med nedladdning av spaCy-modellen `sv_core_news_lg`.
-
-**Ändrade filer:**
-- `README.md` - Lade till `python -m spacy download sv_core_news_lg` i Miljösetup-kodblocket och ett textstycke som förklarar modellberoendet för EntityLayer.
-
-**Gjort:**
-- Identifierade luckan i README:s setup-instruktioner som orsakade `OSError: [E050]` under issue #99-sessionen 2026-05-12.
-- Lade till nedladdningssteget mellan `pip install` och `pytest --co -q`.
-- Lade till textförklaring av modellberoendet med referens till EntityLayer (Lager 2).
-
-**Beslut fattade:** Inga arkitektoniska beslut. Ren dokumentationsfix.
-
-**Öppet/Nästa steg:** Inga.
