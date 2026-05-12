@@ -10,8 +10,11 @@ cd aegis
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[all,llm,demo,nlp,dev]"
+python -m spacy download sv_core_news_lg
 pytest --co -q
 ```
+
+`sv_core_news_lg` är spaCy:s svenska NER-modell som EntityLayer (Lager 2) använder för detektion av namn, platser och organisationer. SpaCy distribuerar modeller utanför pip-paketet, så nedladdningen är ett separat steg efter `pip install`. Utan modellen fallerar `run_evaluation.py` och `tests/integration/test_end_to_end.py` med `OSError: [E050]`.
 
 På Windows / PowerShell aktiveras venv istället med:
 
