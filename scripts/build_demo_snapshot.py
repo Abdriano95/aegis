@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Offline script: generate demo/snapshots/iteration_2_report.json.
+"""Offline script: generate a demo/snapshots/<name>.json snapshot.
 
-Runs the iteration 2 four-layer pipeline against the combined dataset (iteration-1 +
-article9 + combination, 159 texts total) and serialises the evaluation report to a
-JSON snapshot file that the demo reads at startup.
+Runs the four-layer pipeline against the combined dataset (iteration-1 +
+article9 + combination, 159 texts total) and serialises the evaluation report
+to a JSON snapshot file that the demo reads at startup.
 
 Requirements:
     - Ollama running locally on http://localhost:11434
@@ -12,10 +12,12 @@ Requirements:
 
 Usage:
     python scripts/build_demo_snapshot.py
+    python scripts/build_demo_snapshot.py --output iteration_3_baseline_post_I2.json
 """
 
 from __future__ import annotations
 
+import argparse
 import dataclasses
 import json
 import subprocess
@@ -43,7 +45,8 @@ from gdpr_classifier.layers.entity import EntityLayer  # noqa: E402
 from gdpr_classifier.layers.pattern import PatternLayer  # noqa: E402
 
 _MODEL = "qwen2.5:7b-instruct"
-_SNAPSHOT_PATH = _PROJECT_ROOT / "demo" / "snapshots" / "iteration_2_report.json"
+_SNAPSHOTS_DIR = _PROJECT_ROOT / "demo" / "snapshots"
+_DEFAULT_SNAPSHOT_NAME = "iteration_2_report.json"
 _DATASET_PATHS = {
     "iteration_1": _PROJECT_ROOT / "tests" / "data" / "iteration_1" / "test_dataset.json",
     "article9": _PROJECT_ROOT / "tests" / "data" / "iteration_2" / "article9_dataset.json",
@@ -96,7 +99,23 @@ def _calc_metrics(tp: int, fp: int, fn: int) -> RunMetrics:
     )
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
+    parser.add_argument(
+        "--output",
+        default=_DEFAULT_SNAPSHOT_NAME,
+        help=(
+            "Snapshot-filnamn under demo/snapshots/. "
+            f"Default: {_DEFAULT_SNAPSHOT_NAME}"
+        ),
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = parse_args()
+    snapshot_path = _SNAPSHOTS_DIR / args.output
+
     check_ollama()
 
     print("Laddar dataset...")
@@ -208,11 +227,11 @@ def main() -> None:
         "report": dataclasses.asdict(report),
     }
 
-    _SNAPSHOT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _SNAPSHOT_PATH.write_text(
+    snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+    snapshot_path.write_text(
         json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    print(f"\nSnapshot skrivet till {_SNAPSHOT_PATH.relative_to(_PROJECT_ROOT)}")
+    print(f"\nSnapshot skrivet till {snapshot_path.relative_to(_PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":

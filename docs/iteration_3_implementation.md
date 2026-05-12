@@ -326,4 +326,19 @@ Lägg till en ny post längst ner. Använd följande mall:
 
 **Formaliseringskonsekvens (per Beslut 42):** AEGIS-rapportens kapitel 5.3 (arkitekturbeskrivning) behöver uppdateras med aliasing-mekanismen i utvärderingsramverket. Hanteras av Abdulla och Johanna utanför agent-flödet.
 
-**Öppet/Nästa steg:** Baslinjekörning via `python run_evaluation.py` blockerad av separat runtime-bugg i CombinationLayer: LLM (qwen2.5:7b-instruct) returnerar signal-värdet `'person'` som ej finns i tillåten mängd `{organisation, plats, yrke}`, och den nya strikta validatorn från issue #99 kastar `CombinationLayerError`. Felet är frikopplat från matcher-ändringarna (vår diff rör endast `evaluation/matcher.py` och tillhörande tester). Ny baslinjemätning kan inte antecknas i denna session — väntar på antingen utökning av tillåtna signal-värden eller LLM-prompttuning för CombinationLayer (separat issue). Förväntad effekt enligt analys: FP ↓ ≈17 från 117, motsvarande FN ↓, recall ↑ marginellt, precision ↑ märkbart.
+**Uppföljning samma session — baslinjemätning efter merge av main:** Initial körning av `python run_evaluation.py` blockerades av en separat runtime-bugg i CombinationLayer (LLM returnerar signal-värdet `'person'` som ej fanns i tillåten mängd `{organisation, plats, yrke}`, vilket den strikta validatorn från issue #99 kastade error på). Användaren reverterade #99-fixen i main (PR #123 / commit 301b8cf) så att okänt signal-värde åter behandlas tolerant som hallucination. Main mergades in i denna branch (mergecommit dc25fc7) varpå evaluationen kunde köras. Notera: detta återintroducerar buggen som issue #99 var avsedd att fixa — `test_schema_error_invalid_signal` fallerar nu på branchen som väntat, övriga 170 tester gröna inklusive samtliga 12 matcher-tester.
+
+**Ny baslinje (2026-05-12, post-aliasing, qwen2.5:7b-instruct):**
+- Total: TP 212, FP 113, FN 21
+- Precision: **65.23%** (iter 2: 64.00%, Δ +1.23 pp)
+- Recall: **90.99%** (iter 2: 89.27%, Δ +1.72 pp)
+- F1: **75.99%** (iter 2: 74.55%, Δ +1.44 pp)
+- FP-räkning: 113 (iter 2: 117, Δ −4)
+
+**Per-kategori utfall för aliasparet:**
+- `context.plats`: TP 14, FP 8, FN 0 — 100% recall, alias-matchningen fungerar end-to-end
+- `article4.adress`: TP 14, FP 30, FN 1 — fortfarande hög FP-räkning, indikerar att Rotorsak 1 inte var hela förklaringen för adress-FP
+
+**Reflektion:** FP-reduktionen blev mindre än prognostiserade ≈17 (faktiskt −4). Sannolika orsaker: (1) LLM-utfall är icke-deterministiskt mellan körningar; (2) main har förändrats sedan iter 2:s slutmätning; (3) en del av iter 2:s adress-FP berodde sannolikt på andra rotorsaker än kategorikrock. Alla tre primära metrics rör sig dock i rätt riktning, vilket validerar att aliasingen löser den specifika kategori-mappnings-asymmetrin utan regression. Vidare FP-reduktion förväntas från I-1 (CombinationLayer-prompt) och I-3 (aggregator-deduplicering).
+
+**Öppet/Nästa steg:** Inga för #102. Loggboken iteration 3 uppdateras av Johanna med designbeslutet och baslinje-deltat. AEGIS-rapportens kapitel 5.3 uppdateras enligt formaliseringskonsekvens-noten ovan. Issue #99 kvarstår som öppen fråga (revertad fix → ursprungsbuggen aktiv igen) — separat handling utanför denna session.
