@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
+from dataclasses import replace
 from itertools import combinations
 
 from gdpr_classifier.core import (
@@ -38,6 +40,7 @@ class Aggregator:
         active_layers: list[str],
     ) -> Classification:
         filtered = self._apply_containment_rules(findings)
+        filtered = self._deduplicate_same_category_overlap(filtered)
         overlaps = self._find_overlaps(filtered)
         sensitivity, mechanism = self._determine_sensitivity(filtered)
         return Classification(
@@ -119,6 +122,64 @@ class Aggregator:
             f for idx, f in enumerate(findings)
             if idx not in to_remove
         ]
+
+    def _deduplicate_same_category_overlap(
+        self, findings: list[Finding],
+    ) -> list[Finding]:
+        """Merge same-category findings with overlapping spans (Issue #103).
+
+        När EntityLayer och CombinationLayer detekterar samma organisationsnamn
+        parallellt skapas redundans i Classification.findings. Denna metod
+        behåller fyndet med högst confidence och propagerar borttaget fynds
+        ``source`` till behållet fynds ``metadata["deduplicated_sources"]``.
+
+        Tiebreaker vid lika confidence: stabil ordning — det fynd som kommer
+        först i ``findings`` behålls. Cross-category overlaps (ADRESS+PLATS,
+        article9+context etc.) påverkas inte.
+
+        Körs efter ``_apply_containment_rules`` och före ``_find_overlaps``.
+        See SSOT arkitektur.md §8 för motivation.
+        """
+        by_category: dict[Category, list[tuple[int, Finding]]] = defaultdict(list)
+        for idx, f in enumerate(findings):
+            by_category[f.category].append((idx, f))
+
+        to_remove: set[int] = set()
+        sources_to_propagate: dict[int, list[str]] = defaultdict(list)
+
+        for group in by_category.values():
+            if len(group) < 2:
+                continue
+            # Stabil sortering: confidence desc, behåller input-ordning vid lika.
+            sorted_group = sorted(group, key=lambda t: -t[1].confidence)
+            for i in range(len(sorted_group)):
+                kept_idx, kept_f = sorted_group[i]
+                if kept_idx in to_remove:
+                    continue
+                for j in range(i + 1, len(sorted_group)):
+                    other_idx, other_f = sorted_group[j]
+                    if other_idx in to_remove:
+                        continue
+                    if kept_f.start < other_f.end and other_f.start < kept_f.end:
+                        to_remove.add(other_idx)
+                        sources_to_propagate[kept_idx].append(other_f.source)
+
+        if not to_remove:
+            return findings
+
+        result: list[Finding] = []
+        for idx, f in enumerate(findings):
+            if idx in to_remove:
+                continue
+            if idx in sources_to_propagate:
+                new_metadata = dict(f.metadata) if f.metadata else {}
+                existing = new_metadata.get("deduplicated_sources", [])
+                new_metadata["deduplicated_sources"] = (
+                    existing + sources_to_propagate[idx]
+                )
+                f = replace(f, metadata=new_metadata)
+            result.append(f)
+        return result
 
     def _find_overlaps(
         self, findings: list[Finding],
