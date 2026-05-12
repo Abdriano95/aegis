@@ -104,10 +104,12 @@ class CombinationLayer:
                 continue
 
             if signal_str not in allowed_signals:
-                raise CombinationLayerError(
-                    f"Invalid signal value: '{signal_str}'. "
-                    f"Allowed values: {sorted(allowed_signals)}."
+                logger.debug(
+                    "Unknown signal type ignored: '%s'. Allowed: %s.",
+                    signal_str,
+                    allowed_signals,
                 )
+                continue
 
             try:
                 confidence_float = float(confidence)
