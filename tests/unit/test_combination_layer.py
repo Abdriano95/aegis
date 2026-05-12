@@ -171,16 +171,29 @@ class TestCombinationLayer(unittest.TestCase):
         with self.assertRaises(CombinationLayerError):
             self.layer.detect("text")
 
-    def test_schema_error_invalid_signal(self) -> None:
-        """Test schema error handling for invalid individual signal."""
+    def test_invalid_signal_value_is_skipped(self) -> None:
+        """Test that unknown signal enum values are logged and skipped, not raised.
+
+        Per Beslut 29 (Loggbok iteration 2) och revisionsbeslut 2026-05-12:
+        LLM-genererade signal-värden som följer schemats form men bryter mot
+        dess enum-mängd hanteras som hallucinationer (tolerant skip) snarare
+        än som schemafel. Empirisk evidens: LLM producerade 'person' under
+        skarp evaluation-körning vilket avbröt pipelinen.
+        """
+        text = "Min chef i Eskilstuna."
         self.mock_provider.generate_json.return_value = {
             "individual_signals": [
-                {"signal": "invalid_signal", "text_span": "text", "confidence": 0.5}
+                {"signal": "yrke", "text_span": "chef", "confidence": 0.9},
+                {"signal": "person", "text_span": "Anna", "confidence": 0.8},
             ],
             "combination": {"is_identifiable": False},
         }
-        with self.assertRaises(CombinationLayerError):
-            self.layer.detect("text")
+        findings = self.layer.detect(text)
+
+        # 'yrke'-signalen behålls, 'person' skippas tyst (loggas via logger.debug)
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].category, Category.YRKE)
+        self.assertEqual(findings[0].text_span, "chef")
 
     def test_provider_error_propagates(self) -> None:
         """Test that LLMProviderError propagates unchanged."""
