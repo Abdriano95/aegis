@@ -122,7 +122,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | Issue | Titel | Spår | Ansvarig | Status | Beroenden | Formaliseringskonsekvens |
 |---|---|---|---|---|---|---|
 | [#101](https://github.com/Abdriano95/aegis/issues/101) (I-1) | Promptskärpning för CombinationLayer context.yrke och context.organisation | A1 | Abdulla | ⬜ Ej startad | Inga | Stärker DP1 Rationale; 4.5.2 ska uppdateras. |
-| [#102](https://github.com/Abdriano95/aegis/issues/102) (I-2) | Matcher-aliasing för article4.adress och context.plats | A2 | Johanna | ⬜ Ej startad | Inga | 5.3 (arkitekturbeskrivning) uppdateras med aliasing-mekanism. |
+| [#102](https://github.com/Abdriano95/aegis/issues/102) (I-2) | Matcher-aliasing för article4.adress och context.plats | A2 | Johanna | ✅ Klar (2026-05-12) | Inga | 5.3 (arkitekturbeskrivning) uppdateras med aliasing-mekanism. |
 | [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ⬜ Ej startad | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ⬜ Ej startad | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ⬜ Ej startad | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
@@ -294,3 +294,36 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Beslut fattade:** Inga arkitektoniska beslut. Ren dokumentationsfix.
 
 **Öppet/Nästa steg:** Inga.
+
+### Session 2026-05-12 - Claude Code (Opus 4.7) — Issue #102 (I-2)
+
+**Iteration:** 3 / v0.3.0-dev
+**Mål:** Issue #102 — Implementera matcher-aliasing mellan `article4.adress` och `context.plats` i evaluation/matcher.py för att lösa Rotorsak 1 från FP-rotorsaksanalysen 2026-05-04.
+
+**Ändrade filer:**
+- `evaluation/matcher.py` — Modul-konstant `CATEGORY_ALIASES` (frozenset av frozensets), hjälpfunktion `_are_aliased`, tvåpass-loop i `match()` (Pass 1 exakt → Pass 2 alias), uppdaterad docstring med ny regel 1b.
+- `tests/unit/test_matcher.py` — 6 nya enhetstester: 4 obligatoriska (alias båda riktningar, exakt-företräde med båda orderingar, ej alias för obesläktade) + 2 robusthet (symmetri, alias-stjäl-inte-från-exakt).
+- `docs/arkitektur.md` — Ny underrubrik 9.2.1 "Matcher-aliasing för kategorikrock" inom sektion 9.2 (efter Aggregering, före 9.3).
+- `docs/iteration_3_implementation.md` — Statusuppdatering #102 (⬜ Ej startad → 🔄 Pågår vid sessionsstart → ✅ Klar 2026-05-12 vid sessionsslut) samt denna sessionspost.
+
+**Gjort:**
+- Statusuppdatering till 🔄 Pågår som första edit före kodändringar.
+- Implementerade `CATEGORY_ALIASES = frozenset({frozenset({Category.ADRESS, Category.PLATS})})` på modulnivå för triviall framtida utökning.
+- Implementerade `_are_aliased(a, b)` med self-aliasing → False (exakt-fall fångas redan av Pass 1) och robusthet mot okända kategorier via frozenset-membership.
+- Restrukturerade `match()`:s inner-loop till tvåpass per prediktion: Pass 1 exakt-match (oförändrat beteende), Pass 2 alias-match endast om Pass 1 inte fann något. Confidence-sortering, `id(e)`-tracking och en-till-en-claiming oförändrade.
+- 6 nya tester gröna; alla 6 befintliga matcher-tester orörda och gröna (12/12 i `test_matcher.py`).
+- Hela testsviten grön: 171 passed, 0 failed (`pytest tests/`).
+- SSOT-uppdatering 9.2.1 dokumenterar aliasstrukturen, tvåpass-logiken, motiveringen (Rotorsak 1) och hänvisning till Loggboken iteration 3.
+
+**Avvikelse från issue-spec:** Issue-specen refererade till `Category.KONTEXTUELLT_PLATS`. Det faktiska enum-namnet i `gdpr_classifier/core/category.py` är `Category.PLATS` (string-värde `"context.plats"`). Implementationen använder det faktiska namnet enligt spec-instruktionen ("Om enum-värdet för `context.plats` har annat namn, använd det faktiska namnet och notera det i sessionsloggen").
+
+**Designval (utöver spec):**
+- `aliased_matches`-fält i `MatchResult` skippades. Information härledbar post-hoc via `p.category == e.category` på `true_positives`. Undviker mutable-list-default på `frozen=True` dataclass.
+- SSOT-placering: ny underrubrik 9.2.1 inom sektion 9.2 (samlat med övrig matcher-dokumentation) snarare än egen sektion 9.6.
+- `_are_aliased` returnerar False vid self-aliasing — exakt-fallet hanteras redan av Pass 1.
+
+**Beslut fattade:** Aliasing på evaluation-sidan istället för dataset-fix eller EntityLayer-mapping-fix (lösning på Rotorsak 1). Beslut 11 om LOC → ADRESS-mappning står kvar. Designbeslut för aliasing-mekanismen förs in i Loggboken iteration 3 av Johanna utanför agent-flödet.
+
+**Formaliseringskonsekvens (per Beslut 42):** AEGIS-rapportens kapitel 5.3 (arkitekturbeskrivning) behöver uppdateras med aliasing-mekanismen i utvärderingsramverket. Hanteras av Abdulla och Johanna utanför agent-flödet.
+
+**Öppet/Nästa steg:** Baslinjekörning via `python run_evaluation.py` blockerad av separat runtime-bugg i CombinationLayer: LLM (qwen2.5:7b-instruct) returnerar signal-värdet `'person'` som ej finns i tillåten mängd `{organisation, plats, yrke}`, och den nya strikta validatorn från issue #99 kastar `CombinationLayerError`. Felet är frikopplat från matcher-ändringarna (vår diff rör endast `evaluation/matcher.py` och tillhörande tester). Ny baslinjemätning kan inte antecknas i denna session — väntar på antingen utökning av tillåtna signal-värden eller LLM-prompttuning för CombinationLayer (separat issue). Förväntad effekt enligt analys: FP ↓ ≈17 från 117, motsvarande FN ↓, recall ↑ marginellt, precision ↑ märkbart.
