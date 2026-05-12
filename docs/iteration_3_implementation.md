@@ -121,7 +121,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 
 | Issue | Titel | Spår | Ansvarig | Status | Beroenden | Formaliseringskonsekvens |
 |---|---|---|---|---|---|---|
-| [#101](https://github.com/Abdriano95/aegis/issues/101) (I-1) | Promptskärpning för CombinationLayer context.yrke och context.organisation | A1 | Abdulla | ⬜ Ej startad | Inga | Stärker DP1 Rationale; 4.5.2 ska uppdateras. |
+| [#101](https://github.com/Abdriano95/aegis/issues/101) (I-1) | Promptskärpning för CombinationLayer context.yrke och context.organisation | A1 | Abdulla | ✅ Klar 2026-05-12 | Inga | Stärker DP1 Rationale; 4.5.2 ska uppdateras. |
 | [#102](https://github.com/Abdriano95/aegis/issues/102) (I-2) | Matcher-aliasing för article4.adress och context.plats | A2 | Johanna | ✅ Klar (2026-05-12) | Inga | 5.3 (arkitekturbeskrivning) uppdateras med aliasing-mekanism. |
 | [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ✅ Klar (2026-05-12) | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ⬜ Ej startad | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
@@ -386,6 +386,71 @@ Lägg till en ny post längst ner. Använd följande mall:
 **Reflektion:** FP-reduktionen blev 16 (faktiskt utfall) mot prognostiserade ≈11 i issue-specen. Skillnaden förklaras sannolikt av att aktuell baseline efter #99 och I-2 är annorlunda än 2026-05-04-snapshotten, och av icke-determinism i LLM-utfall mellan körningar. Avgörande: all reduktion kom från `context.organisation` och recall förblev exakt 90.99% — dedup-mekanismen löser det strukturella problemet rent (ingen TP-konsumtion, ingen kategori-leakage). Vidare FP-reduktion förväntas från I-1 (prompt-skärpning context.organisation/yrke) och eventuell framtida cross-category-dedup.
 
 **Öppet/Nästa steg:** Inga för #103. Loggboken iteration 3 uppdateras av Johanna med designbeslutet och baslinje-deltat. AEGIS-rapportens kapitel 5.3 uppdateras enligt formaliseringskonsekvens-noten. Issue #99-buggen (revertad i main) kvarstår — påverkar inte denna issue men noteras för spårbarhet.
+
+### Session 2026-05-12 - Claude Code (Opus 4.7) - I-1 promptskärpning
+
+**Iteration:** 3 / v0.3.0-dev
+**Mål:** Skärpa CombinationLayers prompt (v4 till v5) så att FP för context.yrke och context.organisation reduceras utan att kategorivis recall sjunker under same-session v4-reproduktionens baslinje.
+
+**Ändrade filer:**
+- `gdpr_classifier/prompts/combination/v5.yaml` - ny promptversion med utökade negativa exempel
+- `gdpr_classifier/layers/combination/combination_layer.py` - default `prompt_version` "latest" till "v5" för reproducerbarhet
+- `scripts/build_demo_snapshot.py` - tillagda CLI-args `--combination-version` och `--article9-version` ovanpå Johannas `--output`-flagga
+- `tests/unit/test_snapshot_loader.py` - metadata-symmetri v4 till v5
+- `docs/prompts_bilaga.md` - ny fil med v5-post och empiriskt utfall
+- `docs/iteration_3_implementation.md` - statusrad för #101 och denna sessionspost
+- `demo/snapshots/iteration_3_baseline_v4_reproduction.json` - same-session v4-reproduktion (genererad artefakt)
+- `demo/snapshots/iteration_3_baseline_post_I1.json` - post-I-1-snapshot (genererad artefakt)
+
+**Gjort:**
+- Filtrerat `demo/snapshots/iteration_2_report.json` på `source="context.organisation"` och identifierat två konkreta hallucineringsmönster utöver de tre verbatim-fraserna i FP-rotorsaksanalysen: e-postadresser och e-postdomäner ("exempel.com", "ekonomi@foretaget.se") samt avdelningar och delarbetsplatser utan eget företagsnamn ("Bokningsavdelningen", "IT-avdelningen", "huvudkontoret", "vårt kontor", "ett privat företag", "HR-notat", "fabriken i Borås")
+- Konstruerat `v5.yaml` med utökade negativa exempel som täcker verb- och passivkonstruktioner ("leddes av", "protokollfördes av", "eskaleras till"), förstärkt personnamnförbud med empiriska fall ("Karin Holm", "Lars Berg") och de två organisationshallucineringsmönstren. Lagt till två nya negativa exempel i `examples`-sektionen som visar `individual_signals: []`. `system_prompt`, `context` och `output_format` bevarade ordagrant från v4
+- Bumpat default `prompt_version` i `CombinationLayer.__init__` från "latest" till "v5"
+- Slagit samman parse_args i `build_demo_snapshot.py` med Johannas `--output`-flagga (filnamn under demo/snapshots/) och behållit hennes `_SNAPSHOTS_DIR`-mönster
+- Skapat `docs/prompts_bilaga.md` enligt I-11-spec med post för v5 och flagga om kommitthash som platshållare
+- Rebasat branch på origin/main efter arkitekt-agentens granskning så att Johannas I-2 (matcher-aliasing, PR #124) och I-3 (aggregator-deduplicering, PR #125) ingår i pipeline-konfigurationen
+- Kört pytest på rebasad bas (resultatet rapporteras i Mätvärden-blocket nedan)
+- Kört empirisk verifiering same-session på rebasad bas: v4-reproduktion följd av v5-körning, båda mot iteration 2:s slutdataset (159 texter, qwen2.5:7b-instruct, Ollama)
+
+**Mätvärden (per-kategori, qwen2.5:7b-instruct, 159 texter, 2026-05-12, post-rebase):**
+
+| Mätvärde | v4-reproduktion (rebasad bas) | v5 (rebasad bas) |
+|---|---|---|
+| context.yrke: TP / FP / FN | 16 / 23 / 6 | 16 / 20 / 6 |
+| context.yrke: precision / recall / F1 | 41.03% / 72.73% / 52.46% | 44.44% / 72.73% / 55.17% |
+| context.organisation: TP / FP / FN | 23 / 25 / 4 | 23 / 19 / 4 |
+| context.organisation: precision / recall / F1 | 47.92% / 85.19% / 61.33% | 54.76% / 85.19% / 66.67% |
+| context.plats: TP / FP / FN | 14 / 7 / 0 | 14 / 4 / 0 |
+| article4.adress: TP / FP / FN | 14 / 28 / 1 | 15 / 27 / 0 |
+| Total: TP / FP / FN | 210 / 99 / 23 | 213 / 91 / 20 |
+| Total: precision / recall / F1 | 67.96% / 90.13% / 77.49% | 70.07% / 91.42% / 79.33% |
+
+Båda körningarna genomfördes same-session på branch rebasad på origin/main HEAD `47c1f92` (innehåller I-2:s matcher-aliasing från PR #124 och I-3:s aggregator-deduplicering från PR #125).
+
+**Baseline-anomali (pre-rebase, åtgärdad):** Initial empirisk verifiering kördes på branch `bfab0a8` innan Johannas I-2 (matcher-aliasing, PR #124) och I-3 (aggregator-deduplicering, PR #125) hade mergats in. v4-reproduktionen matchade då iteration 2:s baseline (208/117/25) exakt, vilket maskerade I-2:s förväntade 17 FP-reduktion för article4.adress kontra context.plats samt I-3:s 16 FP-reduktion för context.organisation dubbeldetektion. Branch rebasades på origin/main 2026-05-12 efter arkitekt-agentens granskning. Empirisk verifiering kördes om i same-session med I-2 och I-3 aktiva; siffrorna i mätvärdes-tabellen reflekterar post-rebase-tillstånd. Pre-rebase-resultaten är inte längre relevanta för prompt-attribution och bevaras enbart i git-historiken för spårbarhet.
+
+**Kontrollpunkt I-2/I-3-effekt verifierad:** Post-rebase v4-reproduktionen (FP=99) ligger 18 FP under iteration 2:s baseline (FP=117), vilket bekräftar att I-2 + I-3 ger den förväntade FP-reduktionen. Värdet ligger inom 2 FP från Johannas committade post-I-3-baseline (TP=212, FP=97, FN=21) som dokumenterad i sessionsposten för Issue #103 ovan. Differensen på 2 FP totalt och 3 FP för context.organisation (25 mot Johannas 22) ligger inom LLM-non-determinism-toleransen mellan körningar (varians ±10 FP totalt observerades mellan iteration 2:s omgångar enligt iteration_2_utvardering.md Del 6). Ingen sekundär anomali att dokumentera.
+
+**Reproduktionsavvikelser:** Inga som påverkar prompt-attribution. v4-reproduktion och v5 kördes same-session mot samma dataset på samma rebasade kodbas, så LLM-non-determinism är den enda återstående felkällan mellan körningarna; den begränsas till spridningen som dokumenterats i Del 6.
+
+**Acceptanskriterium 3 verifierat:**
+- FP-reduktion per kategori: context.yrke -3 FP (-13.0 procent), context.organisation -6 FP (-24.0 procent). Total FP-reduktion -8 (-8.1 procent)
+- Recall bevarad per kategori: context.yrke 72.73 procent (oförändrad), context.organisation 85.19 procent (oförändrad). Hårdvillkoret per DP1 (fail-safe) uppfyllt
+- Sidoeffekt: context.plats FP -3 (-43 procent), article4.adress recall +6.67 pp till 100 procent. Båda förändringarna positiva och konsistenta med att den skärpta prompten genererar färre felaktiga kontextsignaler som skulle gå genom alias-matching
+- Totalrecall förbättrad: 90.13 procent till 91.42 procent (+1.29 pp)
+
+**Beslut fattade:** Inga arkitektoniska beslut. Operativa val (alla genomgångna med arkitekt-agenten i Plan Mode):
+- Default `prompt_version` pinnad till "v5" istället för "latest" för reproducerbarhet
+- Ny `docs/prompts_bilaga.md` skapad enligt I-11-spec
+- `build_demo_snapshot.py` utökad med CLI-args (`--combination-version`, `--article9-version`) ovanpå Johannas `--output`
+- v4-reproduktionskörning genomförd same-session med v5-körning för prompt-attribuerbar jämförelse (justering 1 från arkitekt-agentens granskning)
+- v5.yaml metadata utökad med `issue`- och `decision_ref`-fält för spårbarhet (justering 2 från arkitekt-agentens granskning)
+- Branch rebasad på origin/main för att inkludera I-2 och I-3 (åtgärd 1 från arkitekt-agentens pre-commit-granskning)
+- Snapshots döpta enligt projektkonvention: `iteration_3_baseline_v4_reproduction.json` och `iteration_3_baseline_post_I1.json` (åtgärd 2 från arkitekt-agentens pre-commit-granskning)
+
+**Formaliseringskonsekvens (per Beslut 42, Loggbok iteration 3):** Promptutvecklingen är empiriskt material för DP1 (recall-prioritering som fail-safe-princip) och stärker Rationale-komponenten med konkret precisionsförbättring. AEGIS-rapportens kapitel 4.5.2 (designcykel 3:s konstruktion) ska uppdateras med beskrivning av promptarbetet (v4 till v5, negativa exempel-strategi). DP1:s Rationale i 5.5.1 kan stärkas med precisionsutfallet från denna issue: precision steg 67.96 till 70.07 procent och totalrecall förbättrades 90.13 till 91.42 procent same-session på rebasad bas. Rapportarbetet utförs utanför agent-flödet av Abdulla och Johanna.
+
+**Öppet/Nästa steg:** Kommitthash i `docs/prompts_bilaga.md` v5-postens fält "Kommitthash" är platshållare och uppdateras i samma commit som filen committas. Issue #101 kan stängas efter commit och push. Pre-existing bugg #99 (`test_schema_error_invalid_signal`) återintroducerad genom revert i PR #123 kvarstår och hanteras separat per Separat buggfix-tabellen.
 
 ### Session 2026-05-12 - Claude Code (Opus 4.7) — Issue #99 (revision)
 

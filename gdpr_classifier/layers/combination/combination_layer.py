@@ -26,12 +26,13 @@ class CombinationLayer:
     even without direct identifiers.
     """
 
-    def __init__(self, provider: LLMProvider, prompt_version: str = "latest"):
+    def __init__(self, provider: LLMProvider, prompt_version: str = "v5"):
         """Initialize the layer with an LLM provider and prompt version.
 
         Args:
             provider: An instance of an LLMProvider.
-            prompt_version: The prompt version to use, defaults to "latest".
+            prompt_version: The prompt version to use, defaults to "v5"
+                (iteration 3 baseline pin for reproducibility).
         """
         self._provider = provider
         self._prompt_version = prompt_version

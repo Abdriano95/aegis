@@ -11,8 +11,13 @@ Requirements:
     - pip install -e ".[all]"
 
 Usage:
+    # Default: iteration 2 baseline snapshot
     python scripts/build_demo_snapshot.py
-    python scripts/build_demo_snapshot.py --output iteration_3_baseline_post_I2.json
+
+    # Override prompt versions and output filename
+    python scripts/build_demo_snapshot.py \\
+        --combination-version v4 \\
+        --output iteration_3_baseline_v4_reproduction.json
 """
 
 from __future__ import annotations
@@ -52,6 +57,8 @@ _DATASET_PATHS = {
     "article9": _PROJECT_ROOT / "tests" / "data" / "iteration_2" / "article9_dataset.json",
     "combination": _PROJECT_ROOT / "tests" / "data" / "iteration_2" / "combination_dataset.json",
 }
+_DEFAULT_ARTICLE9_VERSION = "v5"
+_DEFAULT_COMBINATION_VERSION = "v5"
 
 
 def check_ollama() -> None:
@@ -100,7 +107,11 @@ def _calc_metrics(tp: int, fp: int, fn: int) -> RunMetrics:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
+    """Parse CLI arguments for prompt versions and output filename."""
+    parser = argparse.ArgumentParser(
+        description="Generate a pipeline evaluation snapshot.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
         "--output",
         default=_DEFAULT_SNAPSHOT_NAME,
@@ -108,6 +119,16 @@ def parse_args() -> argparse.Namespace:
             "Snapshot-filnamn under demo/snapshots/. "
             f"Default: {_DEFAULT_SNAPSHOT_NAME}"
         ),
+    )
+    parser.add_argument(
+        "--article9-version",
+        default=_DEFAULT_ARTICLE9_VERSION,
+        help=f"Article9Layer prompt version (default: {_DEFAULT_ARTICLE9_VERSION}).",
+    )
+    parser.add_argument(
+        "--combination-version",
+        default=_DEFAULT_COMBINATION_VERSION,
+        help=f"CombinationLayer prompt version (default: {_DEFAULT_COMBINATION_VERSION}).",
     )
     return parser.parse_args()
 
@@ -129,14 +150,17 @@ def main() -> None:
         f"({len(d1)} iteration-1 + {len(d2)} artikel-9 + {len(d3)} kombination)"
     )
 
-    print("Skapar pipeline...")
+    print(
+        f"Skapar pipeline (article9={args.article9_version}, "
+        f"combination={args.combination_version})..."
+    )
     provider = get_llm_provider(_MODEL)
     pipeline = Pipeline(
         layers=[
             PatternLayer(),
             EntityLayer(),
-            Article9Layer(provider),
-            CombinationLayer(provider),
+            Article9Layer(provider, prompt_version=args.article9_version),
+            CombinationLayer(provider, prompt_version=args.combination_version),
         ],
         aggregator=Aggregator(),
     )
@@ -214,7 +238,10 @@ def main() -> None:
         "metadata": {
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "model": _MODEL,
-            "prompt_versions": {"article9": "v5", "combination": "v4"},
+            "prompt_versions": {
+                "article9": args.article9_version,
+                "combination": args.combination_version,
+            },
             "dataset": {
                 "total_texts": n,
                 "iteration_1_texts": len(d1),

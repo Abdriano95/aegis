@@ -51,7 +51,7 @@ def _make_snapshot_dict(report: Report) -> dict:
         "metadata": {
             "generated_at": "2026-05-03T12:00:00+00:00",
             "model": "qwen2.5:7b-instruct",
-            "prompt_versions": {"article9": "v5", "combination": "v4"},
+            "prompt_versions": {"article9": "v5", "combination": "v5"},
             "dataset": {"total_texts": 10, "iteration_1_texts": 10, "article9_texts": 0, "combination_texts": 0},
             "git_commit": "abc1234",
             "pipeline_layers": ["pattern", "entity", "article9", "combination"],
