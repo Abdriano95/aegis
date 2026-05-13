@@ -592,6 +592,10 @@ Slutgiltig kalibrering av trösklarna sker baserat på iteration 2:s kvantitativ
 
 I iteration 1 tilldelas endast `NONE`, `LOW` och `HIGH`. `MEDIUM` används från och med iteration 2 när Lager 3 och Lager 4 är aktiva.
 
+**Reservplan (Beslut 39):**
+
+Vid scope-tryck eller om iteration 3:s utvärdering visar att den tvådimensionella derivatkedjan inte ger önskat resultat tillåter Beslut 39 en reducerad version där `derive_sensitivity` ersätts av en fallback som returnerar iteration 2:s `_determine_sensitivity`-logik. Reservplanen implementeras som en konfigurationsflagga på `Aggregator.__init__` (förslagsvis `use_legacy_sensitivity: bool = False`), som vid aktivering får `aggregate` att hoppa över `derive_sensitivity` och i stället beräkna sensitivity via en bevarad legacy-helper `_legacy_sensitivity(filtered)` som speglar iteration 2:s logik. Reservplanen är **inte** aktiverad i v0.3.0; den dokumenteras som arkitektonisk option för framtida iteration eller akut rollback. `Classification.identifiability` och `Classification.data_class` populeras fortsatt av `_determine_dimensions` även i legacy-läge, så den arkitekturella separationen bevaras även om derivatlogiken rullas tillbaka. DP6 kan formaliseras på den arkitekturella separationen även utan ny derivatsemantik (Beslut 39).
+
 
 ## 9. Utvärdering
 

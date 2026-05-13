@@ -11,8 +11,9 @@ from evaluation.confusion_matrix import ConfusionMatrix
 from evaluation.dataset.labeled_text import LabeledText
 from evaluation.matcher import match
 from evaluation.metrics import f1, precision, recall
-from evaluation.report import MechanismStats, Report, RunMetrics, SampleResult
+from evaluation.report import DimensionStats, MechanismStats, Report, RunMetrics, SampleResult
 from gdpr_classifier.core.category import Category
+from gdpr_classifier.core.classification import DataClass, Identifiability
 
 
 def _calc_metrics(tp: int, fp: int, fn: int) -> RunMetrics:
@@ -35,6 +36,14 @@ def run_evaluation(pipeline: Any, dataset: list[LabeledText]) -> Report:
     mech_mechanism3: int = 0
     mech_low: int = 0
     mech_none: int = 0
+    dim_id_none: int = 0
+    dim_id_low: int = 0
+    dim_id_medium: int = 0
+    dim_id_high: int = 0
+    dim_dc_none: int = 0
+    dim_dc_ordinary: int = 0
+    dim_dc_special: int = 0
+    dim_dc_criminal: int = 0
 
     for item in dataset:
         classification = pipeline.classify(item.text)
@@ -51,7 +60,31 @@ def run_evaluation(pipeline: Any, dataset: list[LabeledText]) -> Report:
                 mech_none += 1
             case _:
                 mech_none += 1 # Count any unexpected value as "none"
-        
+
+        match getattr(classification, "identifiability", Identifiability.NONE):
+            case Identifiability.LOW:
+                dim_id_low += 1
+            case Identifiability.MEDIUM:
+                dim_id_medium += 1
+            case Identifiability.HIGH:
+                dim_id_high += 1
+            case Identifiability.NONE | None:
+                dim_id_none += 1
+            case _:
+                dim_id_none += 1  # Count any unexpected value as NONE
+
+        match getattr(classification, "data_class", DataClass.NONE):
+            case DataClass.ORDINARY:
+                dim_dc_ordinary += 1
+            case DataClass.SPECIAL:
+                dim_dc_special += 1
+            case DataClass.CRIMINAL:
+                dim_dc_criminal += 1
+            case DataClass.NONE | None:
+                dim_dc_none += 1
+            case _:
+                dim_dc_none += 1  # Count any unexpected value as NONE
+
         match_result = match(classification.findings, item.expected_findings)
         cm.add_match_result(match_result)
         samples.append(
@@ -91,5 +124,15 @@ def run_evaluation(pipeline: Any, dataset: list[LabeledText]) -> Report:
             medium_via_mechanism3=mech_mechanism3,
             low_count=mech_low,
             none_count=mech_none,
+        ),
+        per_dimension=DimensionStats(
+            identifiability_none=dim_id_none,
+            identifiability_low=dim_id_low,
+            identifiability_medium=dim_id_medium,
+            identifiability_high=dim_id_high,
+            data_class_none=dim_dc_none,
+            data_class_ordinary=dim_dc_ordinary,
+            data_class_special=dim_dc_special,
+            data_class_criminal=dim_dc_criminal,
         ),
     )

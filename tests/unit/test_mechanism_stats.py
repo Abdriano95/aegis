@@ -18,11 +18,17 @@ import io
 from unittest.mock import patch
 
 from evaluation.dataset.labeled_text import LabeledText
-from evaluation.report import MechanismStats, Report, RunMetrics, print_report
+from evaluation.report import (
+    DimensionStats,
+    MechanismStats,
+    Report,
+    RunMetrics,
+    print_report,
+)
 from evaluation.runner import run_evaluation
 from gdpr_classifier.aggregator import Aggregator
 from gdpr_classifier.core import Category, Finding, SensitivityLevel
-from gdpr_classifier.core.classification import Classification
+from gdpr_classifier.core.classification import Classification, DataClass, Identifiability
 
 
 def _make_finding(
@@ -123,7 +129,11 @@ class _DummyPipeline:
         return self._results.pop(0)
 
 
-def _make_classification(mechanism: str) -> Classification:
+def _make_classification(
+    mechanism: str,
+    identifiability: Identifiability = Identifiability.NONE,
+    data_class: DataClass = DataClass.NONE,
+) -> Classification:
     sensitivity_map = {
         "article9": SensitivityLevel.HIGH,
         "bypass": SensitivityLevel.MEDIUM,
@@ -137,6 +147,8 @@ def _make_classification(mechanism: str) -> Classification:
         active_layers=[],
         overlapping_findings=[],
         mechanism_used=mechanism,
+        identifiability=identifiability,
+        data_class=data_class,
     )
 
 
@@ -205,3 +217,90 @@ def test_print_report_includes_per_mechanism_section(capsys) -> None:
     assert "2" in captured  # medium_via_mechanism3
     assert "5" in captured  # low_count
     assert "4" in captured  # none_count
+
+
+class TestDimensionStats:
+    """Per-dimension counter accumulation across the dataset (I-5 Del 3)."""
+
+    def test_dimension_stats_default_in_bare_report(self) -> None:
+        """Report constructed without per_dimension gets all-zero DimensionStats."""
+        report = Report(total=_zero_metrics(), per_category={}, per_layer={})
+        assert report.per_dimension == DimensionStats()
+        assert report.per_dimension.identifiability_none == 0
+        assert report.per_dimension.data_class_none == 0
+
+    def test_run_evaluation_counts_dimensions(self) -> None:
+        """run_evaluation accumulates per-dimension counters correctly."""
+        results = [
+            _make_classification("article9", Identifiability.LOW, DataClass.SPECIAL),
+            _make_classification("article9", Identifiability.MEDIUM, DataClass.SPECIAL),
+            _make_classification("bypass", Identifiability.MEDIUM, DataClass.ORDINARY),
+            _make_classification("mechanism3", Identifiability.MEDIUM, DataClass.ORDINARY),
+            _make_classification("low", Identifiability.LOW, DataClass.ORDINARY),
+            _make_classification("none", Identifiability.NONE, DataClass.NONE),
+            _make_classification("none", Identifiability.HIGH, DataClass.CRIMINAL),
+        ]
+        pipeline = _DummyPipeline(results)
+        dataset = [
+            LabeledText(text=str(i), expected_findings=[], description="")
+            for i in range(len(results))
+        ]
+
+        report = run_evaluation(pipeline, dataset)
+
+        assert report.per_dimension == DimensionStats(
+            identifiability_none=1,
+            identifiability_low=2,
+            identifiability_medium=3,
+            identifiability_high=1,
+            data_class_none=1,
+            data_class_ordinary=3,
+            data_class_special=2,
+            data_class_criminal=1,
+        )
+
+    def test_run_evaluation_dimension_defaults_count_as_none(self) -> None:
+        """Classification with default NONE/NONE counts as identifiability_none + data_class_none."""
+        classification = Classification(
+            findings=[],
+            sensitivity=SensitivityLevel.NONE,
+            active_layers=[],
+            overlapping_findings=[],
+            # identifiability and data_class omitted → default to NONE
+        )
+        pipeline = _DummyPipeline([classification])
+        dataset = [LabeledText(text="x", expected_findings=[], description="")]
+
+        report = run_evaluation(pipeline, dataset)
+
+        assert report.per_dimension.identifiability_none == 1
+        assert report.per_dimension.data_class_none == 1
+        assert report.per_dimension.identifiability_low == 0
+        assert report.per_dimension.data_class_ordinary == 0
+
+    def test_print_report_includes_per_dimension_section(self, capsys) -> None:
+        """print_report always outputs the Per Dimension section with both sub-headers."""
+        stats = DimensionStats(
+            identifiability_none=1,
+            identifiability_low=2,
+            identifiability_medium=3,
+            identifiability_high=4,
+            data_class_none=5,
+            data_class_ordinary=6,
+            data_class_special=7,
+            data_class_criminal=8,
+        )
+        report = Report(
+            total=_zero_metrics(),
+            per_category={},
+            per_layer={},
+            per_dimension=stats,
+        )
+        print_report(report)
+        captured = capsys.readouterr().out
+
+        assert "Per Dimension" in captured
+        assert "Identifiability" in captured
+        assert "Data class" in captured
+        for n in range(1, 9):
+            assert str(n) in captured

@@ -40,10 +40,11 @@ from evaluation.confusion_matrix import ConfusionMatrix  # noqa: E402
 from evaluation.dataset.loader import load_dataset  # noqa: E402
 from evaluation.matcher import match  # noqa: E402
 from evaluation.metrics import f1, precision, recall  # noqa: E402
-from evaluation.report import MechanismStats, Report, RunMetrics, SampleResult  # noqa: E402
+from evaluation.report import DimensionStats, MechanismStats, Report, RunMetrics, SampleResult  # noqa: E402
 from gdpr_classifier import Aggregator, Pipeline  # noqa: E402
 from gdpr_classifier.config import get_llm_provider  # noqa: E402
 from gdpr_classifier.core.category import Category  # noqa: E402
+from gdpr_classifier.core.classification import DataClass, Identifiability  # noqa: E402
 from gdpr_classifier.layers.article9 import Article9Layer  # noqa: E402
 from gdpr_classifier.layers.combination import CombinationLayer  # noqa: E402
 from gdpr_classifier.layers.entity import EntityLayer  # noqa: E402
@@ -169,6 +170,8 @@ def main() -> None:
     cm = ConfusionMatrix()
     samples: list[SampleResult] = []
     mech_counts = dict.fromkeys(["article9", "bypass", "mechanism3", "low", "none"], 0)
+    id_counts = dict.fromkeys(["none", "low", "medium", "high"], 0)
+    dc_counts = dict.fromkeys(["none", "ordinary", "special", "criminal"], 0)
 
     for i, item in enumerate(dataset, 1):
         print(f"  [{i:3d}/{n}] {truncate(item.text)}")
@@ -177,6 +180,19 @@ def main() -> None:
         if mech not in mech_counts:
             mech = "none"
         mech_counts[mech] += 1
+
+        id_value = getattr(classification, "identifiability", Identifiability.NONE)
+        id_key = id_value.value if id_value is not None else "none"
+        if id_key not in id_counts:
+            id_key = "none"
+        id_counts[id_key] += 1
+
+        dc_value = getattr(classification, "data_class", DataClass.NONE)
+        dc_key = dc_value.value if dc_value is not None else "none"
+        if dc_key not in dc_counts:
+            dc_key = "none"
+        dc_counts[dc_key] += 1
+
         mr = match(classification.findings, item.expected_findings)
         cm.add_match_result(mr)
         samples.append(
@@ -219,6 +235,16 @@ def main() -> None:
             low_count=mech_counts["low"],
             none_count=mech_counts["none"],
         ),
+        per_dimension=DimensionStats(
+            identifiability_none=id_counts["none"],
+            identifiability_low=id_counts["low"],
+            identifiability_medium=id_counts["medium"],
+            identifiability_high=id_counts["high"],
+            data_class_none=dc_counts["none"],
+            data_class_ordinary=dc_counts["ordinary"],
+            data_class_special=dc_counts["special"],
+            data_class_criminal=dc_counts["criminal"],
+        ),
     )
 
     print(f"\nTotalt: TP={t_tp}, FP={t_fp}, FN={t_fn}")
@@ -231,6 +257,14 @@ def main() -> None:
         f"mechanism3={mech_counts['mechanism3']}, "
         f"low={mech_counts['low']}, "
         f"none={mech_counts['none']}"
+    )
+    print(
+        f"Identifiability: none={id_counts['none']}, low={id_counts['low']}, "
+        f"medium={id_counts['medium']}, high={id_counts['high']}"
+    )
+    print(
+        f"Data class: none={dc_counts['none']}, ordinary={dc_counts['ordinary']}, "
+        f"special={dc_counts['special']}, criminal={dc_counts['criminal']}"
     )
 
     commit = get_git_commit()

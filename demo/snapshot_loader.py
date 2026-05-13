@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from evaluation.dataset.labeled_finding import LabeledFinding
-from evaluation.report import MechanismStats, Report, RunMetrics, SampleResult
+from evaluation.report import DimensionStats, MechanismStats, Report, RunMetrics, SampleResult
 from gdpr_classifier.core.category import Category
 from gdpr_classifier.core.finding import Finding
 
@@ -58,12 +58,15 @@ def _rehydrate_report(data: dict) -> Report:
     per_mechanism = (
         MechanismStats(**pm_data) if pm_data else MechanismStats(0, 0, 0, 0, 0)
     )
+    pd_data = data.get("per_dimension", {})
+    per_dimension = DimensionStats(**pd_data) if pd_data else DimensionStats()
     return Report(
         total=total,
         per_category=per_category,
         per_layer=per_layer,
         samples=samples,
         per_mechanism=per_mechanism,
+        per_dimension=per_dimension,
     )
 
 

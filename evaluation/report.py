@@ -36,6 +36,24 @@ class MechanismStats:
 
 
 @dataclass(frozen=True)
+class DimensionStats:
+    """Per-dimension distribution över datasetet (I-5 Del 3).
+
+    Spårar hur många klassificeringar som hamnar i varje identifiability-
+    och data_class-nivå. Parallellt med MechanismStats; bryter inte
+    iteration 2:s konfusionsmatris-logik.
+    """
+    identifiability_none: int = 0
+    identifiability_low: int = 0
+    identifiability_medium: int = 0
+    identifiability_high: int = 0
+    data_class_none: int = 0
+    data_class_ordinary: int = 0
+    data_class_special: int = 0
+    data_class_criminal: int = 0
+
+
+@dataclass(frozen=True)
 class Report:
     total: RunMetrics
     per_category: dict[Category, RunMetrics]
@@ -44,6 +62,7 @@ class Report:
     per_mechanism: MechanismStats = field(
         default_factory=lambda: MechanismStats(0, 0, 0, 0, 0)
     )
+    per_dimension: DimensionStats = field(default_factory=DimensionStats)
 
 
 def _context_snippet(text: str, start: int, end: int, window: int = 20) -> str:
@@ -85,6 +104,19 @@ def print_report(report: Report, verbose: bool = False) -> None:
     print(f"  MEDIUM via mechanism3: {pm.medium_via_mechanism3}")
     print(f"  LOW:                   {pm.low_count}")
     print(f"  NONE:                  {pm.none_count}")
+
+    print("\n--- Per Dimension ---")
+    pd = report.per_dimension
+    print("  Identifiability")
+    print(f"    NONE:   {pd.identifiability_none}")
+    print(f"    LOW:    {pd.identifiability_low}")
+    print(f"    MEDIUM: {pd.identifiability_medium}")
+    print(f"    HIGH:   {pd.identifiability_high}")
+    print("  Data class")
+    print(f"    NONE:     {pd.data_class_none}")
+    print(f"    ORDINARY: {pd.data_class_ordinary}")
+    print(f"    SPECIAL:  {pd.data_class_special}")
+    print(f"    CRIMINAL: {pd.data_class_criminal}")
 
     if verbose:
         fp_pairs: list[tuple[str, Finding]] = [

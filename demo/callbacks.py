@@ -450,6 +450,24 @@ def build_summary(classification: Classification) -> html.Div:
     }
     level_bg = level_colors.get(level, "#95a5a6")
 
+    identifiability_level = classification.identifiability.value.upper()
+    identifiability_colors = {
+        "NONE": "#bdc3c7",
+        "LOW": "#85c1e9",
+        "MEDIUM": "#3498db",
+        "HIGH": "#1f618d",
+    }
+    identifiability_bg = identifiability_colors.get(identifiability_level, "#95a5a6")
+
+    data_class_level = classification.data_class.value.upper()
+    data_class_colors = {
+        "NONE": "#bdc3c7",
+        "ORDINARY": "#bb8fce",
+        "SPECIAL": "#8e44ad",
+        "CRIMINAL": "#5b2c6f",
+    }
+    data_class_bg = data_class_colors.get(data_class_level, "#95a5a6")
+
     mechanism = classification.mechanism_used or "none"
     mech_explanation = _MECHANISM_DESCRIPTIONS.get(mechanism, mechanism)
 
@@ -500,6 +518,81 @@ def build_summary(classification: Classification) -> html.Div:
             html.Div(
                 f"Mekanism: {mechanism} ({mech_explanation})",
                 style={"marginBottom": "16px", "fontSize": "14px"},
+            ),
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.Div(
+                                "Identifierbarhet",
+                                style={
+                                    "fontWeight": "bold",
+                                    "fontSize": "13px",
+                                    "marginBottom": "4px",
+                                },
+                            ),
+                            html.Div(
+                                identifiability_level,
+                                style={
+                                    "display": "inline-block",
+                                    "backgroundColor": identifiability_bg,
+                                    "color": "white",
+                                    "fontWeight": "bold",
+                                    "fontSize": "13px",
+                                    "padding": "2px 10px",
+                                    "borderRadius": "4px",
+                                },
+                            ),
+                            html.Div(
+                                "Hur identifierbar är personen i texten.",
+                                style={
+                                    "fontSize": "12px",
+                                    "color": "#555",
+                                    "marginTop": "4px",
+                                },
+                            ),
+                        ],
+                        style={
+                            "marginRight": "40px",
+                            "display": "inline-block",
+                            "verticalAlign": "top",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                "Dataskyddsklass",
+                                style={
+                                    "fontWeight": "bold",
+                                    "fontSize": "13px",
+                                    "marginBottom": "4px",
+                                },
+                            ),
+                            html.Div(
+                                data_class_level,
+                                style={
+                                    "display": "inline-block",
+                                    "backgroundColor": data_class_bg,
+                                    "color": "white",
+                                    "fontWeight": "bold",
+                                    "fontSize": "13px",
+                                    "padding": "2px 10px",
+                                    "borderRadius": "4px",
+                                },
+                            ),
+                            html.Div(
+                                "Vilken GDPR-rättslig kategori datat tillhör.",
+                                style={
+                                    "fontSize": "12px",
+                                    "color": "#555",
+                                    "marginTop": "4px",
+                                },
+                            ),
+                        ],
+                        style={"display": "inline-block", "verticalAlign": "top"},
+                    ),
+                ],
+                style={"marginBottom": "16px"},
             ),
             html.Div(
                 [
