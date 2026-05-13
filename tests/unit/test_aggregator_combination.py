@@ -1,6 +1,7 @@
 """Unit tests for Aggregator combination logic and D5-correction (Issue #74).
 
-Tests verify _determine_sensitivity() with kombinationslogik:
+Tests verify Aggregator.aggregate() with kombinationslogik (sensitivity via
+_determine_dimensions + derive_sensitivity from I-5 Del 2):
   a) article9.* findings → HIGH
   b) context.kombination with high_confidence_bypass → MEDIUM (bypass)
   c) context.kombination with Mekanism 3 evidence → MEDIUM
@@ -10,12 +11,22 @@ Tests verify _determine_sensitivity() with kombinationslogik:
   g) No findings → NONE
   h) Priority order: HIGH > MEDIUM > LOW
   i) Isolated context.* + article4 → LOW (D5 neither suppresses nor elevates)
+
+TestDetermineDimensionsOutputs (I-5 Del 2) verifies that the new
+identifiability and data_class fields on Classification populate consistently
+with mechanism_used across all five mechanism scenarios.
 """
 
 from __future__ import annotations
 
 from gdpr_classifier.aggregator import Aggregator
-from gdpr_classifier.core import Category, Finding, SensitivityLevel
+from gdpr_classifier.core import (
+    Category,
+    DataClass,
+    Finding,
+    Identifiability,
+    SensitivityLevel,
+)
 
 
 def _make_finding(
@@ -230,3 +241,127 @@ class TestDetermineSensitivity:
         )
 
         assert result.sensitivity == SensitivityLevel.LOW
+
+
+class TestDetermineDimensionsOutputs:
+    """Identifiability och data_class populeras korrekt för varje mechanism_used.
+
+    Verifierar att den nya tvådimensionsoperationaliseringen (Beslut 37, I-5 Del 2)
+    populerar Classification.identifiability och Classification.data_class
+    konsistent med mechanism_used. Re-asserterar samtidigt sensitivity-utfallet
+    från iteration 2:s motsvarande scenarier som bakåtkompatibilitetsskydd.
+    """
+
+    def test_article9_yields_low_identifiability_special_data(self) -> None:
+        """article9 + article4 → identifiability=LOW (driven av article4),
+        data_class=SPECIAL (driven av article9), mechanism_used="article9"
+        (prioritet över article4), sensitivity=HIGH.
+
+        Samma scenario som test_article9_gives_high för att samtidigt
+        re-assertera iteration 2:s bakåtkompatibilitet på sensitivity.
+        """
+        halsodata = _make_finding(
+            Category.HALSODATA,
+            start=0,
+            end=10,
+            source="article9.halsodata",
+        )
+        email = _make_finding(
+            Category.EMAIL,
+            start=20,
+            end=40,
+            source="pattern.regex_email",
+        )
+
+        result = Aggregator().aggregate(
+            findings=[halsodata, email],
+            active_layers=["article9", "pattern"],
+        )
+
+        assert result.mechanism_used == "article9"
+        assert result.identifiability == Identifiability.LOW
+        assert result.data_class == DataClass.SPECIAL
+        assert result.sensitivity == SensitivityLevel.HIGH
+
+    def test_bypass_yields_medium_identifiability_ordinary_data(self) -> None:
+        """bypass-passerad kombination → identifiability=MEDIUM, data_class=ORDINARY."""
+        kombination = _make_finding(
+            Category.KOMBINATION,
+            start=0,
+            end=50,
+            confidence=0.9,  # >= default high_confidence_bypass 0.85
+            source="context.kombination",
+        )
+
+        result = Aggregator().aggregate(
+            findings=[kombination],
+            active_layers=["combination"],
+        )
+
+        assert result.mechanism_used == "bypass"
+        assert result.identifiability == Identifiability.MEDIUM
+        assert result.data_class == DataClass.ORDINARY
+        assert result.sensitivity == SensitivityLevel.MEDIUM
+
+    def test_mechanism3_yields_medium_identifiability_ordinary_data(self) -> None:
+        """Mekanism 3-passerad kombination → identifiability=MEDIUM, data_class=ORDINARY."""
+        kombination = _make_finding(
+            Category.KOMBINATION,
+            start=0,
+            end=60,
+            confidence=0.75,  # >= medium_threshold 0.7, < high_confidence_bypass 0.85
+            source="context.kombination",
+        )
+        namn = _make_finding(
+            Category.NAMN,
+            start=0,
+            end=15,
+            source="entity.spacy_PRS",
+        )
+        email = _make_finding(
+            Category.EMAIL,
+            start=20,
+            end=45,
+            source="pattern.regex_email",
+        )
+
+        result = Aggregator().aggregate(
+            findings=[kombination, namn, email],
+            active_layers=["pattern", "entity", "combination"],
+        )
+
+        assert result.mechanism_used == "mechanism3"
+        assert result.identifiability == Identifiability.MEDIUM
+        assert result.data_class == DataClass.ORDINARY
+        assert result.sensitivity == SensitivityLevel.MEDIUM
+
+    def test_low_yields_low_identifiability_ordinary_data(self) -> None:
+        """article4 utan validerad kombination → identifiability=LOW, data_class=ORDINARY."""
+        email = _make_finding(
+            Category.EMAIL,
+            start=0,
+            end=20,
+            source="pattern.regex_email",
+        )
+
+        result = Aggregator().aggregate(
+            findings=[email],
+            active_layers=["pattern"],
+        )
+
+        assert result.mechanism_used == "low"
+        assert result.identifiability == Identifiability.LOW
+        assert result.data_class == DataClass.ORDINARY
+        assert result.sensitivity == SensitivityLevel.LOW
+
+    def test_none_yields_none_identifiability_none_data(self) -> None:
+        """Inga relevanta fynd → identifiability=NONE, data_class=NONE."""
+        result = Aggregator().aggregate(
+            findings=[],
+            active_layers=["pattern"],
+        )
+
+        assert result.mechanism_used == "none"
+        assert result.identifiability == Identifiability.NONE
+        assert result.data_class == DataClass.NONE
+        assert result.sensitivity == SensitivityLevel.NONE
