@@ -16,31 +16,41 @@ class SensitivityLevel(str, Enum):
 
 
 class Identifiability(str, Enum):
-    """Identifiability dimension (Beslut 37, Loggbok iteration 3).
+    """Identifiability dimension (Beslut 37, Beslut 49 reviderad).
 
-    HIGH is passive in v0.3.0 — reserved for a future layer extension that
-    detects direct identifiers without contextual mechanism. The level is
-    included structurally per the Open-Closed Principle (Martin 2003) so
-    the type can be extended without breaking changes.
+    Categorical classification of how a person is identified in the text:
+    - NONE: no identification possible.
+    - INDIRECT: indirect identification via the puzzle-piece effect
+      (GDPR recital 26, validated context.kombination).
+    - DIRECT: direct identification via an article 4 finding
+      (name, personal ID number, email, etc.).
+
+    When both direct and indirect identification apply, DIRECT wins.
     """
 
     NONE = "none"
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
+    INDIRECT = "indirect"
+    DIRECT = "direct"
 
 
 class DataClass(str, Enum):
-    """Data protection class dimension (Beslut 37, Loggbok iteration 3).
+    """Data protection class dimension (Beslut 37, Beslut 49 reviderad).
 
-    CRIMINAL is passive in v0.3.0 (Beslut 40) — a structural marker for a
-    future Article 10 layer (data on criminal convictions and offences).
-    The level is included structurally per the Open-Closed Principle
-    (Martin 2003) so the type can be extended without breaking changes.
+    Categorical classification of the GDPR-legal data category:
+    - NONE: no sensitive information.
+    - SPECIAL: article 9 (special categories of personal data).
+    - CRIMINAL: article 10 (passive in v0.3.0, Beslut 40 — structural
+      marker for a future article 10 layer).
+
+    An ORDINARY level was removed during the Beslut 49 revision as
+    redundant. "Ordinary personal data" is a consequence of a person
+    being identifiable without sensitive material — it is captured by
+    the (DIRECT, NONE) and (INDIRECT, NONE) cells in the derivation
+    table (see aggregator.derive_sensitivity) and does not need its own
+    data-class level.
     """
 
     NONE = "none"
-    ORDINARY = "ordinary"
     SPECIAL = "special"
     CRIMINAL = "criminal"
 
@@ -51,6 +61,5 @@ class Classification:
     sensitivity: SensitivityLevel
     active_layers: list[str]
     overlapping_findings: list[tuple[Finding, Finding]]
-    mechanism_used: str | None = None
     identifiability: Identifiability = Identifiability.NONE
     data_class: DataClass = DataClass.NONE

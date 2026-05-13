@@ -22,32 +22,30 @@ def derive_sensitivity(
 ) -> SensitivityLevel:
     """Ren funktion: härleder SensitivityLevel från (identifiability, data_class).
 
-    Total över alla 16 (identifiability, data_class)-kombinationer. Beror enbart
+    Total över alla 9 (identifiability, data_class)-kombinationer. Beror enbart
     på inmatningarna — läser inte Aggregator-tillstånd eller trösklar.
 
-    Härledningstabell (Beslut 37, Beslut 49 preliminär):
+    Härledningstabell (Beslut 37, Beslut 49 reviderad):
 
-        identifiability \\ data_class | NONE | ORDINARY | SPECIAL | CRIMINAL
-        ------------------------------|------|----------|---------|----------
-        NONE                          | NONE | LOW*     | HIGH    | HIGH
-        LOW                           | LOW* | LOW      | HIGH    | HIGH
-        MEDIUM                        | LOW* | MEDIUM   | HIGH    | HIGH
-        HIGH                          | LOW* | MEDIUM   | HIGH    | HIGH
+        identifiability \\ data_class | NONE | SPECIAL | CRIMINAL
+        ------------------------------|------|---------|----------
+        NONE                          | NONE | LOW     | LOW
+        INDIRECT                      | LOW  | MEDIUM  | MEDIUM
+        DIRECT                        | LOW  | HIGH    | HIGH
 
-    Asterisk-märkta celler är icke producerbara under v0.3.0:s producentlogik
-    men returnerar LOW som Privacy by Design fail-safe (Beslut 21) snarare än
-    NONE — vid valideringsosäkerhet höjs bedömningen hellre än sänks.
+    Alla 9 celler är strukturellt definierade. Sensitivity är en
+    UI-abstraktion för intressentvisning och V1:s konfigurerbara
+    granskningsprioritering — inte en självständig dimension.
     """
     match (identifiability, data_class):
-        case (_, DataClass.SPECIAL | DataClass.CRIMINAL):
-            return SensitivityLevel.HIGH
-        case (Identifiability.MEDIUM | Identifiability.HIGH,
-              DataClass.ORDINARY):
-            return SensitivityLevel.MEDIUM
-        case (Identifiability.LOW, DataClass.ORDINARY):
-            return SensitivityLevel.LOW
         case (Identifiability.NONE, DataClass.NONE):
             return SensitivityLevel.NONE
+        case (Identifiability.DIRECT,
+              DataClass.SPECIAL | DataClass.CRIMINAL):
+            return SensitivityLevel.HIGH
+        case (Identifiability.INDIRECT,
+              DataClass.SPECIAL | DataClass.CRIMINAL):
+            return SensitivityLevel.MEDIUM
         case _:
             return SensitivityLevel.LOW
 
@@ -80,14 +78,13 @@ class Aggregator:
         filtered = self._apply_containment_rules(findings)
         filtered = self._deduplicate_same_category_overlap(filtered)
         overlaps = self._find_overlaps(filtered)
-        identifiability, data_class, mechanism = self._determine_dimensions(filtered)
+        identifiability, data_class = self._determine_dimensions(filtered)
         sensitivity = derive_sensitivity(identifiability, data_class)
         return Classification(
             findings=filtered,
             sensitivity=sensitivity,
             active_layers=active_layers,
             overlapping_findings=overlaps,
-            mechanism_used=mechanism,
             identifiability=identifiability,
             data_class=data_class,
         )
@@ -239,33 +236,24 @@ class Aggregator:
 
     def _determine_dimensions(
         self, findings: list[Finding],
-    ) -> tuple[Identifiability, DataClass, str]:
-        """Bestämmer (identifiability, data_class, mechanism_used) i en pass.
+    ) -> tuple[Identifiability, DataClass]:
+        """Bestämmer (identifiability, data_class) från fynd.
 
-        Identifiability (identifierbarhetsdimension):
-            NONE   inga article4.*-fynd och ingen validerad context.kombination.
-            LOW    minst ett article4.*-fynd, men ingen validerad kombination
-                   (varken Mekanism 3 eller hög-konfidens-bypass passerar).
-            MEDIUM context.kombination-fynd passerar Mekanism 3 ELLER
-                   hög-konfidens-bypass. Båda valideringsvägarna mappas till
-                   samma identifiability-nivå eftersom de validerar samma
-                   kombinationsclaim genom olika mekanismer (Mekanism 3 =
-                   evidensräkning, bypass = hög konfidens som fail-safe).
-            HIGH   passiv i v0.3.0 — reserverad för framtida lagerutökning.
+        Identifiability:
+            NONE     ingen article4.*-fynd och ingen validerad kombination.
+            INDIRECT validerad context.kombination utan article4.*-fynd
+                     (pusselbitseffekt, GDPR skäl 26).
+            DIRECT   minst ett article4.*-fynd (oavsett kombination).
+                     Direkt identifiering trumfar indirekt resonemang.
 
-        Data_class (dataskyddsklass-dimension):
-            NONE     inget article4.*-, article9.*- eller validerat
-                     context.kombination-fynd.
-            ORDINARY article4.*-fynd eller validerat context.kombination utan
-                     något article9.*-fynd. Validerad kombination räknas som
-                     ordinary data via GDPR skäl 26 (indirekt identifiering).
-            SPECIAL  minst ett article9.*-fynd (oavsett identifiability).
-            CRIMINAL passiv i v0.3.0 (Beslut 40) — strukturell markör för
-                     framtida artikel 10-lager.
+        Data_class:
+            NONE     inget article9.*-fynd.
+            SPECIAL  minst ett article9.*-fynd.
+            CRIMINAL passiv i v0.3.0 (Beslut 40).
 
-        Mechanism_used är oförändrad från iteration 2: en av "article9",
-        "bypass", "mechanism3", "low", "none" — anger vilken mekanism som
-        slutligt avgjorde klassificeringen.
+        Returnerar paret (identifiability, data_class). mechanism_used är
+        borttagen från modellen (Beslut 49 reviderad) — klassifikationen
+        kommuniceras helt av paret.
 
         D5-korrigering: isolerade context.*-fynd (source != "context.kombination")
         ignoreras vid dimensionsbestämning men bevaras i Classification.findings
@@ -278,45 +266,42 @@ class Aggregator:
             f.category.value.startswith("article9.") for f in findings
         )
 
-        kombination_candidates = [
-            f for f in findings
-            if f.source == "context.kombination"
-            and f.confidence >= self.medium_threshold
-        ]
-        validated_mechanism: str | None = None
-        for kf in kombination_candidates:
-            # Privacy by Design fail-safe: hög konfidens kringgår Mekanism 3 (Beslut 21, GDPR art. 25)
-            if kf.confidence >= self.high_confidence_bypass:
-                validated_mechanism = "bypass"
-                break
-            if self._passes_mechanism_3(kf, findings):
-                validated_mechanism = "mechanism3"
-                break
-
-        if has_article9:
-            data_class = DataClass.SPECIAL
-        elif has_article4 or validated_mechanism is not None:
-            data_class = DataClass.ORDINARY
-        else:
-            data_class = DataClass.NONE
-
-        if validated_mechanism is not None:
-            identifiability = Identifiability.MEDIUM
-        elif has_article4:
-            identifiability = Identifiability.LOW
+        if has_article4:
+            identifiability = Identifiability.DIRECT
+        elif self._has_validated_kombination(findings):
+            identifiability = Identifiability.INDIRECT
         else:
             identifiability = Identifiability.NONE
 
         if has_article9:
-            mechanism = "article9"
-        elif validated_mechanism is not None:
-            mechanism = validated_mechanism
-        elif has_article4:
-            mechanism = "low"
+            data_class = DataClass.SPECIAL
         else:
-            mechanism = "none"
+            data_class = DataClass.NONE
 
-        return identifiability, data_class, mechanism
+        return identifiability, data_class
+
+    def _has_validated_kombination(
+        self, findings: list[Finding],
+    ) -> bool:
+        """Returnerar True om någon context.kombination passerar Mekanism 3
+        eller hög-konfidens-bypass.
+
+        Båda valideringsvägarna mappas till INDIRECT identifiability eftersom
+        de validerar samma kombinationsclaim genom olika mekanismer (Mekanism
+        3 = evidensräkning, bypass = hög konfidens som fail-safe enligt
+        Beslut 21, GDPR artikel 25).
+        """
+        candidates = [
+            f for f in findings
+            if f.source == "context.kombination"
+            and f.confidence >= self.medium_threshold
+        ]
+        for kf in candidates:
+            if kf.confidence >= self.high_confidence_bypass:
+                return True
+            if self._passes_mechanism_3(kf, findings):
+                return True
+        return False
 
     def _passes_mechanism_3(
         self, kombination: Finding, all_findings: list[Finding],

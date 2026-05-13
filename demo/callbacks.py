@@ -12,7 +12,7 @@ from pathlib import Path
 from dash import Input, Output, State, callback, ctx, dash_table, dcc, html
 
 from evaluation.dataset.loader import load_dataset
-from evaluation.report import MechanismStats, Report
+from evaluation.report import DimensionStats, Report
 from gdpr_classifier import Aggregator, Pipeline
 from gdpr_classifier.config import get_llm_provider
 from gdpr_classifier.core.classification import Classification
@@ -155,8 +155,9 @@ _LAYER_COLUMNS = [
     {"name": "F1", "id": "f1"},
 ]
 
-_MECHANISM_COLUMNS = [
-    {"name": "Mekanism", "id": "mechanism"},
+_DIMENSION_COLUMNS = [
+    {"name": "Dimension", "id": "dimension"},
+    {"name": "Nivå", "id": "level"},
     {"name": "Antal", "id": "count"},
 ]
 
@@ -182,15 +183,6 @@ _TESTDATA_COLUMNS = [
     {"name": "Text", "id": "text"},
     {"name": "Förväntade fynd", "id": "expected"},
 ]
-
-_MECHANISM_DESCRIPTIONS = {
-    "article9": "Artikel 9-fynd hittat (känsliga uppgifter)",
-    "bypass": "Hög konfidens (>= 0.85), Mekanism 3 kringgicks",
-    "mechanism3": "Pusselbitseffekt med tillräckligt evidens",
-    "low": "Endast Artikel 4-fynd",
-    "none": "Inga fynd över sensitivity-tröskeln",
-}
-
 
 # ---------------------------------------------------------------------------
 # Row builders (pure functions over a Report/dataset)
@@ -241,15 +233,19 @@ def _layer_rows(report: Report) -> list[dict]:
     ]
 
 
-def _mechanism_rows(stats: MechanismStats) -> list[dict]:
-    labels = [
-        ("article9", stats.high_via_article9),
-        ("bypass", stats.medium_via_bypass),
-        ("mechanism3", stats.medium_via_mechanism3),
-        ("low", stats.low_count),
-        ("none", stats.none_count),
+def _dimension_rows(stats: DimensionStats) -> list[dict]:
+    rows = [
+        ("Identifiability", "NONE", stats.identifiability_none),
+        ("Identifiability", "INDIRECT", stats.identifiability_indirect),
+        ("Identifiability", "DIRECT", stats.identifiability_direct),
+        ("Data class", "NONE", stats.data_class_none),
+        ("Data class", "SPECIAL", stats.data_class_special),
+        ("Data class", "CRIMINAL", stats.data_class_criminal),
     ]
-    return [{"mechanism": key, "count": count} for key, count in labels]
+    return [
+        {"dimension": dim, "level": level, "count": count}
+        for dim, level, count in rows
+    ]
 
 
 def _fp_rows(report: Report) -> list[dict]:
@@ -452,24 +448,19 @@ def build_summary(classification: Classification) -> html.Div:
 
     identifiability_level = classification.identifiability.value.upper()
     identifiability_colors = {
-        "NONE": "#bdc3c7",
-        "LOW": "#85c1e9",
-        "MEDIUM": "#3498db",
-        "HIGH": "#1f618d",
+        "NONE": "#bdc3c7",      # ljusgrå
+        "INDIRECT": "#3498db",  # mellanblå
+        "DIRECT": "#1f618d",    # mörkblå
     }
     identifiability_bg = identifiability_colors.get(identifiability_level, "#95a5a6")
 
     data_class_level = classification.data_class.value.upper()
     data_class_colors = {
-        "NONE": "#bdc3c7",
-        "ORDINARY": "#bb8fce",
-        "SPECIAL": "#8e44ad",
-        "CRIMINAL": "#5b2c6f",
+        "NONE": "#bdc3c7",      # ljusgrå
+        "SPECIAL": "#8e44ad",   # mellanlila
+        "CRIMINAL": "#5b2c6f",  # mörklila
     }
     data_class_bg = data_class_colors.get(data_class_level, "#95a5a6")
-
-    mechanism = classification.mechanism_used or "none"
-    mech_explanation = _MECHANISM_DESCRIPTIONS.get(mechanism, mechanism)
 
     per_category: dict[str, int] = defaultdict(int)
     per_layer: dict[str, int] = defaultdict(int)
@@ -512,12 +503,8 @@ def build_summary(classification: Classification) -> html.Div:
                     "fontWeight": "bold",
                     "padding": "4px 14px",
                     "borderRadius": "4px",
-                    "marginBottom": "8px",
+                    "marginBottom": "16px",
                 },
-            ),
-            html.Div(
-                f"Mekanism: {mechanism} ({mech_explanation})",
-                style={"marginBottom": "16px", "fontSize": "14px"},
             ),
             html.Div(
                 [
@@ -544,7 +531,7 @@ def build_summary(classification: Classification) -> html.Div:
                                 },
                             ),
                             html.Div(
-                                "Hur identifierbar är personen i texten.",
+                                "Direkt (artikel 4), indirekt via pusselbitseffekt (skäl 26) eller ingen identifiering.",
                                 style={
                                     "fontSize": "12px",
                                     "color": "#555",
@@ -581,7 +568,7 @@ def build_summary(classification: Classification) -> html.Div:
                                 },
                             ),
                             html.Div(
-                                "Vilken GDPR-rättslig kategori datat tillhör.",
+                                "Särskilda kategorier (artikel 9), uppgifter om brott (artikel 10) eller ingen känslig data.",
                                 style={
                                     "fontSize": "12px",
                                     "color": "#555",
@@ -746,8 +733,8 @@ def update_report(verbose_values: list[str]) -> list:
         _make_table("category-table", _CATEGORY_COLUMNS, _category_rows(report)),
         html.H3("Per lager"),
         _make_table("layer-table", _LAYER_COLUMNS, _layer_rows(report)),
-        html.H3("Per mekanism"),
-        _make_table("mechanism-table", _MECHANISM_COLUMNS, _mechanism_rows(report.per_mechanism)),
+        html.H3("Per dimension"),
+        _make_table("dimension-table", _DIMENSION_COLUMNS, _dimension_rows(report.per_dimension)),
     ]
 
     if verbose:

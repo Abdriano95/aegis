@@ -1,10 +1,12 @@
-"""Unit tests for dimension enums and Classification extension (I-5 Del 1).
+"""Unit tests for dimension enums and Classification extension.
 
-Verifies that the new enums Identifiability and DataClass have the correct
+Verifies that the enums Identifiability and DataClass have the correct
 shape (values, ordering, str inheritance, public export), and that
 Classification remains frozen, is backwards-compatibly constructible with
 defaults, and equality-compares across the new fields. Anchored in Beslut 37
-(tvådimensionsoperationalisering enligt Variant 2).
+(tvådimensionsoperationalisering) and Beslut 49 reviderad (kategorisk
+identifiability NONE/INDIRECT/DIRECT, kategorisk data_class NONE/SPECIAL/
+CRIMINAL, mechanism_used borttagen från Classification).
 """
 
 from __future__ import annotations
@@ -46,30 +48,26 @@ class TestDimensionEnums:
     """Shape and import-path properties of Identifiability and DataClass."""
 
     def test_identifiability_values_and_order(self) -> None:
-        """Identifiability has exactly four members in NONE/LOW/MEDIUM/HIGH order with lower-case values."""
+        """Identifiability has exactly three members in NONE/INDIRECT/DIRECT order with lower-case values."""
         members = list(Identifiability)
         assert members == [
             Identifiability.NONE,
-            Identifiability.LOW,
-            Identifiability.MEDIUM,
-            Identifiability.HIGH,
+            Identifiability.INDIRECT,
+            Identifiability.DIRECT,
         ]
         assert Identifiability.NONE.value == "none"
-        assert Identifiability.LOW.value == "low"
-        assert Identifiability.MEDIUM.value == "medium"
-        assert Identifiability.HIGH.value == "high"
+        assert Identifiability.INDIRECT.value == "indirect"
+        assert Identifiability.DIRECT.value == "direct"
 
     def test_data_class_values_and_order(self) -> None:
-        """DataClass has exactly four members in NONE/ORDINARY/SPECIAL/CRIMINAL order with lower-case values."""
+        """DataClass has exactly three members in NONE/SPECIAL/CRIMINAL order with lower-case values."""
         members = list(DataClass)
         assert members == [
             DataClass.NONE,
-            DataClass.ORDINARY,
             DataClass.SPECIAL,
             DataClass.CRIMINAL,
         ]
         assert DataClass.NONE.value == "none"
-        assert DataClass.ORDINARY.value == "ordinary"
         assert DataClass.SPECIAL.value == "special"
         assert DataClass.CRIMINAL.value == "criminal"
 
@@ -105,7 +103,6 @@ class TestClassificationWithDimensions:
         )
         assert result.identifiability == Identifiability.NONE
         assert result.data_class == DataClass.NONE
-        assert result.mechanism_used is None
 
     def test_explicit_construction_preserves_values(self) -> None:
         """Explicit identifiability and data_class arguments are preserved on the instance."""
@@ -114,29 +111,27 @@ class TestClassificationWithDimensions:
             sensitivity=SensitivityLevel.MEDIUM,
             active_layers=["pattern", "combination"],
             overlapping_findings=[],
-            mechanism_used="mechanism3",
-            identifiability=Identifiability.MEDIUM,
-            data_class=DataClass.ORDINARY,
+            identifiability=Identifiability.INDIRECT,
+            data_class=DataClass.SPECIAL,
         )
         assert result.sensitivity == SensitivityLevel.MEDIUM
-        assert result.identifiability == Identifiability.MEDIUM
-        assert result.data_class == DataClass.ORDINARY
-        assert result.mechanism_used == "mechanism3"
+        assert result.identifiability == Identifiability.INDIRECT
+        assert result.data_class == DataClass.SPECIAL
 
     def test_frozen_dataclass_blocks_mutation(self) -> None:
         """Assigning to identifiability on an existing instance raises FrozenInstanceError."""
         instance = _make_minimal_classification()
         with pytest.raises(dataclasses.FrozenInstanceError):
-            instance.identifiability = Identifiability.HIGH  # type: ignore[misc]
+            instance.identifiability = Identifiability.DIRECT  # type: ignore[misc]
 
     def test_equality_includes_new_fields(self) -> None:
         """Two Classifications differing only on identifiability are not equal."""
-        a = _make_minimal_classification(identifiability=Identifiability.LOW)
-        b = _make_minimal_classification(identifiability=Identifiability.MEDIUM)
+        a = _make_minimal_classification(identifiability=Identifiability.INDIRECT)
+        b = _make_minimal_classification(identifiability=Identifiability.DIRECT)
         assert a != b
 
     def test_equality_includes_data_class(self) -> None:
         """Two Classifications differing only on data_class are not equal."""
-        a = _make_minimal_classification(data_class=DataClass.ORDINARY)
-        b = _make_minimal_classification(data_class=DataClass.SPECIAL)
+        a = _make_minimal_classification(data_class=DataClass.SPECIAL)
+        b = _make_minimal_classification(data_class=DataClass.CRIMINAL)
         assert a != b

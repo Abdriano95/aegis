@@ -2,6 +2,11 @@
 
 Verifies round-trip serialisation and rehydration of a minimal Report snapshot,
 with explicit assertions that Category enum keys are correctly restored.
+
+Iteration 2-snapshot innehåller en ``per_mechanism``-nyckel som hörde till
+en tidigare modell (MechanismStats borttagen i fixup av Beslut 49 reviderad).
+Snapshot-laddaren ignorerar nyckeln tyst — verifierat av
+test_iteration_2_snapshot_loads_without_mechanism_stats.
 """
 
 from __future__ import annotations
@@ -11,10 +16,8 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
-from demo.snapshot_loader import SnapshotData, _SNAPSHOT_PATH, load_snapshot
-from evaluation.report import MechanismStats, Report, RunMetrics, SampleResult
+from demo.snapshot_loader import SnapshotData, load_snapshot
+from evaluation.report import DimensionStats, Report, RunMetrics, SampleResult
 from gdpr_classifier.core.category import Category
 from gdpr_classifier.core.finding import Finding
 
@@ -36,12 +39,13 @@ def _make_minimal_report() -> Report:
         per_category={Category.PERSONNUMMER: metrics},
         per_layer={"pattern": metrics},
         samples=[sample],
-        per_mechanism=MechanismStats(
-            high_via_article9=1,
-            medium_via_bypass=2,
-            medium_via_mechanism3=3,
-            low_count=4,
-            none_count=5,
+        per_dimension=DimensionStats(
+            identifiability_none=1,
+            identifiability_indirect=2,
+            identifiability_direct=3,
+            data_class_none=4,
+            data_class_special=5,
+            data_class_criminal=6,
         ),
     )
 
@@ -121,8 +125,8 @@ def test_numeric_fields_are_int(tmp_path: Path) -> None:
     assert loaded.report.total.fn == 2
 
 
-def test_mechanism_stats_rehydrated(tmp_path: Path) -> None:
-    """MechanismStats fields must survive round-trip correctly."""
+def test_dimension_stats_rehydrated(tmp_path: Path) -> None:
+    """DimensionStats fields must survive round-trip correctly."""
     report = _make_minimal_report()
     snapshot_file = tmp_path / "test_snapshot.json"
     snapshot_file.write_text(
@@ -134,12 +138,51 @@ def test_mechanism_stats_rehydrated(tmp_path: Path) -> None:
         loaded = load_snapshot()
 
     assert loaded is not None
-    pm = loaded.report.per_mechanism
-    assert pm.high_via_article9 == 1
-    assert pm.medium_via_bypass == 2
-    assert pm.medium_via_mechanism3 == 3
-    assert pm.low_count == 4
-    assert pm.none_count == 5
+    pd = loaded.report.per_dimension
+    assert pd.identifiability_none == 1
+    assert pd.identifiability_indirect == 2
+    assert pd.identifiability_direct == 3
+    assert pd.data_class_none == 4
+    assert pd.data_class_special == 5
+    assert pd.data_class_criminal == 6
+
+
+def test_iteration_2_snapshot_loads_without_mechanism_stats(tmp_path: Path) -> None:
+    """Iteration 2-snapshot innehåller per_mechanism-nyckel som ska ignoreras.
+
+    Snapshot-laddaren accepterar äldre snapshot-format där per_mechanism
+    fanns; eftersom MechanismStats togs bort i Beslut 49 reviderad fixup
+    ska nyckeln ignoreras tyst och per_dimension återgå till default
+    DimensionStats(). Detta skyddar bakåtkompatibilitet utan att fabricera
+    värden.
+    """
+    legacy_snapshot = {
+        "metadata": {"generated_at": "2026-05-03T12:00:00+00:00"},
+        "report": {
+            "total": {"tp": 5, "fp": 2, "fn": 1, "recall": 0.83, "precision": 0.71, "f1": 0.77},
+            "per_category": {},
+            "per_layer": {},
+            "samples": [],
+            "per_mechanism": {
+                "high_via_article9": 38,
+                "medium_via_bypass": 10,
+                "medium_via_mechanism3": 0,
+                "low_count": 69,
+                "none_count": 42,
+            },
+        },
+    }
+    snapshot_file = tmp_path / "iter2_legacy.json"
+    snapshot_file.write_text(
+        json.dumps(legacy_snapshot, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    with patch("demo.snapshot_loader._SNAPSHOT_PATH", snapshot_file):
+        loaded = load_snapshot()
+
+    assert loaded is not None
+    assert loaded.report.per_dimension == DimensionStats()
 
 
 def test_returns_none_when_file_missing() -> None:

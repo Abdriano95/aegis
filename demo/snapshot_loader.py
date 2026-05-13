@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from evaluation.dataset.labeled_finding import LabeledFinding
-from evaluation.report import DimensionStats, MechanismStats, Report, RunMetrics, SampleResult
+from evaluation.report import DimensionStats, Report, RunMetrics, SampleResult
 from gdpr_classifier.core.category import Category
 from gdpr_classifier.core.finding import Finding
 
@@ -46,7 +46,12 @@ def load_snapshot() -> SnapshotData | None:
 
 
 def _rehydrate_report(data: dict) -> Report:
-    """Reconstruct a Report dataclass from a raw deserialized dict."""
+    """Reconstruct a Report dataclass from a raw deserialized dict.
+
+    Iteration 2-snapshot innehåller en ``per_mechanism``-nyckel som hörde
+    till en tidigare modell (MechanismStats borttagen i fixup av Beslut 49
+    reviderad). Nyckeln ignoreras tyst om den finns.
+    """
     total = RunMetrics(**data["total"])
     per_category = {
         Category(k): RunMetrics(**v)
@@ -54,10 +59,6 @@ def _rehydrate_report(data: dict) -> Report:
     }
     per_layer = {k: RunMetrics(**v) for k, v in data["per_layer"].items()}
     samples = [_rehydrate_sample(s) for s in data.get("samples", [])]
-    pm_data = data.get("per_mechanism", {})
-    per_mechanism = (
-        MechanismStats(**pm_data) if pm_data else MechanismStats(0, 0, 0, 0, 0)
-    )
     pd_data = data.get("per_dimension", {})
     per_dimension = DimensionStats(**pd_data) if pd_data else DimensionStats()
     return Report(
@@ -65,7 +66,6 @@ def _rehydrate_report(data: dict) -> Report:
         per_category=per_category,
         per_layer=per_layer,
         samples=samples,
-        per_mechanism=per_mechanism,
         per_dimension=per_dimension,
     )
 
