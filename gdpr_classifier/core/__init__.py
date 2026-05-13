@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 from .category import Category
-from .classification import Classification, SensitivityLevel
+from .classification import Classification, DataClass, Identifiability, SensitivityLevel
 from .finding import Finding
 from .layer import Layer
 
 __all__ = [
     "Category",
     "Classification",
+    "DataClass",
     "Finding",
+    "Identifiability",
     "Layer",
     "SensitivityLevel",
 ]
