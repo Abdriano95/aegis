@@ -904,3 +904,32 @@ Per layer: pattern oförändrad (förväntat); entity TP+1/FP−1 (matcher-attri
 - Probe-issue (separat arkitekturarbete kring layer-internal observability) påbörjas i separat session med ny arkitekt-instans.
 - Push av denna commit sker först efter Abdullas explicita bekräftelse av rapportens innehåll.
 - Referenser: [docs/iteration_3_temp_instrumentation_archive.md](iteration_3_temp_instrumentation_archive.md) (arkiv), [docs/iteration_3_threshold_calibration.md](iteration_3_threshold_calibration.md) (fas 1-data som grund för omformulering), [docs/iteration_3_num_ctx_fix.md](iteration_3_num_ctx_fix.md) (försumbar delta).
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) - Issue #107 (I-7) - Probe-checkpoint 1 (smoke-test qwen3:14b)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Smoke-testa qwen3:14b lokalt via `scripts/probe_llm_models.py` som första checkpoint inom Issue #107. Verifiera att modellen laddar, svarar på svenska, producerar giltig JSON och håller acceptabel latens innan vidare arbete planeras.
+
+**Sammanfattning:** Smoke-testet passerade på alla fyra kriterier (laddning, svenska, giltig JSON, acceptabel latens). JSON-validiteten var 5/5 över kategori A-prompts. Svensk-korrektheten var 8/9 över kategori B-prompts; det enda felet är ett semantiskt grannfel inom artikel 9-domänen och inte en felklassificering över sensitivitetsgränsen. Snittlatensen 2.81s per prompt är hanterbar för full evaluation-skala. Beslut: gå vidare med qwen3:14b till checkpoint 2.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` - denna sessionspost tillagd. Inga kodändringar.
+
+**Gjort:**
+
+Probe-skriptet kördes med 14 prompts fördelade över två kategorier. Kategori A täcker generella JSON-extraktionsuppgifter på svenska (extrahera namn, lista poster, kategorisera, räkna ord, plocka datum). Kategori B täcker svenska sensitivitetsfraser från artikel 9 (hälsodata, etniskt ursprung, religiös övertygelse, sexuell läggning, politisk åsikt, fackmedlemskap och kombinationer av dessa). Rådata och per-prompt-utfall skrevs till `scripts/probe_results_2026-05-14.md`.
+
+JSON-validiteten var 5/5 över kategori A. Svensk-korrektheten var 8/9 över kategori B. Det enda felet (b5_politics_positive) klassade frasen om "politisk åsikt" som "fackmedlemskap". Båda kategorier är artikel 9-kategorier, så felet är ett semantiskt grannfel och inte en sensitivitets-felklassificering.
+
+Snittlatensen blev 2.81s per prompt. Första prompten (a1_extract_name) tog 6.17s; övriga tretton låg jämnt mellan 2.35s och 2.72s. Tolkningen är att 6.17s-utfallet är modell-warmup eller initial GPU-allokering, inte representativ latens. Modellen laddade utan problem på lokal hårdvara (RX 9070 XT, 16 GB VRAM, ROCm-konfigurerad Ollama).
+
+**Beslut fattade:**
+
+Operativt val: gå vidare med qwen3:14b till nästa checkpoint. Smoke-kriterierna (modellen laddar, svarar, håller svenska, producerar giltig JSON) är passerade. Det enda felet är ett semantiskt grannfel inom rätt artikel 9-domän, inte ett klassmässigt sammanbrott. Latensen är hanterbar för full evaluation-skala (uppskattat 50 procent längre än qwen2.5:7b, vilket håller full pipeline-körning praktiskt genomförbar). Inga arkitektoniska beslut.
+
+**Öppet/Nästa steg:**
+
+Nästa checkpoint kommer röra utvärdering på en delmängd av iteration 2-datasetet, för att börja addressera probe-frågan om modellbegränsning kontra uppgiftens inneboende svårighet. Exakt val av delmängd och utvärderingsform avgörs i kommande session. Issue #107-status oförändrad i statustabellen tills checkpoint 2 är planerad och dokumenterad.
+
+Referenser: [scripts/probe_results_2026-05-14.md](../scripts/probe_results_2026-05-14.md) - rådata från smoke-testet med per-prompt-utfall, JSON-validering, svensk-korrekthet och latens.
