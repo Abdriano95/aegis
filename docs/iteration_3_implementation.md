@@ -779,3 +779,48 @@ Tre mekanismer förklarar regressionen.
 - Om ingen trunkering: num_ctx-sättning som arkitekturhärdning utan omkörning, reformulera I-6 (mål förflyttas från "Precision via trösklar" till "dokumentera invariansfyndet + välj defaults som maximerar Mek3-aktivering enligt Beslut 41").
 - WIP-commit: endast dokumentationsändringar staged. TEMP-koden förblir modifierad-men-ostagad i working tree. Commit-meddelande utan `fixes #106` (issuen är inte klar). Push sker först efter Abdullas explicita bekräftelse.
 - Referenser: [docs/iteration_3_threshold_calibration.md](iteration_3_threshold_calibration.md) — full data och analys av fas 1, alla 14 körda konfigurationer, observationer, designinsikt, pausorsak.
+
+### Session 2026-05-14b - Claude Code (Opus 4.7) — Issue #106 (I-6) — Token-mätning av layer-prompter
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Empiriskt verifiera Fynd 2 från pausen (2026-05-14): mäta token-storlek på Article9Layer- och CombinationLayer-prompter mot alla testtexter i iteration 2 och iteration 3:s evalueringsdataset för att avgöra om Ollamas implicita `num_ctx=4096` har trunkerat prompter under iteration 2 och 3:s LLM-baserade utvärdering.
+
+**Sammanfattning:** Token-mätning genomförd med tiktoken `cl100k_base` mot pipelinens exakta prompt-laddning och prompt-konstruktion (samma kodvägar som `Article9Layer.detect` och `CombinationLayer.detect`). Utfall: **C (trunkering bekräftad)**. 79/79 (100 %) av samtliga mätta texter har effective_tokens (prompt + 800 output-buffer) över 4096. Max effective tokens Article9 = 6117; max effective tokens Combination = 4454. Per-kategori-tabell visar att alla förekommande kategorier ligger systematiskt över 4096, dvs trunkeringen är inte borderline eller selektiv. Beslut om `num_ctx`-fix och omkörning av iteration 2:s/3:s LLM-baserade utvärdering tas av arkitekt-instans baserat på rapporten.
+
+**Ändrade filer:**
+- `tools/measure_prompt_tokens.py` — Ny fil. Fristående mätskript som importerar `gdpr_classifier.prompts.loader.load_prompt` och `evaluation.dataset.loader.load_dataset` (samma kodvägar som pipelinen) och replikerar `user_prompt`-konstruktionen verbatim från [article9_layer.py:58](article9_layer.py:58) / [combination_layer.py:62](combination_layer.py:62). Token-räkning av `system_prompt` + `user_prompt` per text; aggregering (min/median/p75/p90/max) per dataset; per-kategori-statistik (article9.\* respektive context.\*); topp-5 längsta prompts per layer (text-index, inte text); valfri Qwen2.5-validering. CLI-flaggor: `--output-buffer` (default 800), `--skip-validation`, `--output-md`.
+- `docs/iteration_3_token_measurement.md` — Ny fil. Mätrapporten med bakgrund (ref till `iteration_3_threshold_calibration.md`), metod, per-layer-resultat med kvantiler och per-kategori-tabeller, topp-5-längsta-prompts, validering (skippad — transformers ej installerat) och slutsats. Genereras automatiskt av skriptet.
+- `docs/iteration_3_implementation.md` — Denna sessionspost tillagd.
+
+**Gjort:**
+1. Verifierade datasetstruktur via `evaluation/dataset/loader.py:16` `load_dataset`. Iteration_2/article9_dataset.json: 52 records (40 med article9.\*-finding, 12 negativa exempel utan finding). Iteration_2/combination_dataset.json: 27 records. Iteration_1/test_dataset.json: 80 records, inga `article9.*`-kategorier (article4 + context only) → skippas för Article9-mätning. Iteration_3/-katalogen finns inte → båda iteration_3-datasetsen rapporteras "skippade".
+2. Verifierade prompt-laddning fungerar för Article9 `latest` (= v6, 347 system_prompt-tecken + 15720 assembled_prompt-tecken) och Combination `v5` (458 + 10980).
+3. Installerade `tiktoken` (`0.12.0`) via `py -m pip install tiktoken`. Lade INTE till i requirements/pyproject (mät-tool-dependency per spec). `transformers` saknas → Qwen2.5-validering hoppades över med rapporterad orsak.
+4. Skrev `tools/measure_prompt_tokens.py`: dedikerad `_display_path` för relativa sökvägar i rapporten, `measure_dataset`-funktion som itererar via `enumerate(load_dataset(path))` (deterministisk JSON-fil-ordning), `classify_outcome` med spec'ens A/B/C-trösklar (0 % / 1-5 % eller kategori i [3800, 4096] / >5 % eller kategori > 4096), `render_stdout` och `render_markdown` med separata per-kategori-tabeller per layer.
+5. Körde `py -X utf8 tools/measure_prompt_tokens.py` (UTF-8-läge för korrekt svensk teckenkodning i terminal). Stdout-sammanfattning genererad; markdown-rapport skriven till `docs/iteration_3_token_measurement.md`.
+6. Reproducerbarhetscheck: körde skriptet två gånger till skilda output-filer; `diff` gav 0 skillnader (deterministisk).
+7. Sanity-check på flaggor: `--output-buffer 1000` shiftade effective_tokens-fönstret med +200 enligt förväntan; `--skip-validation` skrev "qwen2.5-validering hoppades över: --skip-validation".
+
+**Resultat (huvudsiffror):**
+
+| Layer | Dataset | N | Max prompt tokens | Max effective tokens | Andel > 4096 |
+|---|---|---|---|---|---|
+| Article9 (v6) | iteration_2/article9_dataset.json | 52 | 5317 | 6117 | 100 % |
+| Combination (v5) | iteration_2/combination_dataset.json | 27 | 3654 | 4454 | 100 % |
+
+Article9-prompter ligger systematiskt 2000+ tokens över 4096-gränsen (cirka 1,5× för stora). Combination-prompter ligger 300-360 tokens över gränsen (marginellt men konsekvent — alla 27/27). Per-kategori-tabellen visar att max effective tokens > 4096 i samtliga article9.\*- och context.\*-kategorier.
+
+**Validering:** Qwen2.5-tokenizer-jämförelse hoppades över eftersom `transformers` inte är installerat i miljön. Spec'ens § 1d tillåter detta explicit ("Om transformers inte är installerat … hoppa över valideringen och rapportera 'qwen2.5-validering hoppades över: \<orsak\>'"). Förbehåll: utfallet är så långt över tröskeln (article9 cirka 6000 effective vs limit 4096, dvs ~49 % över) att en eventuell tokenizer-divergens på ±10 % inte ändrar slutsatsen.
+
+**Avvikelse från spec'ens förutsättningar:**
+- Tests/data/iteration_3/ finns inte i repot. Per spec'ens `(om finns)`-formulering rapporterar skriptet datasetsen som "skippade" och fortsätter med iteration_2-datasetsen.
+- TEMP-instrumenteringen i `aggregator.py` och `run_evaluation.py` är redan committad i `7c8247a` (föregående session), inte modifierad-men-ostagad som spec'ens Avslutsverifiering bullet 5 antar. Inga ändringar gjorda i den koden — out-of-scope-spärren respekterad oavsett.
+
+**Beslut fattade:** Inga arkitektoniska beslut i denna session. Beslut om `num_ctx`-fix i `OllamaProvider` och omfattning av eventuell omkörning av iteration 2:s/3:s LLM-baserade utvärdering tas av arkitekt-instans baserat på mätrapporten.
+
+**Öppet/Nästa steg:**
+- I-6 förblir **🔄 Pågår (pausad)** — token-mätningen är en pausutredning, inte issue-uppfyllelse. Inget `fixes #106` i commit-meddelandet.
+- Arkitekt-instans tar nästa beslut: (1) införa `num_ctx`-fix i `OllamaProvider` (storlek beslutas; uppåt 8192 räcker för båda layers givet observerade max), (2) omfattning av omkörning (iteration 2:s slutmätvärden för Article9 och Context påverkas; iteration 3:s baseline från `00e1e66` är på trunkerad data), (3) reformulering av I-6:s mål.
+- Push av denna commit sker först efter Abdullas explicita bekräftelse av rapportens innehåll.
+- Referenser: [docs/iteration_3_token_measurement.md](iteration_3_token_measurement.md) — full mätrapport med per-dataset-kvantiler, per-kategori-tabeller, topp-5-listor och slutsats.
