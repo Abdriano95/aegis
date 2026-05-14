@@ -330,6 +330,8 @@ Implementeras i iteration 2. Article9Layer detekterar direkt uttryckta kategoriu
 
 **LLM-implementation:** Lagret använder en lokal LLM via en utbytbar `LLMProvider`-abstraktion (se avsnitt 10 för filstruktur). Lokal exekveringsmiljö är primär; molnprovider är sekundär och utbytbar utan ändringar i lagret. Beslut 17 (Loggbok iteration 2) motiverar detta val. Modellstorlek och arkitektur väljs baserat på prestanda mot artikel 9-kategorier i svenska texter och fastställs iterativt.
 
+**Explicit kontextfönster (Beslut 50, Loggbok iteration 3):** Explicit `num_ctx=16384` i `OllamaProvider` för att förhindra tyst trunkering. Token-mätning (commit 3473192) bekräftade systematisk trunkering i iteration 2:s LLM-baserade utvärdering: Article9-prompts 6015–6117 effective tokens mot Ollamas implicita 4096-token-default. Iteration 2:s LLM-baserade utvärdering körs om mot fixad provider; Pattern- och Entity-lagren oförändrade. Spårbar mot DP3 (utbytbar provider kräver konsistent effektivt kontextfönster). Full motivering: Loggbok iteration 3, Google Docs.
+
 **Output:**
 - `Finding.category` ∈ `{article9.halsodata, article9.religios_overtygelse, article9.politisk_asikt, article9.sexuell_laggning, article9.etniskt_ursprung, article9.biometrisk_data, article9.fackmedlemskap}`
 - `Finding.source`: `"article9.{kategori}"` (t.ex. `"article9.halsodata"`)
