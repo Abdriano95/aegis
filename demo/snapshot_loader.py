@@ -19,7 +19,7 @@ from gdpr_classifier.core.finding import Finding
 _LOG = logging.getLogger(__name__)
 
 _SNAPSHOT_PATH = (
-    Path(__file__).resolve().parent / "snapshots" / "iteration_2_report.json"
+    Path(__file__).resolve().parent / "snapshots" / "iteration_3_post_I5_fixup.json"
 )
 
 
