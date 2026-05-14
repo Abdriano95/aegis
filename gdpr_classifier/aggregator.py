@@ -16,6 +16,21 @@ from gdpr_classifier.core import (
 )
 
 
+# TEMP I-6 calibration, remove before commit
+_mechanism3_pass_count = 0
+
+
+def reset_mechanism3_counter() -> None:
+    """TEMP I-6 calibration, remove before commit"""
+    global _mechanism3_pass_count
+    _mechanism3_pass_count = 0
+
+
+def get_mechanism3_count() -> int:
+    """TEMP I-6 calibration, remove before commit"""
+    return _mechanism3_pass_count
+
+
 def derive_sensitivity(
     identifiability: Identifiability,
     data_class: DataClass,
@@ -321,4 +336,9 @@ class Aggregator:
             and f.start < kombination.end
             and kombination.start < f.end
         ]
-        return len(evidence) >= self.min_evidence_count
+        passes = len(evidence) >= self.min_evidence_count
+        # TEMP I-6 calibration, remove before commit
+        if passes:
+            global _mechanism3_pass_count
+            _mechanism3_pass_count += 1
+        return passes
