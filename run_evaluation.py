@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from gdpr_classifier import Aggregator, Pipeline
 from gdpr_classifier.config import get_llm_provider
 from gdpr_classifier.layers.pattern import PatternLayer
@@ -12,7 +14,7 @@ from evaluation.dataset.loader import load_dataset
 from evaluation.runner import run_evaluation
 from evaluation.report import print_report
 
-_MODEL = "qwen2.5:7b-instruct"
+_MODEL = os.getenv("AEGIS_MODEL", "qwen2.5:7b-instruct")
 
 
 def main() -> None:

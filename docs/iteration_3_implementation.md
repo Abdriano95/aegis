@@ -127,7 +127,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
 | [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ✅ Klar (omformulerad) — 2026-05-14, trösklar behålls vid Beslut 20-defaults, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md) och Beslut 51 (Loggbok iteration 3) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
-| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ⬜ Ej startad | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
+| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | 🔄 Pågår (checkpoint 1 + 2 klara 2026-05-15) | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
 | [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
 | [#110](https://github.com/Abdriano95/aegis/issues/110) (I-10) | Villkorad formulering av DP6 | B | Abdulla | ⬜ Ej startad | I-5, I-18 | Detta ÄR formaliseringsarbetet (DP6 i 5.5 eller observation i 4.4.3/6). |
@@ -933,3 +933,33 @@ Operativt val: gå vidare med qwen3:14b till nästa checkpoint. Smoke-kriteriern
 Nästa checkpoint kommer röra utvärdering på en delmängd av iteration 2-datasetet, för att börja addressera probe-frågan om modellbegränsning kontra uppgiftens inneboende svårighet. Exakt val av delmängd och utvärderingsform avgörs i kommande session. Issue #107-status oförändrad i statustabellen tills checkpoint 2 är planerad och dokumenterad.
 
 Referenser: [scripts/probe_results_2026-05-14.md](../scripts/probe_results_2026-05-14.md) - rådata från smoke-testet med per-prompt-utfall, JSON-validering, svensk-korrekthet och latens.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) - Issue #107 (I-7) - Probe-checkpoint 2 (infrastruktur för delmängdsutvärdering)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Möjliggöra checkpoint 2-utvärderingar på delmängder av iteration 2-datasetet (artikel 9 separat, kombination separat, eller hela uppsättningen) med valbar LLM-modell, utan att behöva redigera scripten mellan körningar. Förberedelse för att svara på probe-frågan om Layer 3/4-tak är modell- eller uppgiftsbundet.
+
+**Sammanfattning:** Lade till `--subset {iteration_1,article9,combination,all}` i `scripts/build_demo_snapshot.py` och miljövariabel `AEGIS_MODEL` i både `scripts/build_demo_snapshot.py` och `run_evaluation.py`. Snapshotens `metadata.dataset`-block fortsätter ha alla tre subset-räknare (med 0 för ej laddade), bakåtkompatibelt med `demo/callbacks.py` och `tests/unit/test_snapshot_loader.py`. Nytt fält `metadata.subset` för spårbarhet. Inga ändringar i pipeline, lager eller utvärderingskärnan.
+
+**Ändrade filer:**
+- `run_evaluation.py` - `import os` tillagd; `_MODEL` läser `AEGIS_MODEL` med default `qwen2.5:7b-instruct`.
+- `scripts/build_demo_snapshot.py` - `import os` tillagd; `_MODEL` läser `AEGIS_MODEL`; ny konstant `_SUBSET_KEYS` med val-mappning; `--subset` CLI-flagga; dataset-laddning omskriven till per-subset-loop med `subset_counts`-dict; metadata uppdaterad (nytt `subset`-fält, `dataset`-räknare härleds från `subset_counts`); modul-docstring uppdaterad med två nya användarexempel.
+- `README.md` - ny sektion #7 "Generera demo-snapshot" som dokumenterar `build_demo_snapshot.py` med `--subset` och `AEGIS_MODEL`.
+- `docs/iteration_3_implementation.md` - statusrad för #107 uppdaterad till 🔄 Pågår; denna sessionspost tillagd.
+
+**Gjort:**
+
+Identifierade två kontaktpunkter där modell och datasetval var hårdkodat: `_MODEL`-konstanten i båda scripten och tre eager `load_dataset`-anrop i `build_demo_snapshot.main()`. Valde miljövariabel `AEGIS_MODEL` framför CLI-flagga för modellbyte eftersom `run_evaluation.py` inte har CLI-infrastruktur och scopen begränsades till minimal förändring. Valde dict-baserad `_SUBSET_KEYS`-mappning framför if/elif-kedja för symmetri med befintliga `_DATASET_PATHS` och för att hålla `choices` och loop-logik DRY mot samma sanningskälla.
+
+Metadata-blocket behåller alla tre subset-räknare (`iteration_1_texts`, `article9_texts`, `combination_texts`) men de härleds nu från en `subset_counts`-dict som default-initieras till 0. Bakåtkompatibilitet är verifierad mot `demo/callbacks.py:719-723` (läser endast `total_texts` via `.get(...)`) och mot `tests/unit/test_snapshot_loader.py:59` (vars fixture redan använder `0` för ej laddade subset).
+
+README utökades med en kort sektion #7 som speglar mönstret från sektion #1 (run_evaluation.py): tre kommandoexempel (default, --subset article9, AEGIS_MODEL=qwen3:14b) plus en mening om var snapshoten skrivs och vilka konsumenter som läser den.
+
+`python scripts/build_demo_snapshot.py --help` verifierades och visar `--subset {all,iteration_1,article9,combination}` med default `all` enligt förväntan. Inga befintliga tester täcker dessa script (`tests/integration/test_end_to_end.py` och `tests/unit/test_evaluation_flow.py` testar `evaluation.runner.run_evaluation`-funktionen, inte CLI-skripten; `tests/unit/test_snapshot_loader.py` testar snapshot-läsaren `demo/snapshot_loader.py`, inte byggaren). Detta noteras explicit utan att nya tester adderas — checkpoint 2 är infrastruktur, inte logik som kräver enhetstest.
+
+**Beslut fattade:** Inga arkitektoniska beslut. Operativa val: (a) env-var `AEGIS_MODEL` snarare än CLI-flagga på `run_evaluation.py` för att hålla scope minimal; (b) dict-baserat subset-val för symmetri och DRY; (c) behålla alla tre dataset-räknare i metadata med 0 för ej laddade subset, för bakåtkompatibilitet mot existerande snapshot-konsumenter; (d) `subset`-fält placerat direkt efter `model` i metadata då båda är runtime-kontroller; (e) Issue #107-status förblir 🔄 Pågår efter checkpoint 2 eftersom probe-frågan om modell- vs uppgiftsbundet tak inte är besvarad förrän jämförande evalueringskörningar är genomförda.
+
+**Öppet/Nästa steg:**
+
+Nästa checkpoint kör faktisk evaluation: `AEGIS_MODEL=qwen3:14b python scripts/build_demo_snapshot.py --subset article9 --output probe_checkpoint2_qwen3_article9.json` och motsvarande för `combination`. Resultaten jämförs mot iteration 2-baseline (`qwen2.5:7b-instruct`) per-lager (Layer 3 vs Layer 4) för att besvara probe-frågan om modell- vs uppgiftsbundet tak. Issue #107-status förblir 🔄 Pågår tills alla checkpoints är genomförda och syntetiserade i ett diskussionsunderlag för kapitel 6.

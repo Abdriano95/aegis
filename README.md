@@ -132,3 +132,29 @@ print_report(report)
 ```
 
 `load_dataset` tar en relativ sökväg; byt cwd till repo-roten eller ge en absolut sökväg om du kör från annat håll.
+
+#### 7. Generera demo-snapshot
+
+`scripts/build_demo_snapshot.py` kör hela fyralager-pipelinen mot ett dataset och serialiserar utvärderingsrapporten till en JSON-snapshot under `demo/snapshots/`. Demon (`python -m demo.app`) läser snapshoten vid uppstart. Kräver att Ollama är igång och att modellen är pullad.
+
+```bash
+# Default: alla 159 texter med qwen2.5:7b-instruct
+python scripts/build_demo_snapshot.py
+
+# Endast artikel 9-delmängden (52 texter)
+python scripts/build_demo_snapshot.py --subset article9 \
+    --output probe_article9.json
+
+# Byt LLM-modell via miljövariabel
+AEGIS_MODEL=qwen3:14b python scripts/build_demo_snapshot.py \
+    --subset article9 --output probe_qwen3_article9.json
+```
+
+På Windows / PowerShell sätts miljövariabeln separat:
+
+```powershell
+$env:AEGIS_MODEL = "qwen3:14b"
+python scripts/build_demo_snapshot.py --subset article9 --output probe_qwen3_article9.json
+```
+
+Tillgängliga subset: `iteration_1`, `article9`, `combination`, `all` (default).
