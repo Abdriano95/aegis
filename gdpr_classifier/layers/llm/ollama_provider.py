@@ -23,6 +23,8 @@ class OllamaProvider:
         endpoint: Base URL of the Ollama HTTP API.
         temperature: Sampling temperature. 0.0 is fully deterministic.
         timeout: HTTP request timeout in seconds. Increase for large models.
+        num_ctx: Explicit Ollama context window. Default 16384 förhindrar tyst
+            trunkering av layer-prompter (Beslut 50, Loggbok iteration 3).
     """
 
     def __init__(
@@ -31,11 +33,13 @@ class OllamaProvider:
         endpoint: str = "http://localhost:11434",
         temperature: float = 0.0,
         timeout: int = 300,
+        num_ctx: int = 16384,
     ) -> None:
         self._model_name = model_name
         self._endpoint = endpoint.rstrip("/")
         self._temperature = temperature
         self._timeout = timeout
+        self._num_ctx = num_ctx
 
     def generate_json(
         self,
@@ -54,7 +58,10 @@ class OllamaProvider:
             "stream": False,
             "format": "json",
             "think": False,
-            "options": {"temperature": self._temperature},
+            "options": {
+                "temperature": self._temperature,
+                "num_ctx": self._num_ctx,
+            },
         }
         if system_prompt is not None:
             payload["system"] = system_prompt

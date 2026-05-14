@@ -126,7 +126,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ✅ Klar (2026-05-12) | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
-| [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | 🔄 Pågår (2026-05-14, fas 1 pausad pending token-mätning, se [threshold_calibration.md](iteration_3_threshold_calibration.md)) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
+| [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | 🔄 Pågår (2026-05-14, fas 1 ska göras om mot ny baslinje efter num_ctx-fix, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md)) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
 | [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ⬜ Ej startad | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
 | [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
@@ -824,3 +824,51 @@ Article9-prompter ligger systematiskt 2000+ tokens över 4096-gränsen (cirka 1,
 - Arkitekt-instans tar nästa beslut: (1) införa `num_ctx`-fix i `OllamaProvider` (storlek beslutas; uppåt 8192 räcker för båda layers givet observerade max), (2) omfattning av omkörning (iteration 2:s slutmätvärden för Article9 och Context påverkas; iteration 3:s baseline från `00e1e66` är på trunkerad data), (3) reformulering av I-6:s mål.
 - Push av denna commit sker först efter Abdullas explicita bekräftelse av rapportens innehåll.
 - Referenser: [docs/iteration_3_token_measurement.md](iteration_3_token_measurement.md) — full mätrapport med per-dataset-kvantiler, per-kategori-tabeller, topp-5-listor och slutsats.
+
+### Session 2026-05-14c - Claude Code (Opus 4.7) — Issue #106 (I-6) — num_ctx-fix + omkörning av iteration 2:s LLM-utvärdering
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Implementera Beslut 50: explicit `num_ctx=16384` i `OllamaProvider`, kör om iteration 2:s LLM-baserade utvärdering mot fixad provider, dokumentera deltas och etablera ny baslinje.
+
+**Sammanfattning:** Provider-fix implementerad med två-test-täckning av payload-propagering. Omkörning visade **minimal aggregat-påverkan** — total precision sjönk 0.23 pp och F1 0.15 pp; ny baslinje 213/91/20 (vs pre-fix 213/90/20). Endast 4 av 19 kategorier ändrades (`article9.halsodata` −1 TP, `context.plats` +1 FP, `context.yrke` +1 FP, `article4.adress` +1 TP/−1 FP). Tolkning: trots att 100 % av prompter teoretiskt låg över 4096-tokengränsen visade trunkeringen sig ha försumbar empirisk effekt — sannolikt eftersom Ollama trunkerar från prompt-början (system_prompt + few-shot) snarare än input-texten, och greedy-decode-stokastik dominerar signalen vid ±1-räkningar. Beslut 50 förblir arkitekturellt korrekt (provider får inte vara beroende av Ollama Desktops client-default — DP3-symmetri), men empiriskt visade sig effekten på iteration 2:s kategoriprestanda vara inom samma magnitud som greedy-brus.
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/llm/ollama_provider.py` — `num_ctx: int = 16384` tillagd i `__init__`, propagerad till payload-options-dict, docstring uppdaterad.
+- `tests/unit/test_ollama_provider.py` — Två nya tester: `test_num_ctx_default_sent_in_options` och `test_custom_num_ctx_forwarded`. Totalt 16/16 pass.
+- `docs/iteration_3_num_ctx_fix.md` — Ny fil. Full delta-analys per layer och per kategori, tolkning av varför empirisk effekt är liten trots teoretisk trunkering, framtida-arbete-notering om GeminiProvider/DP3-asymmetri.
+- `docs/arkitektur.md` — Inline Beslut 50-sammanfattning tillagd i § 6.1 (efter LLM-implementation-paragrafen) med format som matchar Beslut 37/49-inline-entries.
+- `docs/iteration_3_implementation.md` — Denna sessionspost tillagd. I-6-statustabellannoteringen uppdaterad från "fas 1 pausad pending token-mätning" till "fas 1 ska göras om mot ny baslinje efter num_ctx-fix".
+- `demo/snapshots/iteration_3_post_num_ctx_fix.json` — Ny post-fix-baslinje (159 texter, 213/91/20, P=70.07 %, R=91.42 %, F1=79.33 %).
+- `demo/snapshots/pre_num_ctx_fix/iteration_3_post_I5_fixup_TRUNCATED.json` — Bevarad kopia av pre-fix-baslinjen.
+
+**Gjort:**
+1. Implementerade `num_ctx`-parameter i `OllamaProvider` med default 16384 enligt Beslut 50. Propagerade till payload `options`-dict tillsammans med `temperature`. Docstring uppdaterad.
+2. Skrev två nya unit-tester som mockar `requests.post` och inspekterar payload — verifierar att default 16384 hamnar i options när inget anges, och att custom-värde propageras. Suiten 16/16 pass.
+3. Verifierade fixen via ad-hoc REPL-snutt som mockade `requests.post` och bekräftade `payload['options'] = {'temperature': 0.0, 'num_ctx': 16384}`. Notering: Abdulla ändrade Ollama Desktops globala default till 16384 samma datum, så `ollama ps` är inte längre en diskriminerande check — payload-inspektionen är beviset.
+4. Bevarade pre-fix-baslinjen via `cp demo/snapshots/iteration_3_post_I5_fixup.json demo/snapshots/pre_num_ctx_fix/iteration_3_post_I5_fixup_TRUNCATED.json`.
+5. Körde `py scripts/build_demo_snapshot.py --output iteration_3_post_num_ctx_fix.json` med defaults (article9=v5, combination=v5 — matchar pre-fix-baslinjens metadata för apples-to-apples). Körtid cirka 20 minuter, 159 texter.
+6. Beräknade per-layer- och per-kategori-deltas via JSON-diff. Skrev `docs/iteration_3_num_ctx_fix.md` med fullständiga tabeller och tolkning.
+7. Lade till Beslut 50-summary-entry i `docs/arkitektur.md` § 6.1, matchande inline-format som Beslut 37/49.
+
+**Resultat (huvudsiffror):**
+
+| Metric | Pre-fix (trunkerad) | Post-fix | Delta |
+|---|---|---|---|
+| TP | 213 | 213 | +0 |
+| FP | 90 | 91 | +1 |
+| FN | 20 | 20 | +0 |
+| Precision | 70.30 % | 70.07 % | −0.23 pp |
+| Recall | 91.42 % | 91.42 % | ±0 |
+| F1 | 79.48 % | 79.33 % | −0.15 pp |
+
+Per layer: pattern oförändrad (förväntat); entity TP+1/FP−1 (matcher-attribuering, ej LLM); article9 TP−1/FP+0 (driven av `article9.halsodata` −1 TP); context TP+0/FP+2 (driven av `context.plats` +1 FP och `context.yrke` +1 FP).
+
+**Beslut fattade:** Inga nya beslut i denna session. Beslut 50 implementerat per Loggbok iteration 3 (Google Docs). Repo-spårbarhet via inline-sammanfattning i `docs/arkitektur.md` § 6.1.
+
+**Öppet/Nästa steg:**
+- I-6 förblir **🔄 Pågår** — kalibreringsfasen är inte klar. Statustabell-annoteringen uppdaterad till "fas 1 ska göras om mot ny baslinje efter num_ctx-fix".
+- Återuppta I-6 fas 1-tröskelkalibrering mot post-fix-baslinjen (213/91/20) i separat session. Eftersom deltat är så litet är majoriteten av fas 1:s tidigare data fortfarande informativ — möjligen behöver bara enstaka kandidat-konfigurationer köras om för att skifta referens.
+- GeminiProvider/DP3-asymmetri (context-fönster konfigureras inte explicit) noterad som framtida arbete i `num_ctx_fix.md`, inte fix-värt nu.
+- Push av denna commit sker först efter Abdullas explicita bekräftelse av rapportens innehåll.
+- Referenser: [docs/iteration_3_num_ctx_fix.md](iteration_3_num_ctx_fix.md) — full delta-analys, tolkning, framtida arbete.

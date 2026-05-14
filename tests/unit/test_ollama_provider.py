@@ -94,6 +94,24 @@ class TestOllamaProviderGenerateJson:
         sent_json = mock_post.call_args.kwargs.get("json") or mock_post.call_args.args[1]
         assert sent_json["options"]["temperature"] == 0.7
 
+    def test_num_ctx_default_sent_in_options(self):
+        payload = {"response": json.dumps({"ok": True})}
+        with patch("requests.post", return_value=_mock_response(payload)) as mock_post:
+            provider = OllamaProvider(model_name="llama3")
+            provider.generate_json("prompt")
+
+        sent_json = mock_post.call_args.kwargs.get("json") or mock_post.call_args.args[1]
+        assert sent_json["options"]["num_ctx"] == 16384
+
+    def test_custom_num_ctx_forwarded(self):
+        payload = {"response": json.dumps({"ok": True})}
+        with patch("requests.post", return_value=_mock_response(payload)) as mock_post:
+            provider = OllamaProvider(model_name="llama3", num_ctx=8192)
+            provider.generate_json("prompt")
+
+        sent_json = mock_post.call_args.kwargs.get("json") or mock_post.call_args.args[1]
+        assert sent_json["options"]["num_ctx"] == 8192
+
     def test_system_prompt_included_when_provided(self):
         payload = {"response": json.dumps({"ok": True})}
         with patch("requests.post", return_value=_mock_response(payload)) as mock_post:
