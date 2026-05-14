@@ -135,7 +135,7 @@ def _parse_args() -> argparse.Namespace:
 
 I-6 omformulerades efter två substansella fynd:
 
-1. **Fas 1-invarians (13 körningar):** Aggregator-trösklarna påverkar inte
+1. **Fas 1-invarians (14 körningar):** Aggregator-trösklarna påverkar inte
    finding-listan, endast `Classification.identifiability`. Matcher
    (Lager 1–3) och aggregator (Lager 4) är separerade per Beslut 18
    (Single Responsibility). I-6:s ursprungliga premiss om
@@ -172,7 +172,7 @@ Koden i denna fil är verbatim — kopiera in och uppdatera importerna i
 
 ## Referenser
 
-- `docs/iteration_3_threshold_calibration.md` (fas 1-data, 13 körningar
+- `docs/iteration_3_threshold_calibration.md` (fas 1-data, 14 körningar
   med invarianta finding-counts TP=212/FP=100/FN=21)
 - `docs/iteration_3_num_ctx_fix.md` (num_ctx-fixens pre/post/delta-tabeller)
 - `docs/iteration_3_token_measurement.md` (Utfall C — token-mätningen som
