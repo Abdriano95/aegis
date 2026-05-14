@@ -126,7 +126,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ✅ Klar (2026-05-12) | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
-| [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | 🔄 Pågår (2026-05-14, fas 1 ska göras om mot ny baslinje efter num_ctx-fix, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md)) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
+| [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ✅ Klar (omformulerad) — 2026-05-14, trösklar behålls vid Beslut 20-defaults, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md) och Beslut 51 (Loggbok iteration 3) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
 | [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ⬜ Ej startad | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
 | [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
@@ -872,3 +872,35 @@ Per layer: pattern oförändrad (förväntat); entity TP+1/FP−1 (matcher-attri
 - GeminiProvider/DP3-asymmetri (context-fönster konfigureras inte explicit) noterad som framtida arbete i `num_ctx_fix.md`, inte fix-värt nu.
 - Push av denna commit sker först efter Abdullas explicita bekräftelse av rapportens innehåll.
 - Referenser: [docs/iteration_3_num_ctx_fix.md](iteration_3_num_ctx_fix.md) — full delta-analys, tolkning, framtida arbete.
+
+### Session 2026-05-14d - Claude Code (Opus 4.7) — Issue #106 (I-6) — Stängning och cleanup
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Stäng I-6 efter omformulering, arkivera TEMP-instrumentering, etablera ren slutkonfiguration. Defaults från Beslut 20 behålls; bidraget formaliseras som arkitektonisk designinsikt i rapporten istället för kalibreringstabell.
+
+**Sammanfattning:** I-6 omformuleras efter två substansella fynd. (1) Fas 1-invarians: aggregator-trösklarna påverkar inte finding-listan över 13 körningar (TP/FP/FN konstanta 212/100/21), endast `Classification.identifiability`. Matcher (Lager 1–3) och aggregator (Lager 4) är arkitektoniskt separerade per Beslut 18 (Single Responsibility) — Precision-lyft via trösklar är därmed inte arkitekturellt möjligt. (2) num_ctx-fixens försumbara delta: omkörning mot fixad provider gav F1 -0.15 pp på full pipeline, inom decode-bruset. Fortsatt kalibrering ger inget nytt forskningsbidrag. Beslut 51 (Loggbok iteration 3) fattat: behåll defaults `medium_threshold=0.7`, `high_confidence_bypass=0.85`, `min_evidence_count=2`. TEMP-instrumenteringen som lades till i `7c8247a` arkiveras verbatim och tas bort från aktiv kodbas. Issuen stängs via PR-merge, inte commit-keyword.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — TEMP I-6-instrumentering borttagen: modulnivå-globala `_mechanism3_pass_count`, `reset_mechanism3_counter()`, `get_mechanism3_count()`, samt increment-block i `_passes_mechanism_3`. Pre-7c8247a-form återställd.
+- `run_evaluation.py` — TEMP CLI-flaggor och counter-anrop borttagna: `argparse`-import, `_parse_args()`, `aggregator_kwargs`-konstruktion, `reset_mechanism3_counter()`-anrop, counter-print. `Aggregator()` instansieras med defaults igen.
+- `docs/iteration_3_temp_instrumentation_archive.md` — Ny fil. Fullständig verbatim arkivering av borttagen TEMP-kod från båda filerna med motivering, återskapnings-instruktioner och referenser till fas 1-data och Beslut 51.
+- `docs/iteration_3_implementation.md` — I-6-statusrad uppdaterad från "🔄 Pågår" till "✅ Klar (omformulerad)". Denna sessionspost tillagd.
+
+**Gjort:**
+1. Verifierade spårbarhet före cleanup: fas 1-tabell i `iteration_3_threshold_calibration.md` (13 körningar med invariant TP=212/FP=100/FN=21), pre/post/delta-tabeller i `iteration_3_num_ctx_fix.md`, Utfall C-slutsats i `iteration_3_token_measurement.md`, samt alla tre snapshot-filer (`iteration_3_post_I5_fixup.json`, `iteration_3_post_num_ctx_fix.json`, `pre_num_ctx_fix/iteration_3_post_I5_fixup_TRUNCATED.json`).
+2. Skapade `docs/iteration_3_temp_instrumentation_archive.md` med verbatim kopior av all borttagen TEMP-kod (4 block från `aggregator.py`, 7 block från `run_evaluation.py`) plus motivering och återskapnings-instruktioner.
+3. Tog bort TEMP-kod från `gdpr_classifier/aggregator.py` (counter-global, två funktioner, increment-block) och `run_evaluation.py` (argparse-import, counter-import, `_parse_args()`, kwargs-konstruktion, reset-anrop, print-rad).
+4. Verifierade städning: `grep -rn "TEMP I-6"` returnerar endast träffar i arkiv-filen och denna sessionsloggsfil (förväntat historiskt). `grep -rn "mechanism3_pass_count|reset_mechanism3_counter|get_mechanism3_count"` returnerar samma två träffar.
+5. Verifierade att Beslut 50:s `num_ctx`-kod i `ollama_provider.py` är oförändrad (4 träffar: parameter, self-assignment, options-dict, docstring) och båda num_ctx-unit-testerna intakta.
+6. Körde hela testsuiten: 203/203 pass inklusive 16/16 i `tests/unit/test_ollama_provider.py`.
+7. Körde `py run_evaluation.py` mot defaults — pipeline genererar Report-output utan fel, siffror inom decode-brus av post-num_ctx-fix-baslinjen 213/91/20 (F1 ≈ 79.33 %).
+8. Uppdaterade I-6-statusrad i statustabell + lade till denna sessionspost.
+
+**Beslut fattade:** Beslut 51 (Loggbok iteration 3): I-6 omformulering, defaults behålls, bidrag = arkitektonisk designinsikt om matcher/aggregator-separation. Inläggning i `docs/arkitektur.md` görs i separat session efter Loggbok-inskrivning — inte här.
+
+**Öppet/Nästa steg:**
+- Stängning av issue #106 sker via PR-merge, inte via `fixes #106`/`closes #106` i commit. Abdulla skapar PR manuellt efter att ha läst arkiv-filen och denna sessionspost.
+- Probe-issue (separat arkitekturarbete kring layer-internal observability) påbörjas i separat session med ny arkitekt-instans.
+- Push av denna commit sker först efter Abdullas explicita bekräftelse av rapportens innehåll.
+- Referenser: [docs/iteration_3_temp_instrumentation_archive.md](iteration_3_temp_instrumentation_archive.md) (arkiv), [docs/iteration_3_threshold_calibration.md](iteration_3_threshold_calibration.md) (fas 1-data som grund för omformulering), [docs/iteration_3_num_ctx_fix.md](iteration_3_num_ctx_fix.md) (försumbar delta).
