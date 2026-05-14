@@ -1,4 +1,4 @@
-"""Classification result and sensitivity level."""
+"""Classification result, sensitivity level and dimension enums."""
 
 from __future__ import annotations
 
@@ -15,10 +15,51 @@ class SensitivityLevel(str, Enum):
     HIGH = "high"
 
 
+class Identifiability(str, Enum):
+    """Identifiability dimension (Beslut 37, Beslut 49 reviderad).
+
+    Categorical classification of how a person is identified in the text:
+    - NONE: no identification possible.
+    - INDIRECT: indirect identification via the puzzle-piece effect
+      (GDPR recital 26, validated context.kombination).
+    - DIRECT: direct identification via an article 4 finding
+      (name, personal ID number, email, etc.).
+
+    When both direct and indirect identification apply, DIRECT wins.
+    """
+
+    NONE = "none"
+    INDIRECT = "indirect"
+    DIRECT = "direct"
+
+
+class DataClass(str, Enum):
+    """Data protection class dimension (Beslut 37, Beslut 49 reviderad).
+
+    Categorical classification of the GDPR-legal data category:
+    - NONE: no sensitive information.
+    - SPECIAL: article 9 (special categories of personal data).
+    - CRIMINAL: article 10 (passive in v0.3.0, Beslut 40 — structural
+      marker for a future article 10 layer).
+
+    An ORDINARY level was removed during the Beslut 49 revision as
+    redundant. "Ordinary personal data" is a consequence of a person
+    being identifiable without sensitive material — it is captured by
+    the (DIRECT, NONE) and (INDIRECT, NONE) cells in the derivation
+    table (see aggregator.derive_sensitivity) and does not need its own
+    data-class level.
+    """
+
+    NONE = "none"
+    SPECIAL = "special"
+    CRIMINAL = "criminal"
+
+
 @dataclass(frozen=True)
 class Classification:
     findings: list[Finding]
     sensitivity: SensitivityLevel
     active_layers: list[str]
     overlapping_findings: list[tuple[Finding, Finding]]
-    mechanism_used: str | None = None
+    identifiability: Identifiability = Identifiability.NONE
+    data_class: DataClass = DataClass.NONE

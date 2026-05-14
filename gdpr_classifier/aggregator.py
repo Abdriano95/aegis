@@ -9,9 +9,45 @@ from itertools import combinations
 from gdpr_classifier.core import (
     Category,
     Classification,
+    DataClass,
     Finding,
+    Identifiability,
     SensitivityLevel,
 )
+
+
+def derive_sensitivity(
+    identifiability: Identifiability,
+    data_class: DataClass,
+) -> SensitivityLevel:
+    """Ren funktion: härleder SensitivityLevel från (identifiability, data_class).
+
+    Total över alla 9 (identifiability, data_class)-kombinationer. Beror enbart
+    på inmatningarna — läser inte Aggregator-tillstånd eller trösklar.
+
+    Härledningstabell (Beslut 37, Beslut 49 reviderad):
+
+        identifiability \\ data_class | NONE | SPECIAL | CRIMINAL
+        ------------------------------|------|---------|----------
+        NONE                          | NONE | LOW     | LOW
+        INDIRECT                      | LOW  | MEDIUM  | MEDIUM
+        DIRECT                        | LOW  | HIGH    | HIGH
+
+    Alla 9 celler är strukturellt definierade. Sensitivity är en
+    UI-abstraktion för intressentvisning och V1:s konfigurerbara
+    granskningsprioritering — inte en självständig dimension.
+    """
+    match (identifiability, data_class):
+        case (Identifiability.NONE, DataClass.NONE):
+            return SensitivityLevel.NONE
+        case (Identifiability.DIRECT,
+              DataClass.SPECIAL | DataClass.CRIMINAL):
+            return SensitivityLevel.HIGH
+        case (Identifiability.INDIRECT,
+              DataClass.SPECIAL | DataClass.CRIMINAL):
+            return SensitivityLevel.MEDIUM
+        case _:
+            return SensitivityLevel.LOW
 
 
 class Aggregator:
@@ -42,13 +78,15 @@ class Aggregator:
         filtered = self._apply_containment_rules(findings)
         filtered = self._deduplicate_same_category_overlap(filtered)
         overlaps = self._find_overlaps(filtered)
-        sensitivity, mechanism = self._determine_sensitivity(filtered)
+        identifiability, data_class = self._determine_dimensions(filtered)
+        sensitivity = derive_sensitivity(identifiability, data_class)
         return Classification(
             findings=filtered,
             sensitivity=sensitivity,
             active_layers=active_layers,
             overlapping_findings=overlaps,
-            mechanism_used=mechanism,
+            identifiability=identifiability,
+            data_class=data_class,
         )
 
     def _apply_containment_rules(
@@ -196,42 +234,74 @@ class Aggregator:
                 overlaps.append((a, b))
         return overlaps
 
-    def _determine_sensitivity(
+    def _determine_dimensions(
         self, findings: list[Finding],
-    ) -> tuple[SensitivityLevel, str]:
-        """Bestämmer sammanfattande känslighetsnivå (SSOT arkitektur.md §8).
+    ) -> tuple[Identifiability, DataClass]:
+        """Bestämmer (identifiability, data_class) från fynd.
 
-        HIGH:   minst ett article9.*-fynd (Lager 3, Article9Layer).
-        MEDIUM: context.kombination-fynd med confidence >= medium_threshold
-                som passerar hög-konfidens-bypass eller Mekanism 3.
-        LOW:    article4.*-fynd utan HIGH- eller MEDIUM-triggar.
-        NONE:   inga fynd.
+        Identifiability:
+            NONE     ingen article4.*-fynd och ingen validerad kombination.
+            INDIRECT validerad context.kombination utan article4.*-fynd
+                     (pusselbitseffekt, GDPR skäl 26).
+            DIRECT   minst ett article4.*-fynd (oavsett kombination).
+                     Direkt identifiering trumfar indirekt resonemang.
+
+        Data_class:
+            NONE     inget article9.*-fynd.
+            SPECIAL  minst ett article9.*-fynd.
+            CRIMINAL passiv i v0.3.0 (Beslut 40).
+
+        Returnerar paret (identifiability, data_class). mechanism_used är
+        borttagen från modellen (Beslut 49 reviderad) — klassifikationen
+        kommuniceras helt av paret.
 
         D5-korrigering: isolerade context.*-fynd (source != "context.kombination")
-        ignoreras vid sensitivity-bestämning men bevaras i Classification.findings.
-
-        Returnerar (SensitivityLevel, mechanism_used) där mechanism_used är en
-        av "article9", "bypass", "mechanism3", "low", "none".
+        ignoreras vid dimensionsbestämning men bevaras i Classification.findings
+        (Beslut 11, Loggbok iteration 1; Beslut 19, Loggbok iteration 2).
         """
-        if any(f.category.value.startswith("article9.") for f in findings):
-            return SensitivityLevel.HIGH, "article9"
+        has_article4 = any(
+            f.category.value.startswith("article4.") for f in findings
+        )
+        has_article9 = any(
+            f.category.value.startswith("article9.") for f in findings
+        )
 
-        kombination_candidates = [
+        if has_article4:
+            identifiability = Identifiability.DIRECT
+        elif self._has_validated_kombination(findings):
+            identifiability = Identifiability.INDIRECT
+        else:
+            identifiability = Identifiability.NONE
+
+        if has_article9:
+            data_class = DataClass.SPECIAL
+        else:
+            data_class = DataClass.NONE
+
+        return identifiability, data_class
+
+    def _has_validated_kombination(
+        self, findings: list[Finding],
+    ) -> bool:
+        """Returnerar True om någon context.kombination passerar Mekanism 3
+        eller hög-konfidens-bypass.
+
+        Båda valideringsvägarna mappas till INDIRECT identifiability eftersom
+        de validerar samma kombinationsclaim genom olika mekanismer (Mekanism
+        3 = evidensräkning, bypass = hög konfidens som fail-safe enligt
+        Beslut 21, GDPR artikel 25).
+        """
+        candidates = [
             f for f in findings
             if f.source == "context.kombination"
             and f.confidence >= self.medium_threshold
         ]
-        for kf in kombination_candidates:
-            # Privacy by Design fail-safe: hög konfidens kringgår Mekanism 3 (Beslut 21, GDPR art. 25)
+        for kf in candidates:
             if kf.confidence >= self.high_confidence_bypass:
-                return SensitivityLevel.MEDIUM, "bypass"
+                return True
             if self._passes_mechanism_3(kf, findings):
-                return SensitivityLevel.MEDIUM, "mechanism3"
-
-        if any(f.category.value.startswith("article4.") for f in findings):
-            return SensitivityLevel.LOW, "low"
-
-        return SensitivityLevel.NONE, "none"
+                return True
+        return False
 
     def _passes_mechanism_3(
         self, kombination: Finding, all_findings: list[Finding],

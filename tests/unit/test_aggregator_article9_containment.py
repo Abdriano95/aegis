@@ -13,7 +13,13 @@ from __future__ import annotations
 import pytest
 
 from gdpr_classifier.aggregator import Aggregator
-from gdpr_classifier.core import Category, Finding, SensitivityLevel
+from gdpr_classifier.core import (
+    Category,
+    DataClass,
+    Finding,
+    Identifiability,
+    SensitivityLevel,
+)
 
 
 def _make_finding(
@@ -169,8 +175,16 @@ class TestContainmentArticle9ContextSignals:
         assert yrke not in result.findings
         assert len(result.findings) == 1
 
-    def test_sensitivity_high_after_article9_filter(self) -> None:
-        """Sensitivity remains HIGH after context signal is removed by article9 filter."""
+    def test_sensitivity_after_article9_filter_without_article4(self) -> None:
+        """Sensitivity is LOW (NONE identifiability + SPECIAL data) after article9
+        filter removes the context.organisation signal.
+
+        Reviderad förväntan (Beslut 49 reviderad): article9 utan article4
+        ger identifiability NONE och data_class SPECIAL → sensitivity LOW.
+        Containment-regeln tar bort context.organisation som överlappar
+        article9 (oförändrat), men sensitivity-utfallet är LOW eftersom
+        ingen identifierbar person finns.
+        """
         article9 = _make_finding(
             Category.FACKMEDLEMSKAP,
             start=0,
@@ -191,5 +205,7 @@ class TestContainmentArticle9ContextSignals:
             active_layers=["article9", "combination"],
         )
 
-        assert result.sensitivity == SensitivityLevel.HIGH
+        assert result.sensitivity == SensitivityLevel.LOW
+        assert result.identifiability == Identifiability.NONE
+        assert result.data_class == DataClass.SPECIAL
         assert org not in result.findings

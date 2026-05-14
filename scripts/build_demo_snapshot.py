@@ -40,10 +40,11 @@ from evaluation.confusion_matrix import ConfusionMatrix  # noqa: E402
 from evaluation.dataset.loader import load_dataset  # noqa: E402
 from evaluation.matcher import match  # noqa: E402
 from evaluation.metrics import f1, precision, recall  # noqa: E402
-from evaluation.report import MechanismStats, Report, RunMetrics, SampleResult  # noqa: E402
+from evaluation.report import DimensionStats, Report, RunMetrics, SampleResult  # noqa: E402
 from gdpr_classifier import Aggregator, Pipeline  # noqa: E402
 from gdpr_classifier.config import get_llm_provider  # noqa: E402
 from gdpr_classifier.core.category import Category  # noqa: E402
+from gdpr_classifier.core.classification import DataClass, Identifiability  # noqa: E402
 from gdpr_classifier.layers.article9 import Article9Layer  # noqa: E402
 from gdpr_classifier.layers.combination import CombinationLayer  # noqa: E402
 from gdpr_classifier.layers.entity import EntityLayer  # noqa: E402
@@ -168,15 +169,25 @@ def main() -> None:
     print(f"\nKör utvärdering ({n} texter)...\n")
     cm = ConfusionMatrix()
     samples: list[SampleResult] = []
-    mech_counts = dict.fromkeys(["article9", "bypass", "mechanism3", "low", "none"], 0)
+    id_counts = dict.fromkeys(["none", "indirect", "direct"], 0)
+    dc_counts = dict.fromkeys(["none", "special", "criminal"], 0)
 
     for i, item in enumerate(dataset, 1):
         print(f"  [{i:3d}/{n}] {truncate(item.text)}")
         classification = pipeline.classify(item.text)
-        mech = classification.mechanism_used or "none"
-        if mech not in mech_counts:
-            mech = "none"
-        mech_counts[mech] += 1
+
+        id_value = getattr(classification, "identifiability", Identifiability.NONE)
+        id_key = id_value.value if id_value is not None else "none"
+        if id_key not in id_counts:
+            id_key = "none"
+        id_counts[id_key] += 1
+
+        dc_value = getattr(classification, "data_class", DataClass.NONE)
+        dc_key = dc_value.value if dc_value is not None else "none"
+        if dc_key not in dc_counts:
+            dc_key = "none"
+        dc_counts[dc_key] += 1
+
         mr = match(classification.findings, item.expected_findings)
         cm.add_match_result(mr)
         samples.append(
@@ -212,12 +223,13 @@ def main() -> None:
         per_category=per_category,
         per_layer=per_layer,
         samples=samples,
-        per_mechanism=MechanismStats(
-            high_via_article9=mech_counts["article9"],
-            medium_via_bypass=mech_counts["bypass"],
-            medium_via_mechanism3=mech_counts["mechanism3"],
-            low_count=mech_counts["low"],
-            none_count=mech_counts["none"],
+        per_dimension=DimensionStats(
+            identifiability_none=id_counts["none"],
+            identifiability_indirect=id_counts["indirect"],
+            identifiability_direct=id_counts["direct"],
+            data_class_none=dc_counts["none"],
+            data_class_special=dc_counts["special"],
+            data_class_criminal=dc_counts["criminal"],
         ),
     )
 
@@ -226,11 +238,12 @@ def main() -> None:
     print(f"Recall:    {total_metrics.recall:.2%}")
     print(f"F1:        {total_metrics.f1:.2%}")
     print(
-        f"Mekanismer: article9={mech_counts['article9']}, "
-        f"bypass={mech_counts['bypass']}, "
-        f"mechanism3={mech_counts['mechanism3']}, "
-        f"low={mech_counts['low']}, "
-        f"none={mech_counts['none']}"
+        f"Identifiability: none={id_counts['none']}, indirect={id_counts['indirect']}, "
+        f"direct={id_counts['direct']}"
+    )
+    print(
+        f"Data class: none={dc_counts['none']}, special={dc_counts['special']}, "
+        f"criminal={dc_counts['criminal']}"
     )
 
     commit = get_git_commit()

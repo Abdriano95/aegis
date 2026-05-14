@@ -168,19 +168,47 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 class SensitivityLevel(Enum):
-    NONE   = "none"
-    LOW    = "low"      # Artikel 4-data hittad
-    MEDIUM = "medium"   # Indirekta identifierare eller kombinationer (pusselbitseffekten)
-    HIGH   = "high"     # Artikel 9-data hittad
+    NONE   = "none"     # ingen identifierbar person, inget känsligt material
+    LOW    = "low"      # härlett — se §8 (default-grenen i derive_sensitivity)
+    MEDIUM = "medium"   # härlett — indirekt identifierbar person med
+                        # artikel 9- eller 10-data
+    HIGH   = "high"     # härlett — direkt identifierbar person med
+                        # artikel 9- eller 10-data
+
+class Identifiability(Enum):
+    NONE     = "none"      # ingen identifiering möjlig
+    INDIRECT = "indirect"  # indirekt identifiering via pusselbitseffekt
+                           # (GDPR skäl 26, validerad context.kombination)
+    DIRECT   = "direct"    # direkt identifiering via artikel 4-fynd
+                           # (namn, personnummer, e-post, etc.)
+
+class DataClass(Enum):
+    NONE     = "none"      # ingen känslig information
+    SPECIAL  = "special"   # artikel 9 (känsliga kategorier)
+    CRIMINAL = "criminal"  # passiv i v0.3.0 (Beslut 40) — strukturell markör
+                           # för framtida artikel 10-lager
 
 @dataclass(frozen=True)
 class Classification:
     findings: list[Finding]
-    sensitivity: SensitivityLevel
-    active_layers: list[str]        # vilka lager som kördes
+    sensitivity: SensitivityLevel       # härlett UI-värde, se §8
+    active_layers: list[str]            # vilka lager som kördes
     overlapping_findings: list[tuple[Finding, Finding]]  # par av överlappande fynd
-    mechanism_used: str | None = None  # "article9" | "bypass" | "mechanism3" | "low" | "none"
+    identifiability: Identifiability = Identifiability.NONE
+    data_class: DataClass = DataClass.NONE
 ```
+
+**Tvådimensionsoperationalisering (Beslut 37, Loggbok iteration 3):** Iteration 2:s naturalistiska utvärdering (V1, V2, V4) konvergerade kring observationen att identifierbarhet (om en fysisk person går att urskilja) och dataskyddsklass (vilken GDPR-rättslig kategori datat tillhör) är två separata dimensioner som tillsammans bestämmer känslighet. `Identifiability` och `DataClass` operationaliserar dessa dimensioner som distinkta enum-typer.
+
+**Kategorisk modellering (Beslut 49 reviderad, Loggbok iteration 3):** Båda dimensionerna är kategoriska, inte kvantitativa glidskalor. `Identifiability` följer GDPR:s struktur i artikel 4 och skäl 26: en person är antingen icke identifierbar (`NONE`), indirekt identifierbar via pusselbitseffekt (`INDIRECT`) eller direkt identifierbar via artikel 4-fynd (`DIRECT`). Vid både direkt och indirekt identifiering vinner `DIRECT` — direkt identifiering trumfar pusselbitsresonemang. `DataClass` motsvarar GDPR:s artikel-uppdelning: ingen känslig information (`NONE`), särskilda kategorier i artikel 9 (`SPECIAL`) eller uppgifter om brott i artikel 10 (`CRIMINAL`). En tidigare `ORDINARY`-nivå togs bort vid revisionen av Beslut 49 eftersom "vanlig personuppgift" inte är en data-egenskap utan en konsekvens av identifierbarhet utan känsligt material — den kombinationen fångas av `(DIRECT, NONE)`-cellen i härledningstabellen (§8) och kräver ingen egen data-klassifikation.
+
+**Sensitivity som UI-abstraktion:** `SensitivityLevel` är från och med iteration 3 ett *härlett* värde från (identifiability, data_class) via funktionen `derive_sensitivity` (specificerad i §8). Sensitivity är inte en självständig dimension utan en pedagogisk sammanfattning för intressentvisning och V1:s konfigurerbara granskningsprioritering. Konsumenter (demo, evaluation, API) läser fältet direkt utan att behöva känna till derivatfunktionens semantik; producent-sidan (Aggregator) ansvarar för att populera fältet konsistent vid konstruktionstillfället.
+
+**Inget mechanism_used-fält:** Iteration 2:s `mechanism_used`-spårningsfält ("article9", "bypass", "mechanism3", "low", "none") togs bort vid revisionen av Beslut 49. Klassifikationen kommuniceras helt av paret (identifiability, data_class); en separat mekanismvokabulär skapade redundans utan att tillföra information. Om framtida iterationer behöver särskilja validerings*vägar* (bypass vs Mekanism 3) kan ett separat `validation_path`-fält införas utan att rubba dimensionsmodellen.
+
+**Passiva nivåer (Open-Closed Principle; Martin 2003):** `DataClass.CRIMINAL` ingår i typdefinitionen men aktiveras inte av någon producent i v0.3.0. Den är en strukturell markör för ett framtida artikel 10-lager (uppgifter om fällande domar och brott; Beslut 40). Nivån är medvetet inkluderad så att typsystemet kan utökas utan brytande ändringar. Efter revisionen av Beslut 49 har `Identifiability` ingen passiv nivå — alla tre värden (`NONE`, `INDIRECT`, `DIRECT`) produceras aktivt av Aggregator.
+
+**Default NONE/NONE (Beslut 21, Privacy by Design):** Default `NONE/NONE` ger `derive_sensitivity(NONE, NONE) = NONE` — ett icke-höjande utfall vid icke-populerade dimensioner. Efter revisionen av Beslut 49 är hela härledningstabellen deterministisk (inga asterisker, ingen fail-safe-mekanism), så defaulten fungerar som en neutral startposition snarare än en fail-safe.
 
 
 ### 3.4 Överlappande fynd
@@ -355,6 +383,44 @@ Konfiguration av aktiva lager sker via `config.py`. I iteration 1 är Lager 1 oc
 ## 8. Aggregator
 
 ```python
+def derive_sensitivity(
+    identifiability: Identifiability,
+    data_class: DataClass,
+) -> SensitivityLevel:
+    """Ren funktion på modulnivå. Total över alla 9 (identifiability,
+    data_class)-kombinationer. Beror enbart på inmatningarna — läser inte
+    Aggregator-tillstånd eller trösklar.
+
+    Härledningstabell (Beslut 37, Beslut 49 reviderad):
+
+        identifiability \\ data_class | NONE | SPECIAL | CRIMINAL
+        ------------------------------|------|---------|----------
+        NONE                          | NONE | LOW     | LOW
+        INDIRECT                      | LOW  | MEDIUM  | MEDIUM
+        DIRECT                        | LOW  | HIGH    | HIGH
+
+    Alla 9 celler är strukturellt definierade. (NONE, SPECIAL)=LOW är
+    "anonym text om känsliga kategorier" — strukturellt produktivt: utan
+    identifierbar person finns ingen personuppgift att skydda. (DIRECT,
+    NONE)=LOW är "direkt identifierbar person utan känsligt material".
+    CRIMINAL är passiv i v0.3.0 men ingår i tabellen som strukturell markör.
+
+    Implementationsrekommendation: pattern matching (Python 3.10+) för
+    uttömmande täckning och mypy-verifiering.
+    """
+    match (identifiability, data_class):
+        case (Identifiability.NONE, DataClass.NONE):
+            return SensitivityLevel.NONE
+        case (Identifiability.DIRECT,
+              DataClass.SPECIAL | DataClass.CRIMINAL):
+            return SensitivityLevel.HIGH
+        case (Identifiability.INDIRECT,
+              DataClass.SPECIAL | DataClass.CRIMINAL):
+            return SensitivityLevel.MEDIUM
+        case _:
+            return SensitivityLevel.LOW
+
+
 class Aggregator:
     def __init__(
         self,
@@ -374,13 +440,15 @@ class Aggregator:
         filtered = self._apply_containment_rules(findings)
         filtered = self._deduplicate_same_category_overlap(filtered)
         overlaps = self._find_overlaps(filtered)
-        sensitivity, mechanism = self._determine_sensitivity(filtered)
+        identifiability, data_class = self._determine_dimensions(filtered)
+        sensitivity = derive_sensitivity(identifiability, data_class)
         return Classification(
             findings=filtered,
             sensitivity=sensitivity,
             active_layers=active_layers,
             overlapping_findings=overlaps,
-            mechanism_used=mechanism,
+            identifiability=identifiability,
+            data_class=data_class,
         )
 
     def _apply_containment_rules(
@@ -395,47 +463,76 @@ class Aggregator:
         """Identifierar par av fynd vars textavsnitt överlappar."""
         ...
 
-    def _determine_sensitivity(
+    def _determine_dimensions(
         self, findings: list[Finding]
-    ) -> tuple[SensitivityLevel, str]:
+    ) -> tuple[Identifiability, DataClass]:
+        """Bestämmer (identifiability, data_class) från fynd.
+
+        Identifiability:
+            NONE     ingen article4.*-fynd och ingen validerad kombination.
+            INDIRECT validerad context.kombination utan article4.*-fynd
+                     (pusselbitseffekt, GDPR skäl 26).
+            DIRECT   minst ett article4.*-fynd (oavsett kombination).
+                     Direkt identifiering trumfar indirekt resonemang.
+
+        Data_class:
+            NONE     inget article9.*-fynd.
+            SPECIAL  minst ett article9.*-fynd.
+            CRIMINAL passiv i v0.3.0 (Beslut 40).
+
+        Returnerar paret (identifiability, data_class). mechanism_used är
+        borttagen från modellen — klassifikationen kommuniceras helt av
+        paret.
+
+        D5-korrigering: isolerade context.*-fynd (source != "context.kombination")
+        ignoreras vid dimensionsbestämning men bevaras i Classification.findings
+        (Beslut 11, Loggbok iteration 1; Beslut 19, Loggbok iteration 2).
         """
-        HIGH:   minst ett article9.*-fynd (Lager 3, Article9Layer).
-        MEDIUM: context.kombination-fynd som passerar Mekanism 1 (span-validering)
-                och antingen Mekanism 3 (evidens >= min_evidence_count) eller
-                hög-konfidens-bypass (confidence >= high_confidence_bypass).
-        LOW:    article4.*-fynd utan HIGH- eller MEDIUM-triggar.
-        NONE:   inga fynd.
+        has_article4 = any(
+            f.category.value.startswith("article4.") for f in findings
+        )
+        has_article9 = any(
+            f.category.value.startswith("article9.") for f in findings
+        )
 
-        D5-korrigering: isolerade context.*-fynd utan ett matchande
-        context.kombination-fynd triggar inte sensitivity-höjning (Beslut 11,
-        Loggbok iteration 1; Beslut 19, Loggbok iteration 2).
+        # Identifiability: DIRECT vinner över INDIRECT
+        if has_article4:
+            identifiability = Identifiability.DIRECT
+        elif self._has_validated_kombination(findings):
+            identifiability = Identifiability.INDIRECT
+        else:
+            identifiability = Identifiability.NONE
 
-        Returnerar (SensitivityLevel, mechanism_used) där mechanism_used är en
-        av "article9", "bypass", "mechanism3", "low", "none".
+        # Data class
+        if has_article9:
+            data_class = DataClass.SPECIAL
+        else:
+            data_class = DataClass.NONE
+
+        return identifiability, data_class
+
+    def _has_validated_kombination(
+        self, findings: list[Finding]
+    ) -> bool:
+        """Returnerar True om någon context.kombination passerar Mekanism 3
+        eller hög-konfidens-bypass.
+
+        Båda valideringsvägarna mappas till samma identifiability-nivå
+        (INDIRECT) eftersom de validerar samma kombinationsclaim genom
+        olika mekanismer (Mekanism 3 = evidensräkning, bypass = hög
+        konfidens som fail-safe enligt Beslut 21).
         """
-        # HIGH: direkt artikel 9-data hittad (Lager 3)
-        if any(f.category.value.startswith("article9.") for f in findings):
-            return SensitivityLevel.HIGH, "article9"
-
-        # MEDIUM: kombinationsfynd som passerar validering
-        kombination_findings = [
+        candidates = [
             f for f in findings
             if f.source == "context.kombination"
             and f.confidence >= self.medium_threshold
         ]
-        for kf in kombination_findings:
-            # Hög-konfidens-bypass: Privacy by Design fail-safe (Beslut 21, GDPR art. 25)
+        for kf in candidates:
             if kf.confidence >= self.high_confidence_bypass:
-                return SensitivityLevel.MEDIUM, "bypass"
-            # Mekanism 3: minimum evidence
+                return True
             if self._passes_mechanism_3(kf, findings):
-                return SensitivityLevel.MEDIUM, "mechanism3"
-
-        # LOW: artikel 4-data hittad
-        if any(f.category.value.startswith("article4.") for f in findings):
-            return SensitivityLevel.LOW, "low"
-
-        return SensitivityLevel.NONE, "none"
+                return True
+        return False
 
     def _passes_mechanism_3(
         self, kombination: Finding, all_findings: list[Finding]
@@ -447,6 +544,12 @@ class Aggregator:
         """
         ...
 ```
+
+**Tvådimensionsoperationalisering i Aggregator (Beslut 37, Loggbok iteration 3):** Från och med iteration 3 ersätts den monolitiska `_determine_sensitivity` med en tvådelad metod: `_determine_dimensions` extraherar de två oberoende dimensionerna `Identifiability` och `DataClass` i en enda pass över de filtrerade fynden, och den rena modulnivå-funktionen `derive_sensitivity` mappar paret till en `SensitivityLevel` enligt härledningstabellen ovan. Resulterande `Classification` innehåller alla tre fälten (sensitivity, identifiability, data_class).
+
+**Renhet och testbarhet av `derive_sensitivity`:** Funktionen är medvetet placerad på modulnivå, inte som metod på Aggregator, eftersom dess utfall inte beror på instansens trösklar (de trösklarna konsumeras av `_determine_dimensions` när Mekanism 3 och hög-konfidens-bypass utvärderas via `_has_validated_kombination`). Detta möjliggör direkt enhetstestning av samtliga 9 (identifiability, data_class)-kombinationer utan att konstruera en Aggregator. Mappningen blir auditerbar och oberoende av aggregatorns kalibrering.
+
+**Implementationsordning (SSOT före kod):** Specifikationen ovan ingår i I-5 Del 1:s commit; den faktiska implementationen av `_determine_dimensions` och `derive_sensitivity` levereras i I-5 Del 2:s commit i samma feature-branch. Detta är legitim omvänd ordning enligt iterationskonventionen: SSOT skrivs först vid arkitektur-design-fas, och kod synkas i nästkommande commit. Under övergångsfönstret garanterar `Classification`-fältens default `NONE`/`NONE` att inga konsumenter bryts.
 
 **Containment-regel: IBAN-telefon-överlapp (Issue #76, iteration 2):**
 
@@ -479,6 +582,10 @@ Slutgiltig kalibrering av trösklarna sker baserat på iteration 2:s kvantitativ
 **D5-korrigering:** Isolerade `context.*`-fynd — alltså individuella signaler från Lager 4 utan ett matchande `context.kombination`-fynd — triggar inte sensitivity-höjning. Motivering: en enskild kontextsignal ökar inte identifieringsrisken utan kombination med andra signaler (Beslut 11, Loggbok iteration 1; Beslut 19, Loggbok iteration 2). Isolerade `context.*`-fynd bevaras i `Classification.findings` för spårbarhet men påverkar inte `sensitivity`.
 
 I iteration 1 tilldelas endast `NONE`, `LOW` och `HIGH`. `MEDIUM` används från och med iteration 2 när Lager 3 och Lager 4 är aktiva.
+
+**Reservplan (Beslut 39):**
+
+Vid scope-tryck eller om iteration 3:s utvärdering visar att den tvådimensionella derivatkedjan inte ger önskat resultat tillåter Beslut 39 en reducerad version där `derive_sensitivity` ersätts av en fallback som returnerar iteration 2:s `_determine_sensitivity`-logik. Reservplanen implementeras som en konfigurationsflagga på `Aggregator.__init__` (förslagsvis `use_legacy_sensitivity: bool = False`), som vid aktivering får `aggregate` att hoppa över `derive_sensitivity` och i stället beräkna sensitivity via en bevarad legacy-helper `_legacy_sensitivity(filtered)` som speglar iteration 2:s logik. Reservplanen är **inte** aktiverad i v0.3.0; den dokumenteras som arkitektonisk option för framtida iteration eller akut rollback. `Classification.identifiability` och `Classification.data_class` populeras fortsatt av `_determine_dimensions` även i legacy-läge, så den arkitekturella separationen bevaras även om derivatlogiken rullas tillbaka. DP6 kan formaliseras på den arkitekturella separationen även utan ny derivatsemantik (Beslut 39).
 
 
 ## 9. Utvärdering
