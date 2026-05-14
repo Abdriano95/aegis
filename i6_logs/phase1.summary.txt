@@ -200,3 +200,17 @@ Mekanism 3 pass count: 0
 exit=127
 
 === Config M=0.8 H=0.95 E=2   (Thu May 14 19:20:32     2026) ===
+exit=0
+--- Total Metrics ---
+TP: 212   FP: 100   FN: 21   
+Precision: 67.95%
+Recall:    90.99%
+F1 Score:  77.80%
+
+Mekanism 3 pass count: 0
+--- Per Dimension ---
+  Identifiability
+    NONE:     77
+    INDIRECT: 0
+
+=== Fas 1 complete Thu May 14 19:51:28     2026 ===
