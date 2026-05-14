@@ -126,7 +126,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#103](https://github.com/Abdriano95/aegis/issues/103) (I-3) | Aggregator-deduplicering för same-category overlap över lager | A2 | Johanna | ✅ Klar (2026-05-12) | Inga (I-5 berör samma kod) | 5.3 uppdateras med dedupliceringsregel. |
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
-| [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ⬜ Ej startad | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
+| [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | 🔄 Pågår (2026-05-14, fas 1 pausad pending token-mätning, se [threshold_calibration.md](iteration_3_threshold_calibration.md)) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
 | [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ⬜ Ej startad | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
 | [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
@@ -722,3 +722,60 @@ Tre mekanismer förklarar regressionen.
 - Definitiv formalisering av Beslut 49 (reviderad) i Loggboken iteration 3 av Johanna.
 - I-6 (empirisk tröskelkalibrering) kan fortsatt påbörjas — Beslut 41:s villkor är fortfarande uppfyllt.
 - Manuellt formaliseringsarbete i AEGIS-rapporten (5.3, 5.5, 4.4.3) av Johanna och Abdulla, kopplat till I-10 och I-12.
+
+### Session 2026-05-14 - Claude Code (Opus 4.7) — Issue #106 (I-6) — Fas 1 pausad
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Påbörja empirisk tröskelkalibrering enligt I-6-prompten (16-konfigurationers rutnät över `medium_threshold`, `high_confidence_bypass`, `min_evidence_count`). Etablera lokal baslinje, köra fas 1-screening sekventiellt, dokumentera utfall för fas 2-planering.
+
+**Sammanfattning:** Fas 1 pausad efter 14 av 16 körningar. TEMP-instrumentering (counter i aggregator.py + CLI-args i run_evaluation.py) finns kvar i working tree. Två oberoende fynd motiverar paus innan vidare empirisk kalibrering.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — Statusrad för I-6 satt till 🔄 Pågår vid sessionens början med annotering om paus och pekare till `iteration_3_threshold_calibration.md`. Denna sessionspost tillagd.
+- `docs/iteration_3_threshold_calibration.md` — Ny fil. Innehåller dokumenterad baslinje, lokal baslinje, planerad metod, fas 1-tabell med 14 körda + 2 ej-körda rader, fem empiriska observationer, arkitekturell designinsikt, pausorsak (num_ctx), nästa steg, cell 2-cirkularitet-not.
+- `gdpr_classifier/aggregator.py` — TEMP-instrumentering oförändrad (modulnivå-counter `_mechanism3_pass_count` + `reset_mechanism3_counter()` + `get_mechanism3_count()` + increment i `_passes_mechanism_3`). Markerade `# TEMP I-6 calibration, remove before commit`. **Inte staged för WIP-commit**.
+- `run_evaluation.py` — TEMP-instrumentering oförändrad (argparse med `--medium-threshold`, `--high-confidence-bypass`, `--min-evidence-count`; kwargs-konstruktion; `reset_mechanism3_counter()`-anrop; counter-print efter `print_report`). Markerade `# TEMP I-6 calibration, remove before commit`. **Inte staged för WIP-commit**.
+
+**Gjort:**
+1. Uppdaterade I-6-status till 🔄 Pågår som första åtgärd (CLAUDE.md sektion 4, steg 2).
+2. Lade till TEMP modulnivå-counter och hjälpfunktioner i `aggregator.py`; instrumenterade `_passes_mechanism_3` med increment vid `return True`.
+3. Lade till TEMP CLI-argument i `run_evaluation.py` med kwargs-injektion till `Aggregator()`; placerade `reset_mechanism3_counter()` före `run_evaluation()` och counter-print efter `print_report()`.
+4. Skapade `docs/iteration_3_threshold_calibration.md` med skelettsektioner.
+5. Verifierade TEMP-instrumentering via syntax-check och `--help`-utskrift; defaults oförändrade (0.7/0.85/2).
+6. Körde sanity check 1× med defaults: TP=211/FP=98/FN=22, avvek med ±2 enheter TP/FN och +8 enheter FP från dokumenterad baslinje (213/90/20 från `00e1e66`). Avvikelsen klassificerades preliminärt som LLM-stochasticitet.
+7. Efter användarbeslut om hybrid-approach: körde **lokal baslinje (3 körningar med defaults)** — medel 211.67/99.33/21.33, stdev 0.58/1.15/0.58 (n−1). Körning 2 och 3 var identiska (212/100/21); körning 1 avvek med −1/−2/+1 jämfört med 2-3. Mek3-count = 0 stabilt över alla 3, INDIRECT = 6 stabilt.
+8. Startade **fas 1-screening** (16 sekventiella körningar i bakgrundsskript). Vid timing-stop hade 14 av 16 konfigurationer slutförts; konfig 15 och 16 (båda M=0.8 H=0.95) avbröts utan att slutföras.
+9. Stoppade bakgrundsprocessen via TaskStop + dödade orphaned python.exe-child.
+10. Sammanställde fas 1-tabellen i kalibreringsrapporten (14 ifyllda rader + 2 "EJ KÖRD (paus)"-rader).
+11. Formulerade fem empiriska observationer (TP/FP/FN invariant, M utan effekt, tre H+E-regimer, Mek3 aktiv vid (H=0.95, E=1), Recall-säkerhet genomgående).
+12. Dokumenterade arkitekturell designinsikt: aggregator-trösklar styr `Classification.identifiability` men inte finding-listan; matcher beräknar TP/FP/FN på finding-nivå innan aggregator kör; konsekvensen är att trösklarna per arkitektur inte kan påverka Precision/Recall/F1.
+13. Dokumenterade pausorsak: parallell analys (annan arkitekt-instans) flaggade att `OllamaProvider.generate_json` inte sätter `num_ctx` explicit i sin payload; default 4096 tokens kan ha trunkerat långa CombinationLayer v5-prompter tyst. Kräver token-mätning innan vidare kalibrering.
+
+**Fynd 1 — Invariansfyndet:**
+- TP/FP/FN = 212/100/21 i samtliga 14 körningar över 14-konfigurationsrutnätet.
+- Precision/Recall/F1 = 67.95% / 90.99% / 77.80% oförändrat över alla konfigurationer.
+- Aggregator-trösklar påverkar `Classification.identifiability`-räkningen (regim A: INDIRECT=6, regim B: INDIRECT=1, regim C: INDIRECT=0) men inte finding-listan.
+- Konsekvens: I-6:s ursprungliga mål "Precision lyfts till 71–73% via trösklar" är arkitekturellt omöjligt. Precision-förbättring kräver lager-konfidensjustering eller prompt-förbättringar, vilka båda ligger utanför issue body.
+- Mek3 är empiriskt aktiv funktionalitet (träffar 1 vid H=0.95+E=1), vilket bekräftar Beslut 41:s designintegritetsargument.
+
+**Fynd 2 — num_ctx-flagga (parallell analys, inte verifierad i denna session):**
+- `OllamaProvider.generate_json` skickar `"options": {"temperature": 0.0}` utan `num_ctx`-fält → Ollama defaultar till 4096 tokens.
+- `ollama ps` under pågående fas 1-körning visade CONTEXT=4096.
+- Hypotes: CombinationLayer v5-prompten + långa testtexter + reasoning + JSON-output kan ha trunkerats tyst under iteration 2 och iteration 3:s LLM-baserade utvärdering.
+- Måste verifieras med empirisk token-mätning innan I-6 fortsätter.
+- Pattern-lagret och Entity-lagret är opåverkade (icke-LLM).
+
+**Beslut fattade:** Inga arkitektoniska beslut i denna session — pausen är operativ, inte arkitektonisk. Invariansfyndet (Fynd 1) är kandidat för ny Beslut (50 eller 51) i Loggboken iteration 3 _efter_ att num_ctx-paus är upplöst och eventuella omkörningar gjorda. Att formalisera ett beslut nu skulle vara prematurt eftersom Fynd 1:s empiriska underlag kan behöva omkalibreras om Fynd 2 visar trunkering.
+
+**Formaliseringskonsekvens (manuellt arbete utanför agent-flödet):** Inga rapportändringar i denna session. När I-6 är reformulerad och slutförd: invariansfyndet bidrar till kapitel 5 (design-rationale för aggregator-arkitekturen, Single Responsibility-koppling) och 4.5.2 (uppdatering av kalibreringsfras med faktiska empiriska utfall). DC3-platshållarna för I-6-resultatet i rapporten lämnas tomma tills paus är upplöst.
+
+**Koordinering:** Johanna informeras separat av Abdulla om paus och invariansfynd. Detta påverkar evaluerings-spåret (A4) som I-6 tillhör. Token-mätning kan motivera omkörning av iteration 2:s slutmätvärden vilket berör Loggboken iteration 2.
+
+**Öppet/Nästa steg:**
+- I-6 är **🔄 Pågår (pausad)** — inte stängd. TEMP-instrumentering kvar i working tree för senare arbete.
+- Token-mätning av Article9Layer- och CombinationLayer-prompter mot alla testtexter (separat uppgift, ny session/issue).
+- Om mätning visar trunkering: num_ctx-fix i `OllamaProvider`, omkörning av iteration 2:s LLM-baserade utvärdering, ny baslinje för I-6.
+- Om ingen trunkering: num_ctx-sättning som arkitekturhärdning utan omkörning, reformulera I-6 (mål förflyttas från "Precision via trösklar" till "dokumentera invariansfyndet + välj defaults som maximerar Mek3-aktivering enligt Beslut 41").
+- WIP-commit: endast dokumentationsändringar staged. TEMP-koden förblir modifierad-men-ostagad i working tree. Commit-meddelande utan `fixes #106` (issuen är inte klar). Push sker först efter Abdullas explicita bekräftelse.
+- Referenser: [docs/iteration_3_threshold_calibration.md](iteration_3_threshold_calibration.md) — full data och analys av fas 1, alla 14 körda konfigurationer, observationer, designinsikt, pausorsak.
