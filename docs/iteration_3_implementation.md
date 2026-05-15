@@ -127,7 +127,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
 | [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ✅ Klar (omformulerad) — 2026-05-14, trösklar behålls vid Beslut 20-defaults, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md) och Beslut 51 (Loggbok iteration 3) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
-| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | 🔄 Pågår (checkpoint 1 + 2 klara 2026-05-15) | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
+| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | 🔄 Pågår (checkpoint 1 + 2 + 3 klara 2026-05-15) | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
 | [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
 | [#110](https://github.com/Abdriano95/aegis/issues/110) (I-10) | Villkorad formulering av DP6 | B | Abdulla | ⬜ Ej startad | I-5, I-18 | Detta ÄR formaliseringsarbetet (DP6 i 5.5 eller observation i 4.4.3/6). |
@@ -963,3 +963,39 @@ README utökades med en kort sektion #7 som speglar mönstret från sektion #1 (
 **Öppet/Nästa steg:**
 
 Nästa checkpoint kör faktisk evaluation: `AEGIS_MODEL=qwen3:14b python scripts/build_demo_snapshot.py --subset article9 --output probe_checkpoint2_qwen3_article9.json` och motsvarande för `combination`. Resultaten jämförs mot iteration 2-baseline (`qwen2.5:7b-instruct`) per-lager (Layer 3 vs Layer 4) för att besvara probe-frågan om modell- vs uppgiftsbundet tak. Issue #107-status förblir 🔄 Pågår tills alla checkpoints är genomförda och syntetiserade i ett diskussionsunderlag för kapitel 6.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) - Issue #107 (I-7) - Probe-checkpoint 3 (jämförande körning Lager 3)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Producera den första jämförande datapunkten för probe-frågan genom att köra qwen2.5:7b-instruct och qwen3:14b mot samma article9-subset (52 texter) via `scripts/build_demo_snapshot.py --subset article9`, så att skillnader i utfall är attributerbara till modellen och inte till data eller pipeline-version.
+
+**Sammanfattning:** Båda modellerna kördes mot article9-subsetet med oförändrad pipeline (prompt_versions article9=v5, combination=v5). qwen2.5:7b-instruct gav TP=36, FP=33, FN=8, Recall=0.8182, Precision=0.5217, F1=0.6372. qwen3:14b gav TP=38, FP=21, FN=6, Recall=0.8636, Precision=0.6441, F1=0.7379. Modellbytet lyfter total-F1 med 10.07 procentenheter, drivet primärt av precision-vinst (+12.23 procentenheter, FP-minskning från 33 till 21) snarare än recall-vinst (+4.55 procentenheter). Två article9-kategorier förbättras materiellt över 10-procentenheterströskeln och en kategori regredierar strax under den. Inga kodändringar; två snapshots producerade av oförändrat skript.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` - statusrad för #107 utökad med "checkpoint 3 klar" (status oförändrad 🔄 Pågår); denna sessionspost tillagd. Inga kodändringar.
+
+**Gjort:**
+
+Subsetkörningen utfördes för båda modellerna med identiskt dataset och identisk pipeline. Totalsiffrorna visar att qwen3:14b förbättrar samtliga aggregatmått jämfört med qwen2.5:7b-instruct, som fungerar som baslinje för subsetet: två fler sanna positiva, tolv färre falska positiva och två färre falska negativa. Total-F1 går från 0.6372 till 0.7379, en ökning på 10.07 procentenheter. Uppdelat på komponenterna kommer förbättringen huvudsakligen från precision (0.5217 till 0.6441, +12.23 procentenheter) medan recall ökar mer blygsamt (0.8182 till 0.8636, +4.55 procentenheter).
+
+På article9-kategorinivå visar två kategorier materiell förbättring över 10-procentenheterströskeln. article9.religios_overtygelse går från F1 0.83 till 1.00 (+16.7 procentenheter) och article9.sexuell_laggning från F1 0.80 till 1.00 (+20.0 procentenheter). En kategori regredierar strax under tröskeln: article9.politisk_asikt går från F1 1.00 till 0.91 (-9.1 procentenheter, en falsk negativ tillkom). Övriga article9-kategorier (biometrisk_data, fackmedlemskap, genetisk_data, halsodata) är i stort sett oförändrade mellan modellerna.
+
+En spårbarhetsfråga noteras i `report.per_layer`. Entity-lagret skiljer sig mellan körningarna: qwen2.5-körningen ger 0/8/0 i TP/FP/FN och qwen3-körningen 0/7/0. Lager 2 är SpaCy-baserat och LLM-fritt, så att dess siffror skiljer sig mellan två körningar som endast varierar LLM-modell är oväntat. Trolig förklaring är att per_layer-räkningen plockar upp downstream-aggregator-beslut som har LLM-beroende komponenter. Detta är inte ett tillfälle för buggrapportering men dokumenteras som spårbarhetsfråga inför formaliseringsfasen. Pattern-lagret saknas som nyckel i `report.per_layer` i båda körningarna.
+
+Latensen mättes från launcher-loggens starttidsstämpel mot snapshotens `metadata.generated_at`. qwen2.5:7b-instruct tog cirka 10 minuter 23 sekunder och qwen3:14b cirka 13 minuter 32 sekunder. qwen2.5-modellen var varm vid körningens start från tidigare avbrutna wrapper-försök, vilket kan ha förkortat dess laddningstid och därmed gör latensjämförelsen inte strikt likvärdig.
+
+En avvikelse från planen på exekveringsmekanik-nivå uppstod. Den ursprungliga `run_in_background` PowerShell-wrapper-metoden visade sig instabil och avslutades med exit 255 utan python-traceback. Metoden byttes till `Win32_Process.Create` via WMI, som detacherar python-processen helt utanför wrapperns job-object och låter python skriva sina egna ut- och felströmmar via cmd-redirigering. Båda slutgiltiga snapshots producerades av oförändrad `scripts/build_demo_snapshot.py`, inga pipeline-parametrar ändrades och inga repo-filer modifierades. De diagnostiska launcher-loggarna har en UTF-16-kodningsartefakt på WMI-ReturnValue-raden som inte påverkar snapshot-JSON eller någon rapporterad siffra.
+
+**Producerade filer:**
+- `demo/snapshots/iteration_3_probe_qwen25_7b_article9.json` - baslinje för subsetet, qwen2.5:7b-instruct.
+- `demo/snapshots/iteration_3_probe_qwen3_14b_article9.json` - probe-kandidaten, qwen3:14b.
+- Diagnostiska hjälpfiler under `demo/snapshots/_probe_*` är otrackade och kan raderas.
+
+**Beslut fattade:** Inga arkitektoniska beslut. Operativa val: (a) byte av exekveringsmekanik till WMI-detachment för att kringgå den instabila bakgrunds-wrappern utan att röra skript eller pipeline; (b) Issue #107-status förblir 🔄 Pågår eftersom Lager 4 ännu inte är täckt och probe-frågan inte är fullständigt besvarad.
+
+**Tolkning för probe-frågan (preliminär, Lager 3):** Modellbytet ger en materiell förbättring på cirka 10 procentenheter total-F1 driven av precision, vilket indikerar att taket är åtminstone delvis modellbundet. Recall-vinsten är dock blygsam (+4.5 procentenheter), vilket pekar mot att uppgiften har en egen inneboende svårighet som inte löses enbart av en större modell. Den preliminära slutsatsen för Lager 3 är att taket är både modell- och uppgiftsbundet, med modell-axeln tydligare på precision och uppgifts-axeln tydligare på recall. Lager 4 (CombinationLayer) är inte testat i denna checkpoint; kombinationssubsetet återstår.
+
+**Öppet/Nästa steg:**
+
+Checkpoint 4 körs mot kombinationssubsetet (27 texter) för att täcka Lager 4 (CombinationLayer) på samma jämförande sätt som Lager 3 nu är täckt. Issue #107-status förblir 🔄 Pågår tills samtliga checkpoints är genomförda och syntetiserade i ett diskussionsunderlag för kapitel 6.
