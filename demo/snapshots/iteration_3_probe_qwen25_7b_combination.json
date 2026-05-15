@@ -1,0 +1,647 @@
+{
+  "metadata": {
+    "generated_at": "2026-05-15T12:21:22.502604+00:00",
+    "model": "qwen2.5:7b-instruct",
+    "subset": "combination",
+    "prompt_versions": {
+      "article9": "v5",
+      "combination": "v5"
+    },
+    "dataset": {
+      "total_texts": 27,
+      "iteration_1_texts": 0,
+      "article9_texts": 0,
+      "combination_texts": 27
+    },
+    "git_commit": "baaf43743fdb7f4c3e16fe4b314b4cd8e727ee66",
+    "pipeline_layers": [
+      "pattern",
+      "entity",
+      "article9",
+      "combination"
+    ]
+  },
+  "report": {
+    "total": {
+      "tp": 47,
+      "fp": 29,
+      "fn": 8,
+      "recall": 0.8545454545454545,
+      "precision": 0.618421052631579,
+      "f1": 0.7175572519083969
+    },
+    "per_category": {
+      "context.plats": {
+        "tp": 14,
+        "fp": 1,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.9333333333333333,
+        "f1": 0.9655172413793104
+      },
+      "article9.halsodata": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "f1": 0.0
+      },
+      "context.organisation": {
+        "tp": 8,
+        "fp": 5,
+        "fn": 2,
+        "recall": 0.8,
+        "precision": 0.6153846153846154,
+        "f1": 0.6956521739130435
+      },
+      "context.yrke": {
+        "tp": 16,
+        "fp": 1,
+        "fn": 6,
+        "recall": 0.7272727272727273,
+        "precision": 0.9411764705882353,
+        "f1": 0.8205128205128205
+      },
+      "article4.adress": {
+        "tp": 0,
+        "fp": 16,
+        "fn": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "f1": 0.0
+      },
+      "context.kombination": {
+        "tp": 9,
+        "fp": 4,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.6923076923076923,
+        "f1": 0.8181818181818181
+      },
+      "article4.namn": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "f1": 0.0
+      }
+    },
+    "per_layer": {
+      "context": {
+        "tp": 44,
+        "fp": 11,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.8,
+        "f1": 0.888888888888889
+      },
+      "entity": {
+        "tp": 3,
+        "fp": 17,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.15,
+        "f1": 0.2608695652173913
+      },
+      "article9": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "f1": 0.0
+      }
+    },
+    "samples": [
+      {
+        "text": "Förslagsgruppen bestod av VD för Hvitfeldtska gymnasiets musiklinje och professor emeritus vid Göteborgs universitet.",
+        "false_positives": [
+          {
+            "category": "context.organisation",
+            "start": 95,
+            "end": 116,
+            "text_span": "Göteborgs universitet",
+            "confidence": 0.98,
+            "source": "context.organisation",
+            "metadata": {
+              "deduplicated_sources": [
+                "entity.spacy_ORG"
+              ]
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "Rektor på Hvitfeldtska gymnasiets musiklinje har bett mig att kontakta läkare i Göteborg om akut tandvård för hennes dotter.",
+        "false_positives": [
+          {
+            "category": "context.plats",
+            "start": 80,
+            "end": 88,
+            "text_span": "Göteborg",
+            "confidence": 0.99,
+            "source": "context.plats",
+            "metadata": null
+          },
+          {
+            "category": "article9.halsodata",
+            "start": 92,
+            "end": 123,
+            "text_span": "akut tandvård för hennes dotter",
+            "confidence": 0.95,
+            "source": "article9.halsodata",
+            "metadata": null
+          },
+          {
+            "category": "article4.adress",
+            "start": 80,
+            "end": 88,
+            "text_span": "Göteborg",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "Professor Lars Eriksson, rektor på Hvitfeldtska gymnasiets musiklinje, meddelade personalen att de förväntade sig ett ökat antal elever.",
+        "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 0,
+            "end": 9,
+            "text_span": "Professor",
+            "confidence": 0.95,
+            "source": "context.yrke",
+            "metadata": null
+          },
+          {
+            "category": "article4.namn",
+            "start": 10,
+            "end": 23,
+            "text_span": "Lars Eriksson",
+            "confidence": 0.8,
+            "source": "entity.spacy_PRS",
+            "metadata": {
+              "ner_label": "PRS"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "En legitimerad tandläkare vid Västra Götalandsregionens tandvårdscenter i Borås har rapporterat ett misstänkt fall av bakterielinfektion.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 30,
+            "end": 55,
+            "text_span": "Västra Götalandsregionens",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          },
+          {
+            "category": "article4.adress",
+            "start": 74,
+            "end": 79,
+            "text_span": "Borås",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "Sjuksköterskan på intensivvården vid Sahlgrenska Universitetssjukhuset i Göteborg tog emot patienten från Hallands sjukhus.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 73,
+            "end": 81,
+            "text_span": "Göteborg",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          },
+          {
+            "category": "article4.adress",
+            "start": 106,
+            "end": 114,
+            "text_span": "Hallands",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "Förläggaren för den nya elbilen, Volvo Cars, har etablerat ett produktionscenter i Trollhättan. De anställda där arbetar som montörer och mekaniker med hög specialisering inom elbilsteknik.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 83,
+            "end": 94,
+            "text_span": "Trollhättan",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": [
+          {
+            "category": "context.yrke",
+            "start": 125,
+            "end": 133,
+            "text_span": "montörer"
+          }
+        ]
+      },
+      {
+        "text": "Avdelningschefen på vårdcentralen i Karlskoga diskuterade med den nya sjuksköterskan om patientflödet.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 36,
+            "end": 45,
+            "text_span": "Karlskoga",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": [
+          {
+            "category": "context.yrke",
+            "start": 70,
+            "end": 84,
+            "text_span": "sjuksköterskan"
+          },
+          {
+            "category": "context.organisation",
+            "start": 20,
+            "end": 45,
+            "text_span": "vårdcentralen i Karlskoga"
+          }
+        ]
+      },
+      {
+        "text": "Den nya enhetschefen som tillträdde i januari efter omorganisationen vid Sahlgrenska Universitetssjukhuset har redan introducerat ett nytt schemasystem för hela avdelningen.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "Den första kvinnliga produktionschefen på Volvo Cars Skövde, som rekryterades från huvudkontoret förra hösten, kommer att tala på branschkonferensen i juni.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "Det nya lagret på industrivägen öppnar i morgon och de första anställda börjar sin utbildning. Den ansvariga förlogistikstrategen, som flyttat hit från huvudkontoret i Stockholm, har gett tydliga instruktioner om hur man ska hantera den höga arbetsbelastningen.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 168,
+            "end": 177,
+            "text_span": "Stockholm",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": [
+          {
+            "category": "context.yrke",
+            "start": 112,
+            "end": 129,
+            "text_span": "logistikstrategen"
+          }
+        ]
+      },
+      {
+        "text": "Under mötesdagen diskuterade projektledaren och den ekonomiska experten från huvudkontoret om de nya budgetplanerna för deras gemensamma projekt i Uppsala.",
+        "false_positives": [
+          {
+            "category": "context.organisation",
+            "start": 77,
+            "end": 90,
+            "text_span": "huvudkontoret",
+            "confidence": 0.97,
+            "source": "context.organisation",
+            "metadata": null
+          },
+          {
+            "category": "context.kombination",
+            "start": 29,
+            "end": 154,
+            "text_span": "projektledaren och den ekonomiska experten från huvudkontoret om de nya budgetplanerna för deras gemensamma projekt i Uppsala",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av specifik yrkesroll (projektledare och ekonomisk expert) samt en specifik organisation (huvudkontoret) och plats (Uppsala) ger tillräcklig identifierbarhet för en person med viss kunskap om projektet.",
+              "validation_path": "reconstructed"
+            }
+          },
+          {
+            "category": "article4.adress",
+            "start": 147,
+            "end": 154,
+            "text_span": "Uppsala",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "Han jobbade som projektledare på den kommunala vårdcentralen i Karlskrona under 2022. Han var inte nöjd med sin lön och började leta efter nya möjligheter.",
+        "false_positives": [
+          {
+            "category": "context.kombination",
+            "start": 16,
+            "end": 73,
+            "text_span": "projektledare på den kommunala vårdcentralen i Karlskrona",
+            "confidence": 0.93,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av en specifik yrkesroll (projektledare) och en specifik plats (den kommunala vårdcentralen i Karlskrona) ger tillräcklig identifierbarhet för en person med viss lokal kunskap.",
+              "validation_path": "exact"
+            }
+          },
+          {
+            "category": "article4.adress",
+            "start": 63,
+            "end": 73,
+            "text_span": "Karlskrona",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": [
+          {
+            "category": "context.organisation",
+            "start": 37,
+            "end": 60,
+            "text_span": "kommunala vårdcentralen"
+          }
+        ]
+      },
+      {
+        "text": "På mötet diskuterade vi med den nya ekonomichefen hur projektet skulle drivas framåt. Han har tidigare arbetat som konsult inom IT-sektorn, men är nu ansvarig för vår avdelning här på fabriken i Borås.",
+        "false_positives": [
+          {
+            "category": "context.organisation",
+            "start": 184,
+            "end": 200,
+            "text_span": "fabriken i Borås",
+            "confidence": 0.98,
+            "source": "context.organisation",
+            "metadata": null
+          },
+          {
+            "category": "context.kombination",
+            "start": 36,
+            "end": 200,
+            "text_span": "ekonomichefen hur projektet skulle drivas framåt. Han har tidigare arbetat som konsult inom IT-sektorn, men är nu ansvarig för vår avdelning här på fabriken i Borås",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av en specifik yrkesroll (ekonomichef) och en specifik plats (fabriken i Borås) ger tillräcklig identifierbarhet för den som har viss kännedom om organisationens struktur.",
+              "validation_path": "reconstructed"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "Det var en anställd på receptionen som berättade att de nya systemen för bokning av mötesrum skulle bli tillgängliga i höst. Hon nämnde också att personalen på IT-avdelningen jobbade hårt med det, men att det fortfarande var lite oklart när exakt de skulle vara färdiga.",
+        "false_positives": [
+          {
+            "category": "context.organisation",
+            "start": 160,
+            "end": 174,
+            "text_span": "IT-avdelningen",
+            "confidence": 0.98,
+            "source": "context.organisation",
+            "metadata": null
+          },
+          {
+            "category": "context.organisation",
+            "start": 23,
+            "end": 34,
+            "text_span": "receptionen",
+            "confidence": 0.95,
+            "source": "context.organisation",
+            "metadata": null
+          }
+        ],
+        "false_negatives": [
+          {
+            "category": "context.yrke",
+            "start": 11,
+            "end": 19,
+            "text_span": "anställd"
+          }
+        ]
+      },
+      {
+        "text": "Den automatiserade processen aktiverades klockan 14.37. En loggsändning registrerades med kodnamn 'Fjärilsdans'. Det följande skedet, 'Stjärnfall', väntas inledas inom de närmaste fem minuterna.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "Systemet registrerar automatiskt alla förändringar i databasen. Varje uppdatering sparas med en timestamp för fullständig historik.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "Protokollen för uppdatering av databasen kommer att ske vid två tillfällen per dag. Första gången sker klockan 07:00 och den andra klockan 15:00. Under perioden mellan dessa uppdateringar kan det uppstå små variationer i informationen.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "En ny regel för hantering av digitala filer implementeras den 15 november. Det innebär att alla dokument ska sparas i en centraliserad plats med automatiskt numreringssystem.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "Automatiserad processen genomfördes enligt schema. Dataanalysen visade en ökning i volym under perioden, vilket påverkade systemhastigheten. Vidare utvärderades algoritmen för att minska energiförbrukning.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "Enligt protokoll från den senaste iterationen ska den optimerade modellen gå igenom en komplex serie testfall. Syftet är att säkerställa att algoritmen hanterar olika scenarier korrekt och utan fel.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "Lagledningen på konferensen diskuterade vikten av att anställa fler medarbetare med erfarenhet inom dataanalys och digital marknadsföring för att möta framtidens utmaningar.",
+        "false_positives": [],
+        "false_negatives": []
+      },
+      {
+        "text": "Att jobba som försäljningskonsult i Malmö kan vara utmanande, men också väldigt givande. Det är viktigt att ha god kundservice och ett starkt nätverk för att lyckas.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 36,
+            "end": 41,
+            "text_span": "Malmö",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": [
+          {
+            "category": "context.yrke",
+            "start": 14,
+            "end": 33,
+            "text_span": "försäljningskonsult"
+          }
+        ]
+      },
+      {
+        "text": "På mötet diskuterade vi behovet av fler lärare inom den digitala utbildningen i Stockholm.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 80,
+            "end": 89,
+            "text_span": "Stockholm",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "Förra veckan deltog många lärare från Stockholm i konferensen om digitalisering inom skolan.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 38,
+            "end": 47,
+            "text_span": "Stockholm",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "På mötet diskuterade vi hur många anställda som arbetade på kontoret i Stockholm.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 71,
+            "end": 80,
+            "text_span": "Stockholm",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": [
+          {
+            "category": "context.yrke",
+            "start": 34,
+            "end": 43,
+            "text_span": "anställda"
+          }
+        ]
+      },
+      {
+        "text": "Det är alltid roligt att träffa nya kollegor på konferenser. I år var många från banksektorn i Stockholm.",
+        "false_positives": [
+          {
+            "category": "article4.adress",
+            "start": 95,
+            "end": 104,
+            "text_span": "Stockholm",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": []
+      },
+      {
+        "text": "Vi har fått många ansökningar om tjänster som ekonomichef i Malmö, men det var svårt att hitta rätt profil.",
+        "false_positives": [
+          {
+            "category": "context.kombination",
+            "start": 46,
+            "end": 65,
+            "text_span": "ekonomichef i Malmö",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av en specifik yrkesroll (ekonomichef) och en specifik plats (Malmö) ger tillräcklig identifierbarhet för att skapa pusselbitseffekten, särskilt i en kontext där det finns många ansökningar.",
+              "validation_path": "exact"
+            }
+          },
+          {
+            "category": "article4.adress",
+            "start": 60,
+            "end": 65,
+            "text_span": "Malmö",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
+            "metadata": {
+              "ner_label": "LOC"
+            }
+          }
+        ],
+        "false_negatives": []
+      }
+    ],
+    "per_dimension": {
+      "identifiability_none": 8,
+      "identifiability_indirect": 3,
+      "identifiability_direct": 16,
+      "data_class_none": 26,
+      "data_class_special": 1,
+      "data_class_criminal": 0
+    }
+  }
+}
