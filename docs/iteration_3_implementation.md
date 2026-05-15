@@ -15,7 +15,7 @@
 
 ## Mål och scope
 
-Iteration 3 är ADR:s Formalization of Learning-fas (Sein et al., 2011, princip 7). Iterationen är formaliseringsfokuserad: huvudbidraget är designkunskap formaliserad som designprinciper och arkitekturbeskrivning, inte ny funktionalitet. Iteration 3 är sista iterationen; det finns ingen iteration 4 som backup.
+Iteration 3 är studiens tredje och sista designcykel (BIE-cykel 3) per ADR (Sein et al., 2011). Formalization of Learning (princip 7) är en separat fas som påbörjas efter att iteration 3 avslutats; iteration 3:s utfall utgör underlag för den fasen. Iteration 3 är sista BIE-cykeln — det finns ingen iteration 4 som backup om en kvarvarande BIE-cykel skulle behövas.
 
 Iteration 3 har tre primära mål:
 
@@ -60,7 +60,7 @@ Iteration 3 organiseras i två konstruktionsspår som körs parallellt under fö
 - Spår A2 (matcher- och aggregator-arbete): Johanna
 - Spår A3 (tvådimensionsoperationalisering): Gemensamt med ansvarsdelning — Abdulla driver core-modell och aggregator, Johanna driver demogränssnitt och utvärderingsmodul
 - Spår A4 (tröskelkalibrering): Johanna, granskas av Abdulla
-- Spår B (formalisering och rapport): Delat enligt arbetsföljd
+- Spår B (underlag till Formalization of Learning): Delat enligt arbetsföljd. Spåret samlar rapport- och designprincipsunderlag som tas vidare till Formalization of Learning (separat fas efter iteration 3). Spår B är inte själva fas 4-arbetet utan dess underlag.
 - Spår C (utvärdering): Gemensamt
 
 ```
@@ -98,18 +98,19 @@ Iteration 3 organiseras i två konstruktionsspår som körs parallellt under fö
 
 ## Förväntade resultat
 
-**Kvantitativa mål:**
+**Kvantitativa och kvalitativa mål för designcykel 3 (BIE-resultat):**
 - Recall bibehålls på eller över iteration 2:s baslinje (89,27 procent)
 - Precision höjs mot V1:s riktmärke (cirka 80 procent) efter samtliga pipeline-ändringar och tröskelkalibrering
 - FP-reduktion från iteration 2:s 117 till en nivå som motsvarar V1:s riktmärke; specifika delsiffror för Rotorsak 1, Rotorsak 3 och Tilläggsorsak från FP-rotorsaksanalysen
 - Per-mekanism-statistik visar att Mekanism 3 aktiveras för åtminstone en del av kombinationsfynden efter tröskelkalibrering
+- Iteration 3:s naturalistiska utvärdering med V1, V2 och V4 är genomförd, transkriberad och tematiskt kodad
 
-**Kvalitativa mål:**
-- DP1-DP5 har stärkt Rationale-komponent per princip enligt Gregor, Chandra Kruse och Seidel (2020)
-- DP6 är antingen formaliserad eller dokumenterad som empirisk lärdom enligt Beslut 38
-- Spårbarhetsmatrisen mappar varje designprincip mot iteration 1- och 2-empiri med uttryckliga referenser
-- Arkitekturkapitel 5.3 är komplett med UML-klassdiagram och Composite-prosa
-- Iteration 3:s naturalistiska utvärdering med V1, V2 och V4 är genomförd, transkriberad och tematiskt kodad; DC3-platshållarna i rapportens kapitel 5 är ifyllda
+**Underlag som tas vidare till Formalization of Learning (separat fas efter iteration 3):**
+- Empiriskt material för DP1–DP5 (stärkt Rationale-komponent per princip enligt Gregor, Chandra Kruse och Seidel, 2020) — formaliseras i fas 4
+- Empiriskt underlag för DP6 (formaliseras eller dokumenteras som empirisk lärdom enligt Beslut 38 i fas 4)
+- Underlag till spårbarhetsmatris mellan designprinciper och iteration 1–2-empiri (matrisen färdigställs i fas 4)
+- Underlag till arkitekturkapitel 5.3 (UML-klassdiagram och Composite-prosa färdigställs i fas 4)
+- Tematiskt kodade utvärderingsdata som DC3-platshållare i rapportens kapitel 5 fylls med i fas 4
 
 ---
 
@@ -1075,3 +1076,29 @@ Latensen mättes från launcher-loggens starttidsstämpel mot snapshotens `metad
 **Öppet/Nästa steg:**
 
 Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras och inga fler körningar återstår. Nästa steg är att syntetisera fynden till diskussionsmaterial för kapitel 6, specifikt avsnitten 6.5 och 6.7 enligt issue-beskrivningen, samt att föra in per_layer-flaggan som förbehåll i kapitel 5:s beskrivning av per-lager-måtten. Issuen hålls 🔄 Pågår tills syntesen är införd; körningsarbetet är avslutat men issuen stängs inte förrän diskussionsunderlaget är skrivet.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) — Dokumentationsstädning iteration 3-ramning
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Dokumentationsstädning: synkronisera iteration 3:s ramning som tredje BIE-cykel och avgränsa Formalization of Learning som efterföljande fas (Sein et al., 2011, princip 7). Genomgång identifierade att flera filer beskriver iteration 3 som ADR:s fjärde fas (Formalization of Learning), vilket inte stämmer mot studiens faktiska flöde (0. problematisering, 1–3. designcykler, 4. Formalization of Learning som separat fas).
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — Mål och scope omformulerad (iteration 3 är tredje BIE-cykeln, fas 4 separat); Spår B omdöpt från "formalisering och rapport" till "underlag till Formalization of Learning"; Förväntade resultat delat i (a) BIE-resultat för designcykel 3 och (b) underlag till fas 4. Denna sessionspost tillagd.
+- `CLAUDE.md` — Sektion 7 rad för iteration 3 omformulerad till tekniskt huvudinnehåll i samma form som iteration 1 och 2; separat not under tabellen tillagd om att Formalization of Learning är en distinkt fas efter iteration 3.
+- `docs/arkitektur.md` — Rubriken "Iteration 3 (v19-v21): Förfining och formalisering" ändrad till "Iteration 3 (v19-v21): Designcykel 3"; innehåll uppdaterat så att formalisering av designprinciper inte längre listas som iteration 3-aktivitet utan som fas 4.
+- `docs/iteration_1_demoforberedelse.md` — Listposten för iteration 3 omformulerad så att BIE-cykel 3:s tekniska innehåll skiljs från Formalization of Learning som separat fas.
+
+**Gjort:**
+- Kört `rg -in "iteration 3.*formali|formali.*iteration 3|formaliseringsfokuserad|formaliseringsfas"` över hela repot och klassificerat samtliga träffar (FIX vs BEHÅLLS).
+- Synkroniserat fyra dokumentationsfiler enligt klassificeringen.
+- Lämnat sessionsloggar (rad 344, 388, 451, 475, 537, 541, 579, 584, 614, 618, 655, 661, 718, 722, 769 i denna fil) oförändrade per regel 4 i sektion 10.
+
+**Förankring:** Sein et al. (2011, s. 40, 44) beskriver Formalization of Learning som princip 7 (Generalized Outcomes) — en distinkt fas som följer BIE-cyklerna. Rapportens kapitel 4 har redan 4.3, 4.4, 4.5 (designcyklerna) och 4.6 (Formalization of Learning) som separata avsnitt; repots dokumentation överensstämmer nu med denna struktur. CLAUDE.md sektion 8 etablerar att dokumentation inte ska avvika från det faktiska arbetet.
+
+**Beslut fattade:** Inga arkitektoniska beslut. Ren dokumentationsstädning.
+
+**Öppet/Nästa steg:**
+- Tidigare sessionsposter (2026-05-11 till 2026-05-14d) kan innehålla formuleringar som "formalisering" eller "formaliseringskonsekvens" som speglar den tidigare felramningen. Sessionsloggar redigeras inte retroaktivt; läsare ska tolka dessa formuleringar i ljuset av att Formalization of Learning är en separat fas efter iteration 3.
+- Loggboken iteration 3 (Google Docs) och AEGIS-rapporten (Google Docs) granskas separat av användaren parallellt med denna körning och ligger utanför agent-flödets scope. Eventuella motsvarande städningar i Loggboken hanteras manuellt.
+- Eventuella issue-titlar eller issue-beskrivningar på GitHub som speglar tidigare felramning behåller sina formuleringar — också utanför scope.
