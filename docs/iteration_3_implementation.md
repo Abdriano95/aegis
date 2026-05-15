@@ -142,6 +142,11 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#118](https://github.com/Abdriano95/aegis/issues/118) (I-18) | Iteration 3:s naturalistiska utvärdering med V1, V2 och V4 | C | Gemensamt | ⬜ Ej startad | I-6, I-19 | Genererar input till I-15, I-17, I-10. |
 | [#119](https://github.com/Abdriano95/aegis/issues/119) (I-19) | Intervjuguide-revidering för iteration 3 | C | Gemensamt | ⬜ Ej startad | Inga | Styr I-18; ingen direkt rapportsektion. |
 | [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
+| (I-7a) | Designspecifikation för Cross-Validating Aggregator (§9.6 evidensvägningspolicy) | B | Gemensamt | ✅ Klar (2026-05-15) — utkast i [`arkitektur_9_6_utkast.md`](arkitektur_9_6_utkast.md), väntar arkitekt-agent-granskning | Inga | Ny §9.6 i SSOT (`docs/arkitektur.md`); underlag för DP/arkitekturkapitel. |
+| (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ⬜ Ej startad | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
+| (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ⬜ Ej startad | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
+
+> I-7a/b/c är en nedbrytning av den arkitektoniska rotorsaken i `docs/kodanalys_precision_och_falska_positiva.md` §15 (delvis realiserad korsverifiering). Skild från I-7/#107 (modellskalningsprobe). GitHub-nummer tilldelas vid skapande per intro-noten ovan; ID-kolumnen bär tills vidare enbart det iterationsinterna ID:t.
 
 ### Separat buggfix (utanför iterationsplanen)
 
@@ -1102,3 +1107,51 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 - Tidigare sessionsposter (2026-05-11 till 2026-05-14d) kan innehålla formuleringar som "formalisering" eller "formaliseringskonsekvens" som speglar den tidigare felramningen. Sessionsloggar redigeras inte retroaktivt; läsare ska tolka dessa formuleringar i ljuset av att Formalization of Learning är en separat fas efter iteration 3.
 - Loggboken iteration 3 (Google Docs) och AEGIS-rapporten (Google Docs) granskas separat av användaren parallellt med denna körning och ligger utanför agent-flödets scope. Eventuella motsvarande städningar i Loggboken hanteras manuellt.
 - Eventuella issue-titlar eller issue-beskrivningar på GitHub som speglar tidigare felramning behåller sina formuleringar — också utanför scope.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) — Issue I-7a (Designspecifikation Cross-Validating Aggregator)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Specificera (ej implementera) hur aggregatorns korsverifiering generaliseras från enbart `context.kombination` (Mekanism 3) till en evidensvägningspolicy per (lager, kategori), som ny sektion 9.6-utkast.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — Tre nya rader (I-7a/b/c) i Issue-specifikationer-tabellen; I-7a-status ⬜ → 🔄 Pågår (2026-05-15) som första edit vid sessionsstart, → ✅ Klar (2026-05-15) vid sessionsslut. Förklarande not om I-7a/b/c-nedbrytningen tillagd under tabellen. Denna sessionspost tillagd.
+- `docs/arkitektur_9_6_utkast.md` — **Ny fil.** Fullständigt granskningsutkast till §9.6 "Cross-Validating Aggregator: evidensvägningspolicy" (9.6.1–9.6.7), rubrikmarkerat "[UTKAST 2026-05-15, EJ LÅST]". Ingen ändring i `arkitektur.md` (utkastet hålls i separat fil per användarbeslut, output-form B).
+
+**Gjort:**
+- Uppdaterade I-7a-status till 🔄 Pågår som första åtgärd (CLAUDE.md §4 steg 2) — implementerat som tillägg av I-7a-raden vid 🔄, eftersom raden inte fanns sedan tidigare.
+- Lade till I-7b (implementation) och I-7c (`LOC→context.plats`-ommappning) som ⬜-platshållarrader; de utgör nedbrytningen och refereras av I-7a.
+- Skrev §9.6-utkastet: beslutstabell per (lager, kategori) (9.6.2), `evidence_basis`-transparensflagga med Finding som primär hemvist (9.6.3), `legacy`/`cross_validating`-mode med default `legacy` (9.6.4), Mekanism 3-generalisering via Option 1 (9.6.5), spårbarhet mot Beslut 11/19/21 (9.6.6) och Degerfors-genomgång (9.6.7).
+- Verifierade att inga `.py/.yaml/.json` rörts och att `arkitektur.md` är oförändrad.
+
+**Beslut fattade:** Inga *fattade* arkitekturbeslut — I-7a producerar ett **utkast** för arkitekt-agent-granskning. Specifikationen *föreslår*: (1) Mekanism 3 generaliseras (Option 1) på Open-Closed/SOLID-grund (Martin 2003); (2) `article9.*` förblir `no_support_required` utan stödkrav och utan bypass-tröskel (recall-prioritet total, enda producent, Beslut 21); (3) generell bypass-tröskel behålls på 0.85 (kalibreringskonsistens med Beslut 51), 0.9 förs vidare som kandidat till I-7b. Det formella Loggbok-beslutet förs in när policyn låsts (efter granskning), nummer tilldelas då av användaren.
+
+**Öppet/Nästa steg:**
+- Utkastet ska granskas av arkitekt-agenten (granskningsfrågorna listade sist i utkastfilen). Efter godkännande: inplacering som §9.6 i `arkitektur.md` och Martin (2003) till §15 (lämpligen via I-20).
+- I-7b implementerar policyn i kod (`Finding.evidence_basis`, generaliserad `_count_structural_support`, mode-flagga) — ändrar mätinstrumentet → kräver Loggbok-beslut + ombaslinje.
+- I-7c utför `entity.spacy_LOC → context.plats`-ommappningen och omprövar matcher-aliaset `{ADRESS, PLATS}`.
+- Commit + push hanteras manuellt av användaren (nio-stegs-loopen steg 8).
+
+### Session 2026-05-15 (uppföljning) - Claude Code (Opus 4.7) — I-7a inplacering
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Slutföra I-7a genom att placera in §9.6-utkastet i SSOT och ta bort utkastfilen.
+
+**Ändrade filer:**
+- `docs/arkitektur.md` — ny sektion 9.6 (Cross-Validating Aggregator: evidensvägningspolicy) tillagd efter §9.5, före §10.
+- `docs/arkitektur_9_6_utkast.md` — borttagen.
+- `docs/iteration_3_implementation.md` — denna sessionspost.
+
+**Gjort:**
+- Inplacering av §9.6 i `docs/arkitektur.md` med utkastbanner och avslutande granskningsfrågor borttagna; allt övrigt innehåll (9.6.1–9.6.7 inkl. 9.6.2.1 och 9.6.2.2) bevarat ordagrant.
+- Borttagning av utkastfilen (`docs/arkitektur_9_6_utkast.md` var otrackad — skapad i förra sessionen, aldrig committad — så raderingen syns inte som git-`D`, endast som att filen försvinner ur arbetsträdet).
+- I-7a-statusraden var redan satt till ✅ Klar (2026-05-15) i förra sessionen och lämnas oförändrad per instruktion.
+- Uppföljningssessionspost (denna post).
+
+**Beslut fattade:** Inga nya. Loggboks-beslut för "Cross-Validating Aggregator: evidensvägningspolicy" skrivs in i Loggboken iteration 3 manuellt av användaren (utanför agent-flödet, Google Docs).
+
+**Öppet/Nästa steg:**
+- Loggboks-beslut förs in manuellt av användaren.
+- Martin (2003) bör läggas till `arkitektur.md` §15-referenser (lämpligen via I-20, SSOT-synk) — utanför I-7a:s scope.
+- Därefter initieras I-7b (implementation) i separat session.
