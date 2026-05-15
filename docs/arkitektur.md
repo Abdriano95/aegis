@@ -809,16 +809,18 @@ README.md
 - Kvantitativt: Fullt dataset inklusive artikel 9-texter, pusselbitseffekt-texter och längre realistiska texter. Per-mekanism-rapport från utvärderingsmodulen (Mekanism 1, Mekanism 3, hög-konfidens-bypass-statistik per kategori).
 - Kvalitativt: Demo med Lager 3 och Lager 4 plus Mekanism-visualisering i demo-gränssnittet. Semistrukturerad intervju med intressenter (V1, V2, V4) enligt `docs/iteration_2_utvardering.md`.
 
-### Iteration 3 (v19-v21): Förfining och formalisering
+### Iteration 3 (v19-v21): Designcykel 3
 
 **Hanterar:**
 - Feedback från designcykel 2:s utvärdering
-- Formalisering av designprinciper (Generalized Outcomes)
+- Tvådimensionsoperationalisering (`identifiability` + `data_class`) per Beslut 37
 - Empirisk kalibrering av trösklar (medium_threshold, high_confidence_bypass, min_evidence_count) baserat på iteration 2:s utvärderingsresultat
 
 **Utvärderar:**
 - Kvantitativt: Komplett dataset med alla lager aktiva
-- Kvalitativt: Slutgiltig demo och intervju
+- Kvalitativt: Slutgiltig demo och intervju (V1, V2, V4)
+
+Designcykel 3:s utfall utgör underlag för Formalization of Learning (separat fas efter iteration 3, Sein et al., 2011, princip 7). Formalisering av designprinciper (Generalized Outcomes) genomförs i fas 4, inte i iteration 3.
 
 
 ## 12. Beslut att dokumentera i loggboken
