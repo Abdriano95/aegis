@@ -142,6 +142,12 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#118](https://github.com/Abdriano95/aegis/issues/118) (I-18) | Iteration 3:s naturalistiska utvärdering med V1, V2 och V4 | C | Gemensamt | ⬜ Ej startad | I-6, I-19 | Genererar input till I-15, I-17, I-10. |
 | [#119](https://github.com/Abdriano95/aegis/issues/119) (I-19) | Intervjuguide-revidering för iteration 3 | C | Gemensamt | ⬜ Ej startad | Inga | Styr I-18; ingen direkt rapportsektion. |
 | [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
+| [#133](https://github.com/Abdriano95/aegis/issues/133) (I-7a) | Designspecifikation för Cross-Validating Aggregator (SSOT 9.6) | A2 | Abdulla | ⬜ Ej startad | Inga (måste låsas före I-7b) | `arkitektur.md` §9.6 (ny); DP7/DP1-kandidat i 5.5; omprövar Beslut 11, 19, 21. |
+| [#134](https://github.com/Abdriano95/aegis/issues/134) (I-7b) | Implementation av Cross-Validating Aggregator | A2 | Abdulla | ⬜ Ej startad | I-7a (spec låst) | 5.3 arkitekturbeskrivning + klassdiagram. |
+| [#135](https://github.com/Abdriano95/aegis/issues/135) (I-7c) | EntityLayer LOC-mappning och context.plats i Mekanism 3 | A2 | Abdulla | ⬜ Ej startad | I-7a; parallellt med I-7b | 5.3 (EntityLayer-mappning); omprövar Beslut 11. |
+| [#136](https://github.com/Abdriano95/aegis/issues/136) (I-7d) | Dubbel baslinjemätning legacy mot cross_validating | A4 | Abdulla | ⬜ Ej startad | I-7b, I-7c | 5.4 utvärderingssyntes; 4.5 designcykel 3. |
+
+> **Not — Cross-Validating Aggregator-arbetsströmmen (I-7a–I-7d):** Raderna I-7a (#133), I-7b (#134), I-7c (#135) och I-7d (#136) bryter ut en ny arbetsström från ursprungliga I-7 (#107) baserat på kodanalys 2026-05-15 (`docs/kodanalys_precision_och_falska_positiva.md`). Den arkitektoniska luckan mellan tänkt och byggd aggregator är den dominerande precisionskällan; Mekanism 3 generaliseras till en evidensvägningspolicy för hela aggregatorn. Ursprungliga I-7 (#107) pausas implicit tills I-7d är klar — **#107:s rad/status ändras medvetet INTE i denna session**. Sekvens: I-7a (låst spec) → I-7b + I-7c → I-7d (before/after-evidens för designcykel 3).
 
 ### Separat buggfix (utanför iterationsplanen)
 
@@ -931,3 +937,27 @@ Per layer: pattern oförändrad (förväntat); entity TP+1/FP−1 (matcher-attri
 - Tidigare sessionsposter (2026-05-11 till 2026-05-14d) kan innehålla formuleringar som "formalisering" eller "formaliseringskonsekvens" som speglar den tidigare felramningen. Sessionsloggar redigeras inte retroaktivt; läsare ska tolka dessa formuleringar i ljuset av att Formalization of Learning är en separat fas efter iteration 3.
 - Loggboken iteration 3 (Google Docs) och AEGIS-rapporten (Google Docs) granskas separat av användaren parallellt med denna körning och ligger utanför agent-flödets scope. Eventuella motsvarande städningar i Loggboken hanteras manuellt.
 - Eventuella issue-titlar eller issue-beskrivningar på GitHub som speglar tidigare felramning behåller sina formuleringar — också utanför scope.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) — issue-skapande I-7a–I-7d (Cross-Validating Aggregator)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Bryta ut en ny arbetsström från ursprungliga I-7 (#107) baserat på kodanalys 2026-05-15: skapa fyra GitHub-issues (I-7a–I-7d) för Cross-Validating Aggregator och registrera dem i statustabellen. Ingen kodändring; ingen commit.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — fyra nya rader i Issue-specifikationer-tabellen (#133–#136 / I-7a–I-7d); breakout-not direkt efter huvudtabellen; första-edit-stub tillagd vid sessionsstart och slutförd till denna post. Enda fil som redigerades.
+
+**Gjort:**
+- Skapat fyra GitHub-issues via `gh issue create` med `--body-file`, label `iteration-3` + `spar-A2`/`spar-A4` + `prio-hog`, assignee `Abdriano95`, milestone `iteration 3 / v0.3.0`. Bodies följer #101:s sektionsstruktur (Beskrivning, Spår, Beroenden, Acceptanskriterier, Formaliseringskonsekvens, Förankring, Out of scope); acceptanskriterier verbatim från arkitekt-promptens Body-block; I-7a behåller även Empirisk grund + de fyra designprinciperna (användarbeslut 2026-05-15).
+- **Nummer-mappning:** I-7a → [#133](https://github.com/Abdriano95/aegis/issues/133), I-7b → [#134](https://github.com/Abdriano95/aegis/issues/134), I-7c → [#135](https://github.com/Abdriano95/aegis/issues/135), I-7d → [#136](https://github.com/Abdriano95/aegis/issues/136). (Arkitekt-promptens gissning #121–124 var inaktuell — högsta issue var #131, högsta PR #132 i den delade nummerrymden; `gh` tilldelade #133–#136.)
+- Lagt till fyra tabellrader efter #120-raden i samma kolumnformat som befintliga rader.
+- Lagt till breakout-not direkt efter huvudtabellen som förklarar att I-7a–I-7d bryter ut från I-7 (#107) och att #107 pausas tills I-7d är klar.
+- Verifierat via `gh issue view` (titel, labels, milestone, assignee, body med branch-not), `gh issue list --label iteration-3`, samt `git status` (endast denna fil modifierad; inga ändringar under gdpr_classifier/, evaluation/, tests/, demo/).
+
+**Beslut fattade:** Inga arkitektoniska beslut. Två operativa användarbeslut bekräftade via AskUserQuestion: (1) varje issue-body citerar `docs/kodanalys_precision_och_falska_positiva.md` men med en not om att doc:en just nu ligger på branch `107-probe-llm-...` (commit `8abc4c2`, ej på main/HEAD) i väntan på merge; (2) full label-konsistens med befintliga rader (`spar-*` + `prio-hog`) i stället för promptmallens minimala `iteration-3`-enbart.
+
+**Öppet/Nästa steg:**
+- Ursprungliga I-7 (#107) pausas tills I-7d (#136) är klar; **#107:s rad/status ändrades inte i denna session** (kvarstår `⬜ Ej startad`).
+- `docs/kodanalys_precision_och_falska_positiva.md` är ännu inte mergad till main — sökvägsreferenserna i de fyra issues blir giltiga på main först när branch `107-probe-llm-...`/dokumentet mergas (hanteras av användaren via git manuellt).
+- Sekvensberoende för implementation: I-7a:s spec måste låsas före I-7b; I-7d kräver I-7b + I-7c.
+
