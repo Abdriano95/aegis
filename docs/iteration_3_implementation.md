@@ -143,7 +143,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#119](https://github.com/Abdriano95/aegis/issues/119) (I-19) | Intervjuguide-revidering för iteration 3 | C | Gemensamt | ⬜ Ej startad | Inga | Styr I-18; ingen direkt rapportsektion. |
 | [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
 | (I-7a) | Designspecifikation för Cross-Validating Aggregator (§9.6 evidensvägningspolicy) | B | Gemensamt | ✅ Klar (2026-05-15) — utkast i [`arkitektur_9_6_utkast.md`](arkitektur_9_6_utkast.md), väntar arkitekt-agent-granskning | Inga | Ny §9.6 i SSOT (`docs/arkitektur.md`); underlag för DP/arkitekturkapitel. |
-| (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ⬜ Ej startad | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
+| (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ✅ Klar (2026-05-16) — §9.6 implementerad i kod, default `legacy`, 214/214 tester gröna; default-flipp efter I-7d (se sessionspost 2026-05-16) | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
 | (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ⬜ Ej startad | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
 
 > I-7a/b/c är en nedbrytning av den arkitektoniska rotorsaken i `docs/kodanalys_precision_och_falska_positiva.md` §15 (delvis realiserad korsverifiering). Skild från I-7/#107 (modellskalningsprobe). GitHub-nummer tilldelas vid skapande per intro-noten ovan; ID-kolumnen bär tills vidare enbart det iterationsinterna ID:t.
@@ -1155,3 +1155,31 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 - Loggboks-beslut förs in manuellt av användaren.
 - Martin (2003) bör läggas till `arkitektur.md` §15-referenser (lämpligen via I-20, SSOT-synk) — utanför I-7a:s scope.
 - Därefter initieras I-7b (implementation) i separat session.
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7b (Implementation Cross-Validating Aggregator)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Implementera §9.6-evidensvägningspolicyn i kod: `Finding.evidence_basis`, `Classification.weakest_evidence_basis`, generaliserad Mekanism 3-primitiv och `cross_validation_mode`-flagga med default `legacy`.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/finding.py` — nytt fält `evidence_basis: Literal[...] = "no_support_required"` (sist, efter `metadata`). `Finding` förblir `@dataclass(frozen=True)`.
+- `gdpr_classifier/core/classification.py` — nytt fält `weakest_evidence_basis: Literal[...] | None = None` (sist, efter `data_class`).
+- `gdpr_classifier/aggregator.py` — `cross_validation_mode`-parameter på `__init__` (default `legacy`, validerad); `_count_structural_support`-primitiv extraherad ur `_passes_mechanism_3` (som blev tunn anropare, Beslut 19 semantiskt bevarad); ny `_apply_evidence_weighting` (R1–R7-taggning, mode-gated); `_validated_kombination_findings`- och `_derive_weakest_evidence_basis`-hjälpare; `_determine_dimensions` returnerar nu trippeln `(identifiability, data_class, weakest_evidence_basis)`; modulkonstant `EvidenceBasis`/`_EVIDENCE_BASIS_RANK`. `_has_validated_kombination` lämnad ordagrant oförändrad.
+- `tests/unit/test_aggregator_evidence_weighting.py` — **ny fil**, 11 tester (R1–R7, legacy-paritet, weakest-härledning, DIRECT-överkörningsexkludering).
+- `docs/iteration_3_implementation.md` — I-7b-status ⬜ → 🔄 Pågår (2026-05-16) som första edit, → ✅ Klar (2026-05-16) vid sessionsslut; denna sessionspost.
+
+**Gjort:**
+- Statusedit till 🔄 Pågår som första åtgärd (CLAUDE.md §4 steg 2).
+- Fas 1 (datamodell + primitiv, ingen policy-aktivering); mellanverifieringsgate godkänd: 203/203 befintliga tester gröna utan ändrad fixtur, smoke-test (default `legacy`, default `evidence_basis`), `git diff` på finding.py = enbart fälttillägg.
+- Fas 2 (policy-aktivering i `cross_validating`): R6-taggning via generaliserad Mekanism 3, weakest-härledning över de fynd som faktiskt bar slutdimensionen, integrering i `aggregate()` efter dedup och före dimensionsbestämning, mode-gated.
+- Slutverifiering: 214/214 tester gröna (203 befintliga + 11 nya); ändrade filer exakt de fem planerade, inga utanför listan.
+- Bekräftat bakåtkompatibelt: `Finding`/`Classification` är core-modeller; båda fälten har defaultar (`"no_support_required"` resp. `None`) → alla befintliga konstruktioner och `legacy`-vägen oförändrade. Ingen `to_dict`/`from_dict`/JSON-serialisering finns för dessa modeller i kodbasen, så specens villkorade serialiseringskrav var icke tillämpligt.
+
+**Beslut fattade:** Inga nya arkitekturbeslut (Loggboks-beslutet "Cross-Validating Aggregator: evidensvägningspolicy" är redan inskrivet under I-7a). Två tolkningsbeslut bekräftades av användaren 2026-05-16 och styrde implementationen: (1) i I-7b ger `cross_validating` *identiska* identifiability/data_class/sensitivity som `legacy` — endast `evidence_basis` + `weakest_evidence_basis` skiljer; dimensions-/precisionsändringen hör till I-7c (§9.6.7 "efter I-7c"); (2) `weakest_evidence_basis` härleds enbart över de fynd som faktiskt bar slutdimensionen (en `article4`-trumfad `context.kombination` exkluderas, §9.6.3 "faktiskt bar"). **Inga avvikelser från §9.6 uppstod.** Skenkonflikten (R3/R4 "triggar ej dimension ensam" vs. att `entity.spacy_LOC` före I-7c fortfarande mappas till `article4.adress`) är ingen konflikt: §9.6.6 markerar Beslut 11 som "Omprövas (av I-7c)" och §9.6.7 bracketerar fixen som "efter I-7c".
+
+**Öppet/Nästa steg:**
+- Default-flippen från `legacy` till `cross_validating` är en **separat senare åtgärd efter I-7d** (kräver dokumenterat Loggbok-beslut + fullständig ombaslinje, §9.6.3-/§9.6.4-varningen om mätinstrumentpåverkan). Inte del av I-7b.
+- I-7c: `entity.spacy_LOC → context.plats`-ommappning + omprövning av matcher-aliaset `{ADRESS, PLATS}`.
+- I-7d: dubbel baslinjemätning `legacy` mot `cross_validating` samt rapport-aggregering per `evidence_basis` (`report.py`/`confusion_matrix.py`).
+- Commit + push hanteras manuellt av användaren (nio-stegs-loopen steg 8).
