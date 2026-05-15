@@ -304,10 +304,12 @@ Implementeras i iteration 1 med SpaCy-modellen `sv_core_news_lg` för svenska NE
 **Entitetsmappning:**
 
 - `PRS` → `Category.NAMN`, `source="entity.spacy_PRS"`
-- `LOC` → `Category.ADRESS`, `source="entity.spacy_LOC"`
+- `LOC` → `Category.PLATS` (`context.plats`), `source="entity.spacy_LOC"`
 - `ORG` → `Category.ORGANISATION`, `source="entity.spacy_ORG"`
 
 ORG mappas medvetet till `Category.ORGANISATION` med prefixet `context.*`, inte till en `article4.*`-kategori. Organisationer är inte personuppgifter enligt GDPR artikel 4. De fungerar däremot som pusselbitar i sensitivity-bedömningen: ett företagsnamn tillsammans med en roll eller en ort kan göra en enskild individ identifierbar även när inga direkta identifierare förekommer (pusselbitseffekten, avsnitt 3.3). Att hålla ORG separat från `article4.namn` gör dessutom att utvärderingsmetriker per kategori blir meningsfulla - person-prestanda blandas inte med ORG-prestanda.
+
+LOC mappas av samma skäl till `Category.PLATS` (`context.plats`), inte till `Category.ADRESS`. En SpaCy-`LOC` är ett geografiskt namn (städer, regioner, stadsdelar, landmärken) och är inte per definition en gatuadress till en fysisk person enligt GDPR artikel 4. Ett naket ortnamn ("Göteborg", "Degerfors") gör inte i sig en individ direkt identifierbar; det fungerar däremot som en pusselbit som kan styrka *indirekt* identifierbarhet i kombination med andra signaler (pusselbitseffekten, avsnitt 3.3, GDPR skäl 26). Mappningen till `context.plats` är därför semantiskt korrekt. Source-taggen förblir `entity.spacy_LOC` (oförändrad per källformatet nedan), vilket gör att den generaliserade Mekanism 3 fortsatt räknar LOC-fynd som giltigt strukturellt stöd för en `context.kombination` via `entity.*`-prefixet — platssignalen flyttas alltså från en felaktig direkt-identifieringstrigger till sin korrekta roll som pusselbit, utan att tappas (verifieras i §9.6.7, Degerfors-fallet). Egentlig gatuadress-detektion är en dokumenterad framtida utvidgning. *Historisk not:* tidigare mappning till `article4.adress` (Beslut 11) omprövades i iteration 3 baserat på kodanalys 2026-05-15 §4 och §14 samt `iteration_2_utvardering.md` Del 7; se §9.6.6 och §9.6.7 samt Loggboken iteration 3.
 
 **Konfidens:** SpaCy exponerar inte per-entitets-konfidens via ett enkelt API i `sv_core_news_lg`. I iteration 1 sätts `Finding.confidence = 0.8` som fast värde för alla NER-fynd. Detta är ett medvetet iteration-1-val och kan revideras i iteration 2 om kalibreringsmetriker motiverar det (t.ex. via per-token-sannolikheter eller byte till KB-BERT).
 

@@ -144,7 +144,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
 | (I-7a) | Designspecifikation för Cross-Validating Aggregator (§9.6 evidensvägningspolicy) | B | Gemensamt | ✅ Klar (2026-05-15) — utkast i [`arkitektur_9_6_utkast.md`](arkitektur_9_6_utkast.md), väntar arkitekt-agent-granskning | Inga | Ny §9.6 i SSOT (`docs/arkitektur.md`); underlag för DP/arkitekturkapitel. |
 | (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ✅ Klar (2026-05-16) — §9.6 implementerad i kod, default `legacy`, 214/214 tester gröna; default-flipp efter I-7d (se sessionspost 2026-05-16) | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
-| (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ⬜ Ej startad | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
+| (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ✅ Klar (2026-05-16) — `_label_map` LOC → `Category.PLATS` (source bevarad), §5 uppdaterad, 217/217 tester gröna; mätbar effekt → I-7d, matcher-alias kvarstår (omprövas efter I-7d) (se sessionspost 2026-05-16) | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
 
 > I-7a/b/c är en nedbrytning av den arkitektoniska rotorsaken i `docs/kodanalys_precision_och_falska_positiva.md` §15 (delvis realiserad korsverifiering). Skild från I-7/#107 (modellskalningsprobe). GitHub-nummer tilldelas vid skapande per intro-noten ovan; ID-kolumnen bär tills vidare enbart det iterationsinterna ID:t.
 
@@ -1183,3 +1183,32 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 - I-7c: `entity.spacy_LOC → context.plats`-ommappning + omprövning av matcher-aliaset `{ADRESS, PLATS}`.
 - I-7d: dubbel baslinjemätning `legacy` mot `cross_validating` samt rapport-aggregering per `evidence_basis` (`report.py`/`confusion_matrix.py`).
 - Commit + push hanteras manuellt av användaren (nio-stegs-loopen steg 8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7c (EntityLayer LOC → context.plats)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Beteendeändringen som löser precisionsproblemet: EntityLayer slutar mappa SpaCys `LOC` till `article4.adress` och mappar den till `context.plats` (omprövning av Beslut 11). Source-taggen `entity.spacy_LOC` bevaras så generaliserad Mekanism 3 fortsatt räknar LOC som strukturellt stöd (§9.6.7 Degerfors-fallet).
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/entity/entity_layer.py` — **en rad** i `_label_map` (rad 21): `"LOC": (Category.ADRESS, "entity.spacy_LOC")` → `"LOC": (Category.PLATS, "entity.spacy_LOC")`. Source-tagg oförändrad; PRS/ORG orörda. Modul-docstringen skrevs om så den inte längre hårdkodar per-etikett-mappningen (`LOC -> Category.ADRESS` borttaget) utan hänvisar till SSOT §5 — håller `grep "LOC"` till en enda relevant träff (i `_label_map`) och eliminerar dubbel sanningskälla.
+- `docs/arkitektur.md` — endast §5 (Entitetsmappning): LOC-punkten → `Category.PLATS` (`context.plats`); nytt prosastycke med GDPR-motivering (en SpaCy-LOC är ett geografiskt namn, inte per definition en gatuadress till en fysisk person enligt art. 4; pusselbitsroll enligt skäl 26; source-tagg bevarad → Mekanism 3-stöd) + historisk not med korsreferens §9.6.6/§9.6.7, kodanalys 2026-05-15 §4/§14, `iteration_2_utvardering.md` Del 7 och Loggbok it. 3. Ingen annan SSOT-sektion ändrad (§9.6.2 R3 och §9.6.7 var redan formulerade "(efter I-7c)"; §9.2.1:s Beslut 11-not lämnad medvetet — matcher-alias-omprövning skjuten till efter I-7d).
+- `tests/unit/test_aggregator_evidence_weighting.py` — fixtur rad 93 (`test_R3_R4_entity_loc_org_as_support`): `_f(Category.ADRESS, ...)` → `_f(Category.PLATS, ...)`, beteendeneutralt (assertionen är source-prefix-driven; testet förblir grönt); ny klass `TestI7cLocAsKombinationSupport` med `test_loc_supports_kombination_via_mekanism_3`.
+- `tests/unit/test_entity_layer.py` — **ny fil**, 2 tester: `test_label_map_loc_maps_to_context_plats` (strukturell backstop på `_label_map`, robust mot SpaCy-NER-variation) och `test_loc_maps_to_context_plats` (end-to-end på riktig `sv_core_news_lg`: "Jag bor i Göteborg" → `Category.PLATS`, source `entity.spacy_LOC`, aldrig `Category.ADRESS`).
+- `docs/iteration_3_implementation.md` — I-7c-status ⬜ → 🔄 Pågår (2026-05-16) som första edit, → ✅ Klar (2026-05-16) vid sessionsslut; denna sessionspost.
+
+**Gjort:**
+- Statusedit till 🔄 Pågår som första åtgärd (CLAUDE.md §4 steg 2).
+- Fas 0-verifieringar (read-only): I-7b-fundamentet på branchen (`cross_validation_mode`, `_apply_evidence_weighting`, `_count_structural_support`, `_passes_mechanism_3` med `("pattern.", "entity.")`); `Category.PLATS` = `"context.plats"`; `_label_map` LOC = `(Category.ADRESS, "entity.spacy_LOC")` som väntat. Inga avvikelser → fortsatt.
+- Kod- + SSOT-ändring + testtillägg enligt plan.
+- Slutverifiering: `pytest tests/` = **217/217 gröna** (214 tidigare + 3 nya: 2 i `test_entity_layer.py`, 1 i `test_aggregator_evidence_weighting.py`). Stickprov: `EntityLayer().detect("Jag bor i Göteborg")` → `[(Category.PLATS, 'Göteborg', 'entity.spacy_LOC')]`. `git status` = exakt de fem planerade filerna, inga utanför listan.
+
+**Befintliga tester — räkning:** **0 befintliga tester behövde uppdateras pga fallering.** Inget test asserterade `LOC → article4.adress` (ingen `test_entity_layer.py` fanns före denna session; enda integrationstestet `test_end_to_end.py` asserterar mönsterdrivet `recall > 0`, och matcher-aliaset `{ADRESS, PLATS}` (Beslut 45, §9.2.1) absorberar kategoriskiftet på utvärderingssidan). Endast **1** *semantiskt inaktuell* fixtur refreshades — `test_aggregator_evidence_weighting.py:93` (`Category.ADRESS` → `Category.PLATS` med oförändrad source `entity.spacy_LOC`), beteendeneutralt. `tests/unit/test_aggregator_deduplication.py` lämnades **helt orörd** (alternativ B, användarbeslut 2026-05-16): den testar dedup-scope, inte LOC-mappning, och ett PLATS+PLATS-fall hade gjort `test_cross_category_overlap_both_kept` till ett samma-kategori-fall som felar.
+
+**Beslut fattade:** Inga nya arkitekturbeslut i koden. Loggboks-beslutet om omprövning av **Beslut 11** (`LOC → context.plats`) skrivs in **manuellt av användaren** i Loggboken iteration 3 utanför agent-flödet. Två sessionsbeslut (användaren 2026-05-16): (1) endast `test_aggregator_evidence_weighting.py`-fixturen refreshas, `test_aggregator_deduplication.py` orörd (alternativ B); (2) test 3c (Stockholm/Degerfors-kontrast) medvetet skippad — beror på LLM-driven CombinationLayer; kontrasten verifieras integralt i I-7d:s dubbla baslinjemätning (promptens explicita undantag).
+
+**Öppet/Nästa steg:**
+- Den **mätbara effekten** (precision/recall/F1) av ommappningen kvantifieras separat i **I-7d** (dubbel baslinje `legacy` vs `cross_validating`). I-7c ändrar koden, I-7d mäter. De 12 nakna städerna som i facit är annoterade `article4.adress` förväntas bli FN efter I-7c — korrekt mätinstrumentskifte, dokumenteras i I-7d, ingen testdata-städning här.
+- Matcher-aliaset `{ADRESS, PLATS}` (Beslut 45 / §9.2.1) kvarstår tills vidare; behovet omprövas efter I-7d.
+- Default-flipp `legacy` → `cross_validating`: separat senare åtgärd efter I-7d.
+- Loggboks-beslut om Beslut 11 + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).

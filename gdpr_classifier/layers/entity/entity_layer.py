@@ -1,9 +1,9 @@
 """EntityLayer implementation.
 
-SpaCy-baserad NER-detektion som mappar PRS -> Category.NAMN,
-LOC -> Category.ADRESS och ORG -> Category.ORGANISATION. Se
-``docs/arkitektur.md`` avsnitt 5 för kategori-mapping och
-source-taggar. Modellen ``sv_core_news_lg`` laddas vid konstruktion.
+SpaCy-baserad NER-detektion som mappar SpaCys SUC3-etiketter till
+GDPR-kategorier via ``_label_map``. Se ``docs/arkitektur.md`` avsnitt 5
+för den auktoritativa kategori-mappningen och source-taggarna (SSOT).
+Modellen ``sv_core_news_lg`` laddas vid konstruktion.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ class EntityLayer:
         self._nlp = spacy.load(model_name)
         self._label_map = {
             "PRS": (Category.NAMN, "entity.spacy_PRS"),
-            "LOC": (Category.ADRESS, "entity.spacy_LOC"),
+            "LOC": (Category.PLATS, "entity.spacy_LOC"),
             "ORG": (Category.ORGANISATION, "entity.spacy_ORG"),
         }
 

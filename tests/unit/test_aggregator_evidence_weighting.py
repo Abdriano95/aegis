@@ -90,7 +90,7 @@ class TestDecisionTableTagging:
             confidence=0.75,  # >= medium_threshold, < high_confidence_bypass
             source="context.kombination",
         )
-        loc = _f(Category.ADRESS, 0, 15, source="entity.spacy_LOC")
+        loc = _f(Category.PLATS, 0, 15, source="entity.spacy_LOC")
         org = _f(Category.ORGANISATION, 20, 50, source="entity.spacy_ORG")
 
         agg = _cv()
@@ -303,3 +303,68 @@ class TestWeakestEvidenceBasisDerivation:
         # Only the article4 email (no_support_required) bore DIRECT; the
         # bypass kombination (high_confidence_no_support) is excluded.
         assert result.weakest_evidence_basis == "no_support_required"
+
+
+class TestI7cLocAsKombinationSupport:
+    """Issue I-7c (arkitektur.md §5, §9.6.7 Degerfors-fallet): after the
+    LOC → context.plats remapping, a LOC finding keeps its
+    entity.spacy_LOC source and therefore still counts as structural
+    support for an overlapping context.kombination via the entity.*
+    prefix in the generalized Mekanism 3. The place signal moves from a
+    spurious DIRECT trigger to its correct role as a puzzle piece that
+    strengthens INDIRECT identifiability — it is not lost."""
+
+    def test_loc_supports_kombination_via_mekanism_3(self) -> None:
+        """Degerfors-like case in cross_validating mode: a medium-
+        confidence context.kombination (>= medium_threshold, <
+        high_confidence_bypass) is validated ONLY because the
+        entity.spacy_LOC place finding (now Category.PLATS) counts as
+        structural support alongside one more overlapping entity signal.
+        The aggregator returns INDIRECT and the kombination's
+        evidence_basis is structural_support."""
+        kombination = _f(
+            Category.KOMBINATION, 0, 60,
+            confidence=0.75,  # >= medium_threshold 0.7, < bypass 0.85
+            source="context.kombination",
+        )
+        # "Degerfors": post-I-7c this is Category.PLATS, source unchanged.
+        plats = _f(
+            Category.PLATS, 0, 15,
+            source="entity.spacy_LOC",
+        )
+        org = _f(
+            Category.ORGANISATION, 20, 50,
+            source="entity.spacy_ORG",
+        )
+
+        agg = _cv()
+        findings = [kombination, plats, org]
+
+        # The LOC place finding is load-bearing: with ORG alone the
+        # support count is 1 (< min_evidence_count); the entity.spacy_LOC
+        # finding tips it to 2 and makes Mekanism 3 pass.
+        assert agg._count_structural_support(
+            kombination, [kombination, org], ("pattern.", "entity."),
+        ) == 1
+        assert agg._count_structural_support(
+            kombination, findings, ("pattern.", "entity."),
+        ) == 2
+
+        result = agg.aggregate(findings, ["entity", "combination"])
+
+        komb = next(
+            f for f in result.findings
+            if f.source == "context.kombination"
+        )
+        assert komb.evidence_basis == "structural_support"
+        # No article4.* finding: place is INDIRECT support, not a DIRECT
+        # trigger (the I-7c behavior change).
+        assert result.identifiability == Identifiability.INDIRECT
+        assert result.weakest_evidence_basis == "structural_support"
+        # The place signal itself stays a context signal, not a trigger.
+        plats_out = next(
+            f for f in result.findings
+            if f.source == "entity.spacy_LOC"
+        )
+        assert plats_out.category == Category.PLATS
+        assert plats_out.evidence_basis == "no_support_required"
