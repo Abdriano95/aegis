@@ -146,7 +146,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ✅ Klar (2026-05-16) — §9.6 implementerad i kod, default `legacy`, 214/214 tester gröna; default-flipp efter I-7d (se sessionspost 2026-05-16) | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
 | (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ✅ Klar (2026-05-16) — `_label_map` LOC → `Category.PLATS` (source bevarad), §5 uppdaterad, 217/217 tester gröna; mätbar effekt → I-7d, matcher-alias kvarstår (omprövas efter I-7d) (se sessionspost 2026-05-16) | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
 | (I-7d) | Dubbel baslinjemätning `legacy` mot `cross_validating` (evidence_basis-rapportering, H1/H2/H3) | B | Gemensamt | ✅ Klar (2026-05-16) — H1/H2/H3 infriade mot it2-baslinjen (P 64,00→75,18 %, R 89,27→90,99 %), `legacy` ≡ `cross_validating` (0/159 sanity-avvikelser), Del 8 i [`iteration_3_utvardering.md`](iteration_3_utvardering.md) (se sessionspost 2026-05-16) | I-7a, I-7b, I-7c | Empirisk dubbelmätning; underlag för §9.6.4-defaultfrågan och kapitel 6; ny `docs/iteration_3_utvardering.md` Del 8. |
-| (I-7e) | Source-medveten evidensräkning via deduplicated_sources-propagering | A2 | Abdriano95 | 🔄 Pågår (2026-05-16) | I-7b, I-7c, I-7d | §9.6.5 utökas inom I-7e; empiriskt material för designprincip om aggregator-passens ordning. |
+| (I-7e) | Source-medveten evidensräkning via deduplicated_sources-propagering | A2 | Abdriano95 | ✅ Klar (2026-05-16) — `_count_structural_support` mode-gateat `deduplicated_sources`-tillägg (alternativ iii), §9.6.5 uppdaterad, 222/222 tester gröna (5 nya); containment-kollaps öppen punkt → ev. I-7g, omkörning I-7f (se sessionspost 2026-05-16) | I-7b, I-7c, I-7d | §9.6.5 utökas inom I-7e; empiriskt material för designprincip om aggregator-passens ordning. |
 
 > I-7a/b/c är en nedbrytning av den arkitektoniska rotorsaken i `docs/kodanalys_precision_och_falska_positiva.md` §15 (delvis realiserad korsverifiering). Skild från I-7/#107 (modellskalningsprobe). GitHub-nummer tilldelas vid skapande per intro-noten ovan; ID-kolumnen bär tills vidare enbart det iterationsinterna ID:t.
 
@@ -1245,3 +1245,32 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 - Matcher-aliaset `{ADRESS, PLATS}` (Beslut 45 / §9.2.1) är fortfarande aktivt och neutraliserade det förväntade mätinstrumentskiftet; omprövning av aliaset kvarstår som öppen punkt efter I-7d.
 - Eventuell framtida dimensions-gating av `cross_validating` skulle invalidera I-7b:s `test_legacy_mode_unchanged` och kräva omarbetning av legacy-paritetsantagandena — separat fas 4-designval.
 - Loggboks-beslut + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7e (Source-medveten evidensräkning via deduplicated_sources-propagering)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Åtgärda den arkitektoniska interaktionen från I-7d:s live-trace: `_deduplicate_same_category_overlap` körs före `_apply_evidence_weighting`, så `entity.spacy_LOC` som kategorikrockar med CombinationLayers `context.plats` deduperas bort och blir osynlig för Mekanism 3 (`_count_structural_support` matchar bara `pattern.`/`entity.`-prefix). Kirurgisk fix (alternativ A′): låt primitiven även läsa `metadata["deduplicated_sources"]`. Dedupliceringen, mätinstrumentet och legacy-läget ska vara oförändrade.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — `_count_structural_support` omskriven: behåller exakt span-överlapp + primärsource-prefixträff (oförändrad semantik), lägger `continue` efter primärträff (ett fynd räknas högst en gång) och en **mode-gatead** gren som i `cross_validating` även konsulterar `(f.metadata or {}).get("deduplicated_sources", [])`. Docstring uppdaterad. `_deduplicate_same_category_overlap` **orört**.
+- `tests/unit/test_aggregator_evidence_weighting.py` — ny klass `TestI7eSourceAwareEvidenceCounting` med 5 tester (a/b/c/d/e). Återanvänder befintliga `_f`/`_cv`-helpers.
+- `docs/arkitektur.md` — §9.6.5 utökad med två stycken: source-medveten räkning + mode-gate-motivering, samt containment-kollaps som öppen punkt (SSOT före kod, CLAUDE.md §8).
+- `docs/iteration_3_implementation.md` — I-7e-rad 🔄→✅ Klar (2026-05-16); denna sessionspost.
+
+**Gjort (inkl. två Fas 0-upptäckter som styrde designen):**
+- **Statusedit** I-7e-rad → 🔄 Pågår som första åtgärd vid sessionsstart (CLAUDE.md §4 steg 2), nu → ✅ Klar.
+- **Fas 0-upptäckt 1 (fixturkorrigering):** den litterala Hudiksvall-meningen når *inte* `structural_support` med A′ ensam — dess andra stödsignal (`entity.spacy_ORG` "Vänsterpartiet") togs bort av `_remove_context_covered_by_article9`-**containment** (täcks av `article9.politisk_asikt`), inte av dedup, och containment propagerar inte source. Endast `entity.spacy_LOC` är dedup-dödad → count = 1 < `min_evidence_count` = 2. Vägval (användare/arkitekt): **Alternativ 1** — kanoniskt test (`test_a_dedup_kollision_via_propagerad_source`) använder två dedup-dödade källor (`context.plats`←`entity.spacy_LOC`, `context.organisation`←`entity.spacy_ORG`, ingen article9) → count = 2 → `structural_support`.
+- **Fas 0-upptäckt 2 (mode-gate nödvändig):** `_count_structural_support` anropas i **legacy** via `_determine_dimensions → _has_validated_kombination → _passes_mechanism_3` (ej mode-gateat, körs i båda lägena). Ett naivt deduplicated_sources-tillägg hade flippat legacy-fixtur (a) `NONE → INDIRECT` och brutit I-7e:s bakåtkompatibilitetskrav. Vägval: **Alternativ iii** — `deduplicated_sources` konsulteras endast när `self.cross_validation_mode == "cross_validating"`. `test_d_legacy_mode_byte_identical_after_fix` bevisar legacy byte-identiskt (NONE/NONE/NONE) för samma fixtur som test_a.
+- Mode-gaten är ett **medvetet avsteg** från primitivens ursprungligen källdrivna, mode-agnostiska design (§9.6.5), motiverat enbart av bakåtkompatibilitet.
+- Containment-källkollaps (t.ex. `_remove_context_covered_by_article9`) är en **separat, oadresserad parallell mekanism** — `test_e_containment_does_not_propagate_source` fryser nuvarande beteende som regression-tripwire. Hör till framtida arbete / hypotetisk **I-7g**.
+- §9.6.5:s formulering "källdriven, mode-agnostisk" reviderad till **"källdriven med mode-gateat `deduplicated_sources`-tillägg i `cross_validating`"**.
+
+**Befintliga tester — räkning:** **0 befintliga tester ändrade/trasiga.** Fixen är additiv för metadatalösa fynd (alla `_f`-fixturer) och mode-gatead → I-7b:s `test_legacy_mode_unchanged` och `TestI7cLocAsKombinationSupport` oförändrat gröna. Totalt **222/222** (217 + 5 nya); de 5 nya + `test_legacy_mode_unchanged` explicit verifierade (6/6).
+
+**Beslut fattade:** Inga nya numrerade arkitekturbeslut i koden. Mode-gate-avsteget och containment-kollapsen som öppen punkt bör föras in som **tilläggsanteckning/-beslut i Loggboken iteration 3 manuellt av användaren** (utanför agent-flödet). **Designprincip-kandidat för fas 4:** korsverifierings-primitiver bör vara mode-agnostiska som regel; undantag (mode-gate) ska vara explicit motiverade av bakåtkompatibilitetskrav och dokumenterade i SSOT.
+
+**Öppet/Nästa steg:**
+- **I-7f** (separat session): omkörning av I-7d-mätningen + uppdatering av `docs/iteration_3_utvardering.md` Del 8 med cross_validating-effekten av A′.
+- **Containment-källkollaps:** öppen punkt; ev. **I-7g** (skulle ändra `_remove_*`-containment till att propagera source — eget Loggbok-beslut, större blast radius).
+- Loggboks-tilläggsbeslut + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).

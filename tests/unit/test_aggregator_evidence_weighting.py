@@ -368,3 +368,215 @@ class TestI7cLocAsKombinationSupport:
         )
         assert plats_out.category == Category.PLATS
         assert plats_out.evidence_basis == "no_support_required"
+
+
+class TestI7eSourceAwareEvidenceCounting:
+    """Issue I-7e (arkitektur.md §9.6.5, Loggbok it. 3, #138): i
+    cross_validating-läget konsulterar _count_structural_support även
+    finding.metadata["deduplicated_sources"], så ett stödfynd som
+    _deduplicate_same_category_overlap tog bort vid
+    same-category-källkollaps återupptäcks. Mode-gateat — legacy är
+    oförändrat (alternativ iii). Fixturerna saknar article9 så
+    _remove_context_covered_by_article9 inte fyrar, utom test_e som
+    avsiktligt exercerar containment-vägen."""
+
+    def test_a_dedup_kollision_via_propagerad_source(self) -> None:
+        """(a) Två dedup-dödade entity-källor: context.plats absorberar
+        entity.spacy_LOC, context.organisation absorberar
+        entity.spacy_ORG. I cross_validating räknas båda via
+        deduplicated_sources → count = 2 = min_evidence_count →
+        kombinationen får structural_support och bär INDIRECT."""
+        kombination = _f(
+            Category.KOMBINATION, 0, 60,
+            confidence=0.75,  # >= medium_threshold 0.7, < bypass 0.85
+            source="context.kombination",
+        )
+        plats_llm = _f(
+            Category.PLATS, 0, 15, confidence=0.98, source="context.plats",
+        )
+        plats_spacy = _f(
+            Category.PLATS, 0, 15, confidence=0.80,
+            source="entity.spacy_LOC",
+        )
+        org_llm = _f(
+            Category.ORGANISATION, 20, 50, confidence=0.95,
+            source="context.organisation",
+        )
+        org_spacy = _f(
+            Category.ORGANISATION, 20, 50, confidence=0.80,
+            source="entity.spacy_ORG",
+        )
+
+        result = _cv().aggregate(
+            [kombination, plats_llm, plats_spacy, org_llm, org_spacy],
+            ["entity", "combination"],
+        )
+
+        # Dedup behöll LLM-fynden (högre confidence) och propagerade de
+        # borttagna entity-källorna till metadata.
+        plats_out = next(
+            f for f in result.findings if f.category == Category.PLATS
+        )
+        org_out = next(
+            f for f in result.findings
+            if f.category == Category.ORGANISATION
+        )
+        assert plats_out.source == "context.plats"
+        assert plats_out.metadata["deduplicated_sources"] == [
+            "entity.spacy_LOC"
+        ]
+        assert org_out.source == "context.organisation"
+        assert org_out.metadata["deduplicated_sources"] == [
+            "entity.spacy_ORG"
+        ]
+
+        komb = next(
+            f for f in result.findings
+            if f.source == "context.kombination"
+        )
+        assert komb.evidence_basis == "structural_support"
+        assert result.identifiability == Identifiability.INDIRECT
+        assert result.data_class == DataClass.NONE
+        assert result.weakest_evidence_basis == "structural_support"
+
+    def test_anna_lindstrom_article4_support_unchanged(self) -> None:
+        """(b) Icke-kategorikrockande fall: stödfynden bär sina
+        entity.*-source direkt (ingen dedup, ingen deduplicated_sources).
+        Fixen är rent additiv — structural_support triggas via den
+        oförändrade primärsource-grenen. Två direkta stöd krävs eftersom
+        min_evidence_count = 2."""
+        kombination = _f(
+            Category.KOMBINATION, 0, 60, confidence=0.75,
+            source="context.kombination",
+        )
+        # "Anna Lindström" → article4.namn, source entity.spacy_PRS.
+        namn = _f(
+            Category.NAMN, 0, 14, confidence=0.80,
+            source="entity.spacy_PRS",
+        )
+        # Andra direkt entity-stödet (ingen context-tvilling → ingen
+        # dedup); behövs för att nå min_evidence_count.
+        plats = _f(
+            Category.PLATS, 20, 35, confidence=0.80,
+            source="entity.spacy_LOC",
+        )
+
+        result = _cv().aggregate(
+            [kombination, namn, plats], ["entity", "combination"],
+        )
+
+        # Ingen dedup skedde → inget fynd bär deduplicated_sources.
+        for f in result.findings:
+            assert not (f.metadata or {}).get("deduplicated_sources")
+
+        komb = next(
+            f for f in result.findings
+            if f.source == "context.kombination"
+        )
+        assert komb.evidence_basis == "structural_support"
+        # article4.namn närvarande → DIRECT trumfar (oförändrad
+        # dimensionslogik; structural_support kom via primärsource).
+        assert result.identifiability == Identifiability.DIRECT
+
+    def test_isolated_kombination_no_phantom_support(self) -> None:
+        """(c) Endast en context.kombination utan stödsignaler. Fixen
+        får inte trolla fram fantomstöd ur frånvarande/tom metadata:
+        evidence_basis förblir no_support_required (varken
+        structural_support eller bypass; conf < 0.85)."""
+        kombination = _f(
+            Category.KOMBINATION, 0, 50, confidence=0.75,
+            source="context.kombination",
+        )
+
+        result = _cv().aggregate([kombination], ["combination"])
+
+        assert result.findings[0].evidence_basis == "no_support_required"
+        assert result.identifiability == Identifiability.NONE
+        assert result.weakest_evidence_basis is None
+
+    def test_d_legacy_mode_byte_identical_after_fix(self) -> None:
+        """(d) Hela poängen med alternativ iii: fixtur identisk med
+        test_a men kört i legacy. Mode-gaten gör att
+        deduplicated_sources INTE konsulteras → _count_structural_support
+        = 0 → _passes_mechanism_3 False → identifiability NONE.
+        Byte-identiskt med pre-I-7e legacy (NONE/NONE/NONE) och alla fynd
+        behåller default evidence_basis (weighting-passet ej anropat)."""
+        kombination = _f(
+            Category.KOMBINATION, 0, 60, confidence=0.75,
+            source="context.kombination",
+        )
+        plats_llm = _f(
+            Category.PLATS, 0, 15, confidence=0.98, source="context.plats",
+        )
+        plats_spacy = _f(
+            Category.PLATS, 0, 15, confidence=0.80,
+            source="entity.spacy_LOC",
+        )
+        org_llm = _f(
+            Category.ORGANISATION, 20, 50, confidence=0.95,
+            source="context.organisation",
+        )
+        org_spacy = _f(
+            Category.ORGANISATION, 20, 50, confidence=0.80,
+            source="entity.spacy_ORG",
+        )
+
+        result = Aggregator().aggregate(
+            [kombination, plats_llm, plats_spacy, org_llm, org_spacy],
+            ["entity", "combination"],
+        )
+
+        assert result.identifiability == Identifiability.NONE
+        assert result.data_class == DataClass.NONE
+        assert result.sensitivity == SensitivityLevel.NONE
+        assert result.weakest_evidence_basis is None
+        assert all(
+            f.evidence_basis == "no_support_required"
+            for f in result.findings
+        )
+
+    def test_e_containment_does_not_propagate_source(self) -> None:
+        """(e) Regression-tripwire: en entity.spacy_ORG som tas bort av
+        _remove_context_covered_by_article9-containment propagerar INTE
+        sin source (till skillnad från dedup). A'-fixen kan därför inte
+        rädda den — kombinationen får INTE structural_support. Fryser den
+        parallella, oadresserade containment-kollaps-vägen; om containment
+        någon gång börjar propagera source ska detta test medvetet
+        brytas."""
+        kombination = _f(
+            Category.KOMBINATION, 0, 70, confidence=0.75,
+            source="context.kombination",
+        )
+        a9 = _f(
+            Category.POLITISK_ASIKT, 40, 70, confidence=0.98,
+            source="article9.politisk_asikt",
+        )
+        # context.organisation (50,65) täcks helt av article9 (40,70) →
+        # _remove_context_covered_by_article9 tar bort den UTAN att
+        # propagera source.
+        org_spacy = _f(
+            Category.ORGANISATION, 50, 65, confidence=0.80,
+            source="entity.spacy_ORG",
+        )
+
+        result = _cv().aggregate(
+            [kombination, a9, org_spacy],
+            ["entity", "article9", "combination"],
+        )
+
+        # Containment droppade org-fyndet spårlöst.
+        assert all(
+            f.source != "entity.spacy_ORG" for f in result.findings
+        )
+        for f in result.findings:
+            assert "entity.spacy_ORG" not in (
+                (f.metadata or {}).get("deduplicated_sources", [])
+            )
+        komb = next(
+            f for f in result.findings
+            if f.source == "context.kombination"
+        )
+        # Fixen räddar INTE en containment-kollapsad källa.
+        assert komb.evidence_basis == "no_support_required"
+        assert result.identifiability == Identifiability.NONE
+        assert result.data_class == DataClass.SPECIAL  # article9 kvar

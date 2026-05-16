@@ -1107,6 +1107,26 @@ primitiven. Ingen befintlig `context.kombination`-klassning ändras av
 generaliseringen i sig (endast av att R5/R3/R4-policyn nu också gäller,
 vilket är hela poängen).
 
+**I-7e — source-medveten räkning i `cross_validating`-läget.** I
+`cross_validating`-läget konsulterar `_count_structural_support` även
+`finding.metadata["deduplicated_sources"]` för att återupptäcka stödfynd
+som `_deduplicate_same_category_overlap` tog bort vid
+same-category-källkollaps (t.ex. `entity.spacy_LOC` som faller bort när
+CombinationLayers `context.plats` vinner dedupliceringen). Detta är ett
+*medvetet avsteg* från primitivens annars källdrivna, mode-agnostiska
+karaktär: utan mode-gaten skulle tillägget ändra legacy-lägets
+`identifiability`-beslut via `_has_validated_kombination →
+_passes_mechanism_3` och bryta bakåtkompatibilitet (I-7e:s
+acceptanskriterium, alternativ iii). Stöddefinitionen ovan omformuleras
+därför från "källdriven, mode-agnostisk" till **"källdriven med
+mode-gateat `deduplicated_sources`-tillägg i `cross_validating`"**.
+
+Containment-borttagning (t.ex. `_remove_context_covered_by_article9`)
+propagerar *inte* source och fångas därför inte av denna mekanism. Den
+utgör en parallell, oadresserad kollaps-väg och dokumenteras som **öppen
+punkt** för framtida arbete (ev. I-7g); regressionsvakten
+`test_e_containment_does_not_propagate_source` fryser nuvarande beteende.
+
 ### 9.6.6 Spårbarhet
 
 | Beslut (Loggbok it. 2) | Status under 9.6 | Innebörd |

@@ -469,19 +469,45 @@ class Aggregator:
         """Antal fynd vars source matchar valid_source_prefixes och vars
         span strikt överlappar target-spannet.
 
-        Generaliserad evidensräknings-primitiv (arkitektur.md §9.6.5,
-        Option 1). Mekanism 3 (Beslut 19) blir en konfigurerad instans av
-        denna primitiv via _passes_mechanism_3. Stöddefinitionen är exakt
-        nuvarande Mekanism 3-formel (strikt span-överlapp, inget
-        närhetsbaserat stöd) — designprincip 2, oförändrad semantik.
+        Generaliserad evidensräknings-primitiv (arkitektur.md §9.6.5).
+        Mekanism 3 (Beslut 19) blir en konfigurerad instans av denna
+        primitiv via _passes_mechanism_3. Stöddefinitionen är strikt
+        span-överlapp, inget närhetsbaserat stöd (designprincip 2).
+
+        I cross_validating-läget konsulteras även
+        ``f.metadata["deduplicated_sources"]`` (I-7e): en source-tagg som
+        _deduplicate_same_category_overlap tog bort vid
+        same-category-källkollaps återupptäcks så att Mekanism 3 ser
+        stödet igen. Mode-gaten är ett medvetet avsteg från primitivens
+        annars källdrivna, mode-agnostiska karaktär; utan den skulle
+        tillägget ändra legacy-lägets identifiability-beslut (via
+        _has_validated_kombination → _passes_mechanism_3) och bryta
+        bakåtkompatibilitet (I-7e:s acceptanskriterium, alternativ iii).
+        Ett fynd räknas högst en gång (``continue`` efter primärträff).
+
+        Containment-borttagning (t.ex. _remove_context_covered_by_article9)
+        propagerar inte source och fångas INTE av denna mekanism — en
+        parallell, oadresserad kollaps-väg, öppen punkt för framtida
+        arbete (ev. I-7g). Defensiv metadata-läsning: ``metadata`` kan
+        vara None eller sakna nyckeln (fynd som inte dedupats).
         """
-        return sum(
-            1
-            for f in all_findings
-            if f.source.startswith(valid_source_prefixes)
-            and f.start < target.end
-            and target.start < f.end
-        )
+        count = 0
+        for f in all_findings:
+            if not (f.start < target.end and target.start < f.end):
+                continue
+            if f.source.startswith(valid_source_prefixes):
+                count += 1
+                continue
+            if self.cross_validation_mode == "cross_validating":
+                dedup_sources = (f.metadata or {}).get(
+                    "deduplicated_sources", []
+                )
+                if any(
+                    s.startswith(valid_source_prefixes)
+                    for s in dedup_sources
+                ):
+                    count += 1
+        return count
 
     def _passes_mechanism_3(
         self, kombination: Finding, all_findings: list[Finding],
