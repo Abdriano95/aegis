@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-05-16T08:14:14.267606+00:00",
+    "generated_at": "2026-05-16T12:59:45.712439+00:00",
     "model": "qwen2.5:7b-instruct",
     "subset": "all",
     "cross_validation_mode": "cross_validating",
@@ -14,7 +14,7 @@
       "article9_texts": 52,
       "combination_texts": 27
     },
-    "git_commit": "e6ab2f87d186fd8a718b7b2126178d866a150c6c",
+    "git_commit": "2d6c30261a1229a7805bd3f5f37b81fb8eebbfe1",
     "pipeline_layers": [
       "pattern",
       "entity",
@@ -46,13 +46,53 @@
       "f1": 0.8233009708737864
     },
     "per_category": {
-      "article9.etniskt_ursprung": {
-        "tp": 0,
+      "article9.politisk_asikt": {
+        "tp": 6,
+        "fp": 0,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "f1": 1.0
+      },
+      "article9.fackmedlemskap": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 1,
+        "recall": 0.8333333333333334,
+        "precision": 1.0,
+        "f1": 0.9090909090909091
+      },
+      "article9.genetisk_data": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 2,
+        "recall": 0.7142857142857143,
+        "precision": 1.0,
+        "f1": 0.8333333333333333
+      },
+      "article9.biometrisk_data": {
+        "tp": 6,
         "fp": 1,
         "fn": 0,
-        "recall": 0.0,
-        "precision": 0.0,
-        "f1": 0.0
+        "recall": 1.0,
+        "precision": 0.8571428571428571,
+        "f1": 0.923076923076923
+      },
+      "context.yrke": {
+        "tp": 16,
+        "fp": 20,
+        "fn": 6,
+        "recall": 0.7272727272727273,
+        "precision": 0.4444444444444444,
+        "f1": 0.5517241379310345
+      },
+      "context.organisation": {
+        "tp": 23,
+        "fp": 19,
+        "fn": 4,
+        "recall": 0.8518518518518519,
+        "precision": 0.5476190476190477,
+        "f1": 0.6666666666666667
       },
       "article4.personnummer": {
         "tp": 18,
@@ -61,6 +101,46 @@
         "recall": 1.0,
         "precision": 1.0,
         "f1": 1.0
+      },
+      "article4.betalkort": {
+        "tp": 6,
+        "fp": 0,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "f1": 1.0
+      },
+      "article4.adress": {
+        "tp": 14,
+        "fp": 0,
+        "fn": 1,
+        "recall": 0.9333333333333333,
+        "precision": 1.0,
+        "f1": 0.9655172413793104
+      },
+      "context.plats": {
+        "tp": 14,
+        "fp": 10,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.5833333333333334,
+        "f1": 0.7368421052631579
+      },
+      "article9.sexuell_laggning": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 2,
+        "recall": 0.6666666666666666,
+        "precision": 1.0,
+        "f1": 0.8
+      },
+      "article9.halsodata": {
+        "tp": 5,
+        "fp": 4,
+        "fn": 2,
+        "recall": 0.7142857142857143,
+        "precision": 0.5555555555555556,
+        "f1": 0.6250000000000001
       },
       "context.kombination": {
         "tp": 9,
@@ -78,21 +158,21 @@
         "precision": 1.0,
         "f1": 1.0
       },
-      "context.organisation": {
-        "tp": 23,
-        "fp": 19,
-        "fn": 4,
-        "recall": 0.8518518518518519,
-        "precision": 0.5476190476190477,
-        "f1": 0.6666666666666667
-      },
-      "article4.betalkort": {
-        "tp": 6,
+      "article4.iban": {
+        "tp": 10,
         "fp": 0,
-        "fn": 0,
-        "recall": 1.0,
+        "fn": 1,
+        "recall": 0.9090909090909091,
         "precision": 1.0,
-        "f1": 1.0
+        "f1": 0.9523809523809523
+      },
+      "article9.etniskt_ursprung": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "f1": 0.0
       },
       "article9.religios_overtygelse": {
         "tp": 5,
@@ -102,54 +182,6 @@
         "precision": 0.8333333333333334,
         "f1": 0.8333333333333334
       },
-      "article9.genetisk_data": {
-        "tp": 5,
-        "fp": 0,
-        "fn": 2,
-        "recall": 0.7142857142857143,
-        "precision": 1.0,
-        "f1": 0.8333333333333333
-      },
-      "context.yrke": {
-        "tp": 16,
-        "fp": 20,
-        "fn": 6,
-        "recall": 0.7272727272727273,
-        "precision": 0.4444444444444444,
-        "f1": 0.5517241379310345
-      },
-      "article9.halsodata": {
-        "tp": 5,
-        "fp": 4,
-        "fn": 2,
-        "recall": 0.7142857142857143,
-        "precision": 0.5555555555555556,
-        "f1": 0.6250000000000001
-      },
-      "article4.namn": {
-        "tp": 32,
-        "fp": 3,
-        "fn": 1,
-        "recall": 0.9696969696969697,
-        "precision": 0.9142857142857143,
-        "f1": 0.9411764705882354
-      },
-      "article9.politisk_asikt": {
-        "tp": 6,
-        "fp": 0,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 1.0,
-        "f1": 1.0
-      },
-      "article4.adress": {
-        "tp": 14,
-        "fp": 0,
-        "fn": 1,
-        "recall": 0.9333333333333333,
-        "precision": 1.0,
-        "f1": 0.9655172413793104
-      },
       "article4.email": {
         "tp": 19,
         "fp": 0,
@@ -158,64 +190,16 @@
         "precision": 1.0,
         "f1": 1.0
       },
-      "article4.iban": {
-        "tp": 10,
-        "fp": 0,
+      "article4.namn": {
+        "tp": 32,
+        "fp": 3,
         "fn": 1,
-        "recall": 0.9090909090909091,
-        "precision": 1.0,
-        "f1": 0.9523809523809523
-      },
-      "context.plats": {
-        "tp": 14,
-        "fp": 10,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 0.5833333333333334,
-        "f1": 0.7368421052631579
-      },
-      "article9.fackmedlemskap": {
-        "tp": 5,
-        "fp": 0,
-        "fn": 1,
-        "recall": 0.8333333333333334,
-        "precision": 1.0,
-        "f1": 0.9090909090909091
-      },
-      "article9.sexuell_laggning": {
-        "tp": 4,
-        "fp": 0,
-        "fn": 2,
-        "recall": 0.6666666666666666,
-        "precision": 1.0,
-        "f1": 0.8
-      },
-      "article9.biometrisk_data": {
-        "tp": 6,
-        "fp": 1,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 0.8571428571428571,
-        "f1": 0.923076923076923
+        "recall": 0.9696969696969697,
+        "precision": 0.9142857142857143,
+        "f1": 0.9411764705882354
       }
     },
     "per_layer": {
-      "context": {
-        "tp": 63,
-        "fp": 49,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 0.5625,
-        "f1": 0.72
-      },
-      "article9": {
-        "tp": 36,
-        "fp": 7,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 0.8372093023255814,
-        "f1": 0.9113924050632911
-      },
       "pattern": {
         "tp": 68,
         "fp": 0,
@@ -224,6 +208,14 @@
         "precision": 1.0,
         "f1": 1.0
       },
+      "context": {
+        "tp": 63,
+        "fp": 49,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.5625,
+        "f1": 0.72
+      },
       "entity": {
         "tp": 45,
         "fp": 14,
@@ -231,6 +223,14 @@
         "recall": 1.0,
         "precision": 0.7627118644067796,
         "f1": 0.8653846153846153
+      },
+      "article9": {
+        "tp": 36,
+        "fp": 7,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.8372093023255814,
+        "f1": 0.9113924050632911
       }
     },
     "samples": [
@@ -744,7 +744,7 @@
               "reasoning": "Kombinationen av yrkesroll (systemutvecklare), organisation (Ericsson AB) och specifik plats (Teknikvägen 8) ger tillräcklig identifierbarhet för en person med viss kunskap om den specifika företagsplatsen.",
               "validation_path": "exact"
             },
-            "evidence_basis": "high_confidence_no_support"
+            "evidence_basis": "structural_support"
           }
         ],
         "false_negatives": []
@@ -2023,12 +2023,12 @@
   "evidence_basis_breakdown": {
     "total": {
       "structural_support": {
-        "tp": 0,
-        "fp": 1
+        "tp": 5,
+        "fp": 2
       },
       "high_confidence_no_support": {
-        "tp": 9,
-        "fp": 10
+        "tp": 4,
+        "fp": 9
       },
       "no_support_required": {
         "tp": 203,
@@ -2037,12 +2037,12 @@
     },
     "context_kombination_only": {
       "structural_support": {
-        "tp": 0,
-        "fp": 1
+        "tp": 5,
+        "fp": 2
       },
       "high_confidence_no_support": {
-        "tp": 9,
-        "fp": 10
+        "tp": 4,
+        "fp": 9
       },
       "no_support_required": {
         "tp": 0,

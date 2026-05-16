@@ -1,4 +1,14 @@
-## Del 8: Dubbel baslinjemätning — `legacy` mot `cross_validating` (I-7d)
+## Del 8: Dubbel baslinjemätning — `legacy` mot `cross_validating` (I-7d, uppdaterad post-I-7e i I-7f)
+
+> **Uppdateringsnot (I-7f, 2026-05-16).** Del 8 är omkörd på post-I-7e-koden
+> (commit `2d6c302`). I-7e gjorde `_count_structural_support` source-medveten via
+> ett **mode-gateat** `deduplicated_sources`-tillägg i `cross_validating`-läget
+> (`docs/arkitektur.md` §9.6.5). Pre-I-7e-talen (I-7d, commit `e6ab2f8`) **bevaras
+> ordagrant** nedan; post-I-7e-talen redovisas parallellt så att I-7e:s faktiska
+> effekt är synlig. H1 och H2:s falsifieringsvillkor är **oförändrade** (de mäter
+> mot iteration-2-baslinjen, inte mot modes). H3:s formulering utökas från en
+> ren andelsmätning till en **delta-analys** pre-I-7e → post-I-7e (8.4). Pre-I-7e-
+> snapshots är arkiverade till `demo/snapshots/i7d_{legacy,cross_validating}_pre_i7e.json`.
 
 ### 8.1 Bakgrund och hypoteser
 
@@ -64,15 +74,34 @@ Konstant mellan de två aggregator-körningarna:
 
 | Variabel | Värde |
 |---|---|
-| Testkorpus | 159 texter (84 iteration-1 + 36 artikel-9 + 39 kombination) |
+| Testkorpus | 159 texter (80 iteration-1 + 52 artikel-9 + 27 kombination)¹ |
 | LLM-modell | `qwen2.5:7b-instruct` (samma som iteration 2–3) |
 | Temperatur | 0,0 (hårdkodad i `ollama_provider.py`, inget seed) |
 | Trösklar | `medium_threshold=0.7`, `high_confidence_bypass=0.85`, `min_evidence_count=2` (Beslut 20/51) |
 | Promptversioner | Article9Layer v5, CombinationLayer v5 |
 | Fyndlista | LLM-anrop en gång per text, samma lista till båda aggregatorerna |
 
+¹ **Korpuskompositionskorrigering (I-7f).** I-7d:s ursprungliga text angav
+"84 iteration-1 + 36 artikel-9 + 39 kombination" — en transkriptionsmiss
+(summan 159 var korrekt). Den faktiska kompositionen, verifierad mot
+datasetfilerna (`tests/data/iteration_1/test_dataset.json` = 80,
+`tests/data/iteration_2/article9_dataset.json` = 52,
+`tests/data/iteration_2/combination_dataset.json` = 27) och bekräftad av
+harnessens egen `load_dataset` samt snapshot-metadata för **både** pre- och
+post-I-7e-körningen, är **80 + 52 + 27 = 159**. Korrigeringen påverkar inga
+mätvärden (korpusen var hela tiden densamma; endast textbeskrivningen var fel).
+
 Varierat: enbart `cross_validation_mode` (`"legacy"` respektive
 `"cross_validating"`).
+
+> **Post-I-7e-omkörning (I-7f).** Den uppdaterade körningen använder exakt samma
+> harness (`scripts/run_i7d_baseline.py`, orörd sedan I-7d), samma korpus
+> (harnessens utskrift för denna körning: 159 texter = 80 iteration-1 + 52
+> artikel-9 + 27 kombination), samma modell, trösklar och promptversioner. Den
+> **enda** kodskillnaden mot pre-I-7e är I-7e:s mode-gateade
+> `deduplicated_sources`-tillägg i `_count_structural_support`
+> (`cross_validating` enbart). `legacy`-vägen är därför oförändrad och förväntas
+> ge byte-identiskt utfall — vilket verifieras explicit i 8.4.
 
 Validitetsbegränsning: residual icke-determinism kvarstår **endast** mot
 iteration-2-baslinjen (`qwen2.5:7b` är inte seed-pinnat, och
@@ -87,8 +116,10 @@ icke-determinism alls — samma fyndlista används. Se 8.7.
 | Konfiguration | TP | FP | FN | Precision | Recall | F1 |
 |---|---|---|---|---|---|---|
 | Iteration-2-baslinje (#80) | 208 | 117 | 25 | 64,00 % | 89,27 % | 74,55 % |
-| I-7d `legacy` | 212 | 70 | 21 | 75,18 % | 90,99 % | 82,33 % |
-| I-7d `cross_validating` | 212 | 70 | 21 | 75,18 % | 90,99 % | 82,33 % |
+| I-7d `legacy` (pre-I-7e) | 212 | 70 | 21 | 75,18 % | 90,99 % | 82,33 % |
+| I-7d `cross_validating` (pre-I-7e) | 212 | 70 | 21 | 75,18 % | 90,99 % | 82,33 % |
+| **I-7f `legacy` (post-I-7e)** | 212 | 70 | 21 | 75,18 % | 90,99 % | 82,33 % |
+| **I-7f `cross_validating` (post-I-7e)** | 212 | 70 | 21 | 75,18 % | 90,99 % | 82,33 % |
 
 `legacy` och `cross_validating` är **byte-identiska** på alla mätvärden (0
 sanity-avvikelser över 159 texter, se 8.4). Förändring mot
@@ -97,6 +128,17 @@ iteration-2-baslinjen, identisk i båda lägena: TP +4, FP −47, FN −4, preci
 procentenheter**. Hela den mätbara förbättringen ligger alltså mot iteration 2
 och syns lika i båda lägena — den är I-7c-mappningens effekt, inte
 `cross_validating`-modes.
+
+**Post-I-7e (I-7f).** Konfusionsmatrisen är **oförändrad** mot pre-I-7e i båda
+lägena (TP/FP/FN = 212/70/21; P/R/F1 = 75,18 %/90,99 %/82,33 %), och
+`legacy` ≡ `cross_validating` kvarstår (0/159 sanity-avvikelser i omkörningen).
+I-7e:s effekt är alltså **inte** en precisions- eller recall-förändring utan
+**enbart** en omfördelning av `evidence_basis`-taggar inom
+`cross_validating`-läget (8.3.4) — exakt det transparens-scope §9.6.5/I-7e
+föreskriver. Sanity-kontrollen post-I-7e legacy mot pre-I-7e legacy är
+byte-identisk i `report.total`, `per_category`, `per_layer` och
+`per_dimension` (endast `metadata.generated_at`/`git_commit` skiljer sig), vilket
+verifierar I-7e:s mode-gate på korpusskala (8.4).
 
 #### 8.3.2 Per-kategori (iteration 2 → I-7d, identiskt mellan modes)
 
@@ -136,28 +178,45 @@ kategorierna är **byte-identiska** mot iteration 2:
 `article9` är oförändrade. `context`-lagret förbättras (fler TP, färre FP),
 delvis I-7c, delvis CombinationLayer v4 → v5 och LLM-variation (se 8.7).
 
-#### 8.3.4 Per-`evidence_basis` (`cross_validating`) — H3:s data
+#### 8.3.4 Per-`evidence_basis` (`cross_validating`) — H3:s data, pre-I-7e mot post-I-7e
 
 Endast `context.kombination` kan bära icke-default `evidence_basis`
 (`_apply_evidence_weighting` lämnar R1–R5/R7 vid `no_support_required`).
-Fördelning över **samtliga** 282 predikterade fynd (212 TP + 70 FP):
+Detta är I-7f:s kärnredovisning: pre-I-7e (I-7d, commit `e6ab2f8`) och post-I-7e
+(I-7f, commit `2d6c302`) i samma tabeller så att I-7e-deltat är direkt synligt.
+Fördelning över **samtliga** 282 predikterade fynd (212 TP + 70 FP — oförändrat
+totalantal):
 
-| `evidence_basis` | TP | FP | Totalt |
-|---|---|---|---|
-| `structural_support` | 0 | 1 | 1 |
-| `high_confidence_no_support` | 9 | 10 | 19 |
-| `no_support_required` | 203 | 59 | 262 |
+| `evidence_basis` | pre TP | pre FP | pre Tot | post TP | post FP | post Tot | Δ Tot |
+|---|---|---|---|---|---|---|---|
+| `structural_support` | 0 | 1 | 1 | 5 | 2 | 7 | **+6** |
+| `high_confidence_no_support` | 9 | 10 | 19 | 4 | 9 | 13 | **−6** |
+| `no_support_required` | 203 | 59 | 262 | 203 | 59 | 262 | 0 |
 
-Restringerat till `context.kombination` (H3:s nämnare, 20 fynd = 9 TP + 11 FP):
+Restringerat till `context.kombination` (H3:s nämnare, 20 fynd = 9 TP + 11 FP
+**i båda körningarna** — samma fynd, omtaggade):
 
-| `evidence_basis` | TP | FP | Totalt | Andel |
-|---|---|---|---|---|
-| `structural_support` | 0 | 1 | 1 | **5,0 %** |
-| `high_confidence_no_support` | 9 | 10 | 19 | **95,0 %** |
-| `no_support_required` | 0 | 0 | 0 | 0,0 % |
+| `evidence_basis` | pre Tot | pre Andel | post Tot | post Andel | Δ Andel |
+|---|---|---|---|---|---|
+| `structural_support` | 1 | **5,0 %** | 7 | **35,0 %** | **+30,0 pe** |
+| `high_confidence_no_support` | 19 | **95,0 %** | 13 | **65,0 %** | **−30,0 pe** |
+| `no_support_required` | 0 | 0,0 % | 0 | 0,0 % | 0,0 pe |
 
-Explicit TP-vs-FP för `high_confidence_no_support`-bucketen (Beslut 21
-fail-safe-bypass): 9 TP mot 10 FP — FP-andel **52,6 %**.
+Bucket-kvalitet (TP-vs-FP), pre → post:
+
+- `structural_support`: 0 TP / 1 FP (precision 0 %) → **5 TP / 2 FP** (precision
+  **71,4 %**). De fynd I-7e flyttar in i strukturellt stöd är till **5/7
+  sanna**, mot pre-I-7e:s enda fynd som var en FP.
+- `high_confidence_no_support` (Beslut 21 fail-safe-bypass): 9 TP / 10 FP
+  (FP-andel **52,6 %**) → **4 TP / 9 FP** (FP-andel **69,2 %**). Bypass-bucketen
+  krymper med 6 fynd; de 5 sanna som lämnar den får nu *redovisad* strukturell
+  evidens i stället för att vila på fail-safe-bypassen.
+
+Konkret rörelse: **6 `context.kombination`-fynd flyttade
+`high_confidence_no_support` → `structural_support`** efter I-7e (5 TP + 1 FP).
+Totalantalet `context.kombination`-fynd (20 = 9 TP + 11 FP) och hela
+konfusionsmatrisen (8.3.1) är oförändrade — I-7e omtaggar evidensgrunden, den
+ändrar inte vilka fynd som finns eller hur de klassificeras.
 
 ### 8.4 Hypotesutvärdering
 
@@ -167,6 +226,20 @@ av 159** texter. `legacy` och `cross_validating` gav alltså byte-identiska
 klassifikationsutfall, exakt som arkitekturen föreskriver (I-7b:s
 `test_legacy_mode_unchanged` bekräftas empiriskt). All hypotesprövning av H1/H2
 sker därför mot iteration-2-baslinjen, inte mot mode-skillnaden.
+
+> **Post-I-7e (I-7f).** Omkörningen ger **0/159** sanity-avvikelser igen, trots
+> att `cross_validating` nu konsulterar `deduplicated_sources` i Mekanism 3.
+> Dessutom är post-I-7e `legacy`-snapshotten byte-identisk med pre-I-7e
+> `legacy`-snapshotten i `report.total`, `per_category`, `per_layer` och
+> `per_dimension` (`identifiability` none/indirect/direct = 84/16/59 i båda;
+> endast `metadata.generated_at`/`git_commit` skiljer sig). Detta är den
+> empiriska verifikationen av I-7e:s **mode-gate** på korpusskala: legacy-vägen
+> är bevisat oförändrad, och de extra strukturella stöd som
+> `deduplicated_sources` återupptäcker i `cross_validating` ändrade **inget**
+> dimensionsutfall — `_has_validated_kombination`/`identifiability` rör sig
+> inte, omtaggningen sker enbart i `_apply_evidence_weighting`
+> (transparenslagret). H1/H2 prövas därför fortsatt mot iteration-2-baslinjen
+> med oförändrade post-I-7e-tal.
 
 **H1.** Redovisas mot iteration 2 med två recall-siffror enligt
 falsifieringsmatrisen:
@@ -210,22 +283,50 @@ regression. Ingen underkategori har lägre recall än iteration 2 →
 med samma promptversion v5 i båda mätningarna och påverkas inte av
 I-7c-mappningen.)
 
-**H3.** Av de 20 predikterade `context.kombination`-fynden taggades **95,0 %**
-(19/20) som `high_confidence_no_support`, **5,0 %** (1/20) som
-`structural_support` och **0 %** som `no_support_required`. H3 är därmed
-infriad deskriptivt med ett konkret tal. Tolkning: nästan inga
-kombinationsfynd uppnår generaliserad Mekanism 3-validering (≥ 2 överlappande
-strukturella stödfynd) — endast 1 av 20. De övriga passerar via
+**H3 (pre-I-7e, I-7d).** Av de 20 predikterade `context.kombination`-fynden
+taggades **95,0 %** (19/20) som `high_confidence_no_support`, **5,0 %** (1/20)
+som `structural_support` och **0 %** som `no_support_required`. H3 var därmed
+infriad deskriptivt med ett konkret tal. Tolkning vid I-7d: nästan inga
+kombinationsfynd uppnådde generaliserad Mekanism 3-validering (≥ 2 överlappande
+strukturella stödfynd) — endast 1 av 20. De övriga passerade via
 hög-konfidens-bypassen (Beslut 21, GDPR artikel 25-fail-safe). Bland
-bypass-fynden är precisionen låg (9 TP mot 10 FP, FP-andel 52,6 %). Detta är
-konkret, kvantifierat underlag för framtida tröskelkalibrering: bypassen bär i
-praktiken hela pusselbitseffekten i denna korpus och är samtidigt den
-svagaste evidensgrunden.
+bypass-fynden var precisionen låg (9 TP mot 10 FP, FP-andel 52,6 %).
 
-**Sammanfattning:** H1 infriad, H2 infriad, H3 infriad (deskriptiv).
+**H3 omformulerad — delta-analys (post-I-7e, I-7f).** I-7e visade att den höga
+bypass-andelen i I-7d delvis var ett *mätartefakt*: `_count_structural_support`
+såg inte stöd som `_deduplicate_same_category_overlap` hade tagit bort vid
+same-category-källkollaps. När `cross_validating` efter I-7e även konsulterar
+`deduplicated_sources` faller bypass-andelen för `context.kombination` från
+**95,0 % → 65,0 %** (−30,0 procentenheter) och `structural_support` stiger
+**5,0 % → 35,0 %** (+30,0 pe). Konkret: **6 av 20 kombinationsfynd** flyttade
+`high_confidence_no_support` → `structural_support`, varav **5 sanna (TP) och 1
+falskt (FP)**. `structural_support`-bucketens kvalitet vänder från 0 TP / 1 FP
+(pre) till 5 TP / 2 FP (post, precision 71,4 %). Tolkning: en betydande del av
+pusselbitseffekten *hade* genuint strukturellt stöd redan i I-7d — det var
+osynligt för mätinstrumentet, inte frånvarande. Bypassen bär fortfarande
+majoriteten (65 %) och är fortfarande den svagaste evidensgrunden, men inte
+längre "i praktiken hela pusselbitseffekten". Detta är det uppdaterade,
+kvantifierade underlaget för framtida tröskelkalibrering: andelen genuint
+stödda kombinationsfynd är ~7× högre än I-7d-mätningen antydde (7 mot 1), och
+de återstående 13 bypass-fynden (4 TP / 9 FP, FP-andel **69,2 %**) är den
+bucket en framtida kalibrering bör rikta in sig på. H3 är därmed infriad även
+post-I-7e, nu som en delta mellan två mätinstrumentversioner snarare än ett
+enskilt tal.
+
+**Sammanfattning (pre-I-7e):** H1 infriad, H2 infriad, H3 infriad (deskriptiv).
 `cross_validating`-modes bidrag är transparens (H3), inte precision —
 precisionseffekten är I-7c-mappningen mätt mot iteration 2 och syns identiskt
 i båda lägena.
+
+**Sammanfattning (post-I-7e, I-7f):** H1 och H2 **oförändrat infriade**
+(post-I-7e-talen är identiska med pre-I-7e: P 75,18 %, R 90,99 %, alla
+`article9.*`-recall ≥ iteration 2). H3 **infriad i sin omformulerade
+delta-form**: I-7e flyttar bypass-andelen 95,0 % → 65,0 % och avslöjar att
+strukturellt stöd var underrapporterat i I-7d, inte frånvarande.
+`cross_validating`-modes bidrag är fortfarande **transparens, inte precision**
+(konfusionsmatrisen oförändrad, 0/159 sanity-avvikelser), men transparensen är
+efter I-7e *mer rättvisande*: `structural_support` är nu meningsfullt nåbart
+och bär 7 av 20 kombinationsfynd i stället för 1.
 
 ### 8.5 Isolerad Degerfors-verifikation
 
@@ -262,6 +363,32 @@ per text, aggregering med båda aggregatorerna — fyra körningar):
    (jämför 8.3.4 där bypass bär nästan all kombinationsdetektion — ett
    konfidensberoende beteende som inte triggades här).
 
+**Post-I-7e-omkörning (I-7f).** Den isolerade verifikationen kördes om på
+post-I-7e-koden. Utfallet är **byte-identiskt** med pre-I-7e: båda texterna, i
+båda lägena, ger ett enda `context.plats`-fynd ("Stockholm"/"Degerfors"
+[32:41], source `entity.spacy_LOC`, conf 0,80, `evidence_basis =
+no_support_required`), `identifiability/data_class/sensitivity = none/none/none`,
+`weakest_evidence_basis = None`.
+
+| Text | Mode | Findings | identifiability / data_class / sensitivity | weakest_evidence_basis |
+|---|---|---|---|---|
+| Stockholm | `legacy` (post-I-7e) | `context.plats` "Stockholm" [32:41], `entity.spacy_LOC`, conf 0,80, `no_support_required` | none / none / none | None |
+| Stockholm | `cross_validating` (post-I-7e) | `context.plats` "Stockholm" [32:41], `entity.spacy_LOC`, conf 0,80, `no_support_required` | none / none / none | None |
+| Degerfors | `legacy` (post-I-7e) | `context.plats` "Degerfors" [32:41], `entity.spacy_LOC`, conf 0,80, `no_support_required` | none / none / none | None |
+| Degerfors | `cross_validating` (post-I-7e) | `context.plats` "Degerfors" [32:41], `entity.spacy_LOC`, conf 0,80, `no_support_required` | none / none / none | None |
+
+**Får Degerfors `structural_support` efter I-7e? Nej — och det är det väntade
+utfallet.** I-7e:s `deduplicated_sources`-tillägg aktiveras endast när det finns
+ett `context.kombination`-fynd vars same-category-stöd dödats av
+`_deduplicate_same_category_overlap`. Här genererar Lager 4 **inget**
+kombinationsfynd alls (samma uppströms-orsak som pre-I-7e, punkt 3 ovan), så
+I-7e:s mekanism exercerades aldrig i detta isolerade par. Den isolerade
+verifikationen bekräftar därför fortsatt I-7c och mode-paritet men kan
+**konstruktionsmässigt inte** demonstrera I-7e — I-7e:s effekt är synlig på
+**korpusskala** (8.3.4: 6 fynd flyttade till `structural_support`,
+bypass 95,0 % → 65,0 %), inte i dessa två meningar. Detta är ett ärligt och
+arkitektoniskt väntat negativt delresultat, inte en regression.
+
 ### 8.6 Tolkning och rekommendation
 
 **Default-frågan (§9.6.4).** Eftersom `legacy` och `cross_validating` ger
@@ -271,6 +398,18 @@ inom I-7d:s mätscope en **transparens-fråga, inte en precisions-fråga**: den
 (`evidence_basis` / `weakest_evidence_basis`), inte vad det *klassificerar*.
 Mätningen ger underlag men fattar inget beslut; rekommendationen lämnas till
 manuell granskning och dokumenterat Loggbok-beslut.
+
+**Default-frågan post-I-7e (I-7f).** Slutsatsen står kvar — flippen är fortsatt
+en transparens-fråga (0/159 sanity-avvikelser, oförändrad konfusionsmatris) —
+men `cross_validating`-modes *värde* är efter I-7e **större** än I-7d antydde.
+I-7d gav bilden att transparenslagret nästan uteslutande producerar den
+svagaste taggen (`high_confidence_no_support`, 95 %); post-I-7e visar att
+`structural_support` är meningsfullt nåbart (35 %, 7/20 kombinationsfynd, 5
+sanna). En framtida default-flipp skulle alltså ge en *mer informativ*
+`weakest_evidence_basis` än I-7d:s siffror indikerade. Detta stärker underlaget
+men ändrar inte beslutskaraktären: rekommendation och eventuell ombaslinje
+lämnas alltjämt till manuell granskning och dokumenterat Loggbok-beslut
+(I-7f fattar inget default-beslut — uttryckligen out of scope).
 
 **Designprincip-kandidat för fas 4.** Arbetsströmmens arkitektoniska bidrag är
 det generaliserade Mekanism 3-mönstret: en deklarativ beslutstabell (R1–R7)
@@ -311,3 +450,21 @@ en framtida läsare måste förstå innan alternativet övervägs.
   observeras eftersom Lager 4 inte genererade något kombinationsfynd för de
   exakta meningarna (8.5); verifikationen bekräftar I-7c och mode-paritet men
   inte pusselbitseffektens evidensvägning i just det fallet.
+- **I-7e är en post-I-7d arkitektonisk ändring (mätinstrumentrevision).**
+  Pre-I-7e-talen i Del 8 mättes på commit `e6ab2f8` (I-7c); post-I-7e-talen på
+  `2d6c302` (I-7e). I-7e ändrade inte klassificeringspolicyn utan
+  *mätinstrumentet för evidensgrund*: `_count_structural_support` blev
+  source-medveten i `cross_validating` via ett **mode-gateat**
+  `deduplicated_sources`-tillägg. §9.6.5:s ursprungliga formulering "källdriven,
+  mode-agnostisk" reviderades därför till "källdriven med mode-gateat
+  `deduplicated_sources`-tillägg i `cross_validating`". Mode-gaten är ett
+  medvetet bakåtkompatibilitetsavsteg (annars hade legacy-dimensioner ändrats
+  via `_has_validated_kombination → _passes_mechanism_3`). Konsekvensen för
+  tolkningen av Del 8 är att jämförelsen pre/post **inte** är två oberoende
+  körningar av samma instrument utan en *instrumentförbättring*: 8.3.4:s delta
+  mäter hur mycket strukturellt stöd som var underrapporterat i I-7d, inte en
+  beteendeförändring i systemet. Containment-källkollaps
+  (`_remove_context_covered_by_article9` m.fl.) propagerar fortfarande inte
+  source och är en kvarstående, oadresserad parallell väg (ev. framtida I-7g).
+  Motiveringen för mode-gate-avsteget och containment-punkten dokumenteras i
+  **Loggboken iteration 3** (skrivs manuellt av användaren utanför agent-flödet).
