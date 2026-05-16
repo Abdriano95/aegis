@@ -993,36 +993,49 @@ att man kan särskilja precision för `structural_support`-fynd från
 kostnad. **Varning (mätinstrumentpåverkan):** att ändra aggregator-
 beteendet i `cross_validating`-läge ändrar mätinstrumentet och gör
 tidigare baslinjer ojämförbara (kodanalys §10; `arkitektur.md` §14.1).
-Därför är default `legacy` (9.6.4), och I-7b:s aktivering av
-`cross_validating` kräver ett dokumenterat Loggbok-beslut plus en
-fullständig ombaslinje. I-7a (denna spec) ändrar inget mätinstrument.
+Default är efter **I-7g** (2026-05-16) `cross_validating` (9.6.4);
+kravet på dokumenterat Loggbok-beslut plus fullständig ombaslinje
+uppfylldes av I-7b–I-7f, och `legacy` kvarstår som opt-in för
+reproduktion. I-7a (denna spec) ändrar inget mätinstrument.
 
 ### 9.6.4 Aggregator-mode och fallback
 
 **Mode.** Aggregatorn får ett explicit läge:
 
 ```python
-cross_validation_mode: Literal["legacy", "cross_validating"] = "legacy"
+cross_validation_mode: Literal["legacy", "cross_validating"] = "cross_validating"
 ```
 
-- **`legacy`** (default): nuvarande beteende oförändrat —
+- **`legacy`** (opt-in via explicit
+  `cross_validation_mode="legacy"`): nuvarande beteende oförändrat —
   `_determine_dimensions` använder ren existenskoll, `_has_validated_
   kombination` använder Mekanism 3 enbart för `context.kombination`,
   inget `evidence_basis` produceras (alla fynd behåller default).
-- **`cross_validating`**: beslutstabellen i 9.6.2 tillämpas, den
-  generaliserade Mekanism 3 (9.6.5) styr stödkrav per (lager, kategori),
-  och `evidence_basis` taggas (9.6.3).
+- **`cross_validating`** (default sedan I-7g): beslutstabellen i 9.6.2
+  tillämpas, den generaliserade Mekanism 3 (9.6.5) styr stödkrav per
+  (lager, kategori), och `evidence_basis` taggas (9.6.3).
 
-**Default `legacy` och dess motivering.** Att aktivera
-`cross_validating` ändrar mätinstrumentet (9.6.3-varningen). Hela
-projektets spårbarhetsupplägg kräver att en sådan ändring föregås av ett
-dokumenterat beslut och en ombaslinje (kodanalys §10; `arkitektur.md`
-§14.1). `legacy` som default bevarar jämförbarhet mot den kalibrerade
-baslinjen (Beslut 51 / I-6) tills I-7b kalibrerar och en Loggbok-beslut
-ombaslinjerar. Detta speglar exakt **Beslut 39:s precedens**:
-reservplanens `use_legacy_sensitivity`-flagga är likaså default av och
-dokumenterad som arkitektonisk option, inte aktiverad i v0.3.0
-(`arkitektur.md` §8, "Reservplan (Beslut 39)").
+**Default `cross_validating` (I-7g, 2026-05-16) och dess motivering.**
+Att aktivera `cross_validating` ändrar mätinstrumentet
+(9.6.3-varningen); hela projektets spårbarhetsupplägg krävde därför att
+flippen föregicks av ett dokumenterat Loggbok-beslut och en fullständig
+ombaslinje (kodanalys §10; `arkitektur.md` §14.1). Det villkoret
+uppfylldes av I-7b–I-7f: **I-7f** bevisade på korpusskala att de två
+lägena ger byte-identiska klassifikationsutfall (0/159
+sanity-avvikelser, oförändrad konfusionsmatris, TP/FP/FN 212/70/21) men
+att `cross_validating` ger en *mer rättvisande* evidensredovisning — 5
+sanna `context.kombination`-fynd får `structural_support` i stället för
+en `high_confidence_no_support` bypass-tagg, utan precisions- eller
+recall-kostnad. Eftersom flippen är en ren transparens-leverans (ingen
+mätvärdesförändring) flippades defaulten till `cross_validating` så att
+I-18:s naturalistiska utvärdering ärver transparensen utan explicit
+opt-in. `legacy` kvarstår som opt-in via explicit
+`cross_validation_mode="legacy"` — **den som vill reproducera iteration
+2- eller pre-I-7f-mätningar måste sätta parametern explicit**. Detta
+stänger **Beslut 39:s precedens** för just denna flagga: till skillnad
+från reservplanens `use_legacy_sensitivity` (fortsatt default av) är
+korsvalideringen nu det dokumenterade standardbeteendet. Flippen loggas
+formellt i Loggboken iteration 3.
 
 **Konfigurationspunkt.** Parametern bor på `Aggregator.__init__`,
 analogt med de befintliga trösklarna (`medium_threshold`,

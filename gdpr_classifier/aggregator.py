@@ -73,7 +73,9 @@ class Aggregator:
         medium_threshold: float = 0.7,
         high_confidence_bypass: float = 0.85,
         min_evidence_count: int = 2,
-        cross_validation_mode: Literal["legacy", "cross_validating"] = "legacy",
+        cross_validation_mode: Literal[
+            "legacy", "cross_validating"
+        ] = "cross_validating",
     ) -> None:
         if not (0.0 <= medium_threshold <= 1.0):
             raise ValueError("medium_threshold must be between 0.0 and 1.0")
@@ -91,9 +93,14 @@ class Aggregator:
         self.medium_threshold = medium_threshold
         self.high_confidence_bypass = high_confidence_bypass
         self.min_evidence_count = min_evidence_count
-        # Default "legacy" bevarar jämförbarhet mot den kalibrerade baslinjen
-        # (Beslut 51 / I-6). cross_validating ändrar mätinstrumentet och
-        # kräver dokumenterat Loggbok-beslut + ombaslinje (arkitektur.md §9.6.4).
+        # Default "cross_validating" (I-7g, 2026-05-16): I-7f visade att de
+        # två lägena ger byte-identiska klassifikationsutfall (0/159 sanity-
+        # avvikelser, oförändrad konfusionsmatris) men att cross_validating
+        # ger mer rättvisande evidensredovisning (5 TP context.kombination →
+        # structural_support i stället för bypass-tagg). "legacy" är opt-in
+        # via explicit cross_validation_mode="legacy" för bakåtkompatibilitet
+        # och reproduktion av iteration 2- samt I-7d/pre-I-7f-baslinjer
+        # (mätinstrumentpåverkan: kodanalys §10; arkitektur.md §9.6.4).
         self.cross_validation_mode = cross_validation_mode
 
     def aggregate(

@@ -148,6 +148,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | (I-7d) | Dubbel baslinjemätning `legacy` mot `cross_validating` (evidence_basis-rapportering, H1/H2/H3) | B | Gemensamt | ✅ Klar (2026-05-16) — H1/H2/H3 infriade mot it2-baslinjen (P 64,00→75,18 %, R 89,27→90,99 %), `legacy` ≡ `cross_validating` (0/159 sanity-avvikelser), Del 8 i [`iteration_3_utvardering.md`](iteration_3_utvardering.md) (se sessionspost 2026-05-16) | I-7a, I-7b, I-7c | Empirisk dubbelmätning; underlag för §9.6.4-defaultfrågan och kapitel 6; ny `docs/iteration_3_utvardering.md` Del 8. |
 | (I-7e) | Source-medveten evidensräkning via deduplicated_sources-propagering | A2 | Abdriano95 | ✅ Klar (2026-05-16) — `_count_structural_support` mode-gateat `deduplicated_sources`-tillägg (alternativ iii), §9.6.5 uppdaterad, 222/222 tester gröna (5 nya); containment-kollaps öppen punkt → ev. I-7g, omkörning I-7f (se sessionspost 2026-05-16) | I-7b, I-7c, I-7d | §9.6.5 utökas inom I-7e; empiriskt material för designprincip om aggregator-passens ordning. |
 | (I-7f) | Omkörning av baslinjemätning post-I-7e och uppdatering av Del 8 | A4 | Abdriano95 | ✅ Klar (2026-05-16) — omkörd på `2d6c302`; legacy byte-identiskt mot pre-I-7e (TP/FP/FN 212/70/21, per-kategori/-lager/-dimension), 0/159 sanity; `cross_validating` bypass `context.kombination` **95,0 % → 65,0 %** (6 fynd → `structural_support`, 5 TP/1 FP); Degerfors oförändrat (inget kombinationsfynd); Del 8 uppdaterad pre/post (se sessionspost 2026-05-16) | I-7e | Del 8 uppdateras med post-I-7e-tal; slutgiltig rapportering av arbetsströmmens utfall för kapitel 5. |
+| (I-7g) | Default-flipp legacy → cross_validating i Aggregator | A2 | Abdriano95 | ✅ Klar (2026-05-16) — default flippad till `cross_validating` (aggregator.py:76); `legacy` opt-in; reproducerbarhets-fix run_i7d_baseline.py:276,477; §9.6.4 stängd + minimal §9.6.3 rad-996-fix; legacy-paritetstester pinnade explicit (test_aggregator_evidence_weighting.py:220/241/524 + docstring); 222/222 tester gröna (se sessionspost 2026-05-16) | I-7f | Stänger §9.6.4-defaultfrågan; transparens-leverans till I-18; reproducerbarhetsnot för iteration 2-baslinjen. |
 
 > I-7a/b/c är en nedbrytning av den arkitektoniska rotorsaken i `docs/kodanalys_precision_och_falska_positiva.md` §15 (delvis realiserad korsverifiering). Skild från I-7/#107 (modellskalningsprobe). GitHub-nummer tilldelas vid skapande per intro-noten ovan; ID-kolumnen bär tills vidare enbart det iterationsinterna ID:t.
 
@@ -1309,3 +1310,41 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 - **Default-flipp `legacy` → `cross_validating`:** separat senare Loggbok-beslut + ev. ombaslinje; I-7f fattar inget default-beslut (out of scope).
 - Pre-existerande 8.2-kompositionsavvikelse (84/36/39): **utredd och rättad i I-7f** (korrekt 80/52/27, verifierat mot datasetfilerna; fotnot ¹ i 8.2) — ingen kvarstående åtgärd.
 - Loggboks-tilläggsbeslut + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7g (Default-flipp legacy → cross_validating i Aggregator)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Flippa Aggregator-defaulten `legacy` → `cross_validating` så att I-18:s naturalistiska utvärdering (via `run_evaluation.py`, som default-instansierar `Aggregator()`) automatiskt levererar den utökade evidensredovisningen utan explicit opt-in. Stänga §9.6.4-defaultfrågan i SSOT, säkra reproducerbarheten för I-7d/I-7f:s legacy-mätning, och bevara grön testsvit. Transparens-leverans — ingen precisions- eller recall-ändring (I-7f bevisade byte-identiska klassifikationsutfall). Inga commits, ingen Loggbok-redigering.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — default `cross_validation_mode` `"legacy"` → `"cross_validating"` (rad ~76); förklarande kommentar (rad ~94) omskriven (motiverar nya defaulten + `legacy` som opt-in för reproduktion).
+- `scripts/run_i7d_baseline.py` — rad 276 (`agg_legacy`) och rad 477 (`"legacy":`) gjorda explicita `Aggregator(cross_validation_mode="legacy")` (reproducerbarhets-fix; rad 277/478-480 var redan explicita).
+- `docs/arkitektur.md` — §9.6.4 omskriven (kodblock, lägesbeskrivnings-bullets, motiveringsstycke: defaultfrågan **stängd**); minimal en-menings-fix i §9.6.3 (rad 996, tidigare "default `legacy`" — nu stale, rättad).
+- `tests/unit/test_aggregator_evidence_weighting.py` — tre `Aggregator()`-default-instansieringar i legacy-paritetstester pinnade explicit `cross_validation_mode="legacy"` (rad 220 + 241 i `test_legacy_mode_unchanged`, rad 524 i `test_d_legacy_mode_byte_identical_after_fix`); moduldocstring rad 9 + 21-22 uppdaterad.
+- `docs/iteration_3_implementation.md` — I-7g-rad tillagd (🔄 Pågår vid sessionsstart → ✅ Klar 2026-05-16); denna sessionspost.
+
+**Gjort:**
+- **Statusedit** I-7g-rad → 🔄 Pågår som sessionens första filedit (CLAUDE.md §4 steg 2), nu → ✅ Klar.
+- **Fas 0 — grep efter alla `Aggregator(`-instansieringar** över `gdpr_classifier/`, `scripts/`, `tests/`, `evaluation/`, `demo/`. Klassificering:
+  - **Kategori (a) — redan explicit `cross_validation_mode`, ej påverkad:** `scripts/run_i7d_baseline.py:277` + `:478-480` (`cross_validating`), `tests/unit/test_aggregator_evidence_weighting.py:58` (`_cv()`-helper).
+  - **Kategori (b) — default `Aggregator()`, legacy-avsikt → explicitgjord:** `scripts/run_i7d_baseline.py:276` + `:477`.
+  - **Kategori (b) — default `Aggregator()`, ärver nu cross_validating:** `run_evaluation.py:29` (**avsiktligt** — så I-18 ärver transparensen); `tests/unit/test_aggregator_evidence_weighting.py:220/241/524` (**bröt** legacy-paritets-assertions → pinnade explicit, se nedan); övriga `tests/unit/test_aggregator_*.py` + `tests/integration/test_end_to_end.py:17` (asserterar **endast** identifiability/data_class/sensitivity/findings → I-7f-byte-identiska → förblev gröna; verifierat att endast `test_aggregator_evidence_weighting.py` matchar grep på `evidence_basis|weakest_evidence_basis`).
+  - `gdpr_classifier/pipeline.py` instansierar inte själv (constructor injection).
+- **Defaultflippen** genomförd i `aggregator.py` (rad ~76) + kommentar omskriven; validering rad 86-89 redan symmetrisk, oförändrad.
+- **Reproducerbarhets-fix** `run_i7d_baseline.py:276,477` — skyddar att I-7d/I-7f:s legacy-mätning fortsatt mäter legacy efter flippen.
+- **§9.6.4 stängd** i SSOT: motivering = I-7f (5 TP `context.kombination` → `structural_support`, oförändrad konfusionsmatris, 0/159 sanity, ingen precisions-/recall-kostnad), `legacy` opt-in, reproducerbarhetsnot, Beslut 39-precedensen stängd för denna flagga, hänvisning Loggboken iteration 3. Minimal §9.6.3 rad-996-fix för intern SSOT-konsistens (CLAUDE.md §8).
+- **Testsvit:** `pytest tests/` → **222 passed in 2.29s**, inklusive `test_legacy_mode_unchanged` och `test_d_legacy_mode_byte_identical_after_fix` (nu explicit `legacy`). Samma totalsumma som post-I-7e.
+
+**Kod-/teständringar:** Defaultflipp + kommentar i `aggregator.py`; två explicit-instansieringar i `run_i7d_baseline.py`; tre test-pinningar + docstring i `test_aggregator_evidence_weighting.py`. Inga andra `tests/`, `evaluation/`, `demo/`. Inga commits (hanteras manuellt av användaren).
+
+**Beslut fattade:** Inga nya numrerade arkitekturbeslut (defaultflippen loggas formellt av användaren i Loggboken iteration 3 utanför agent-flödet). Två **användar-/arkitektgodkända scope-utvidgningar** utöver promptens "endast §9.6.4 / inga teständringar":
+1. **Test-pinning** av `test_aggregator_evidence_weighting.py:220/241/524` + docstring — promptens antagande att legacy-paritetstesterna instansierar explicit var faktiskt felaktigt (de använde bare `Aggregator()`); pinning bevarar legacy-paritets-täckningen och håller sviten grön. Ersätter docstringens 2026-05-15-notering om att bare default = legacy.
+2. **Minimal §9.6.3 rad-996-fix** — flippen gjorde "default `legacy`" där internt motsägelsefullt; rättat för SSOT-konsistens (analogt I-7f:s 8.2-korrigering).
+- **Aktivt designval — kategori (b) demo-/snapshot-/demonstrationsfiler:** `demo/callbacks.py:58`, `scripts/build_demo_snapshot.py:195` och `scripts/demonstrations/stub_substitution.py:140,144` default-instansierar `Aggregator()` och lämnades **medvetet orörda**. Detta är ett aktivt beslut, inte en passiv observation: vi övervägde att pinna dem till `legacy` men beslöt att de **ska** ärva den nya `cross_validating`-defaulten. Demo-UI:t är en användarvänd artefakt inför I-18 och ska visa den mer rättvisande evidensredovisningen (`evidence_basis`-taggar); snapshot-byggaren och substituerbarhetsdemonstrationen ska spegla samma standardbeteende som den utvärderade artefakten. Ingen snapshot byggs om i I-7g (latent effekt tills `build_demo_snapshot.py` körs nästa gång).
+
+**Öppet/Nästa steg:**
+- **Dokumentationsnot — I-7g-etikettkollision:** tidigare I-7e/I-7f-sessionsposter (rad 1267/1276/1308) och I-7e-radens not hypotiserade "I-7g" = containment-källkollaps. Faktisk I-7g = denna default-flipp. **Containment-källkollaps** (propagera source genom `_remove_*`-containment) kvarstår som oadresserad öppen punkt för separat framtida arbete med eget Loggbok-beslut (större blast radius); `test_e_containment_does_not_propagate_source` fryser nuvarande beteende som regression-tripwire.
+- **I-7h** (modellprob `qwen3:14b`) är nästa planerade issue i arbetsströmmen — separat senare session.
+- Cross-Validating Aggregator-arbetsströmmen är därmed både konstruktions- och defaultmässigt komplett; `cross_validating` är artefaktens standardbeteende från och med denna commit.
+- Loggboks-tilläggsbeslut (formell default-flipp-motivering, iteration 3-fliken) + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).

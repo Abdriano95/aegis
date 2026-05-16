@@ -273,7 +273,7 @@ def run_full() -> None:
     print("Skapar lager + två aggregatorer (legacy / cross_validating)...")
     layers = _build_layers()
     active_layers = [layer.name for layer in layers]
-    agg_legacy = Aggregator()
+    agg_legacy = Aggregator(cross_validation_mode="legacy")
     agg_xval = Aggregator(cross_validation_mode="cross_validating")
 
     cm_legacy, cm_xval = ConfusionMatrix(), ConfusionMatrix()
@@ -474,7 +474,7 @@ def run_degerfors() -> None:
     layers = _build_layers()
     active_layers = [layer.name for layer in layers]
     aggregators = {
-        "legacy": Aggregator(),
+        "legacy": Aggregator(cross_validation_mode="legacy"),
         "cross_validating": Aggregator(
             cross_validation_mode="cross_validating"
         ),

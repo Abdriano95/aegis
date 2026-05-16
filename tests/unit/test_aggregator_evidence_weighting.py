@@ -6,7 +6,10 @@ Verifies Issue I-7b implementation of arkitektur.md §9.6:
   in cross_validating mode.
 - §9.6.3 Finding.evidence_basis + Classification.weakest_evidence_basis
   ("the weakest link in the classification").
-- §9.6.4 cross_validation_mode with default "legacy" → unchanged behavior.
+- §9.6.4 cross_validation_mode; the default was flipped to
+  "cross_validating" in I-7g (2026-05-16). The legacy-parity tests below
+  pin cross_validation_mode="legacy" explicitly to verify behavior is
+  byte-for-byte unchanged in legacy mode.
 - §9.6.5 generalized Mekanism 3 via _count_structural_support.
 
 Confirmed interpretation (user, 2026-05-16):
@@ -18,8 +21,11 @@ Confirmed interpretation (user, 2026-05-16):
      bore the final dimension values (an article4 finding making DIRECT
      overrides — and excludes — an otherwise-validated context.kombination).
 
-Fixtures that do not explicitly set cross_validation_mode use the
-Aggregator() default ("legacy"), per the 2026-05-15 user decision.
+The legacy-parity fixtures (TestLegacyParity.test_legacy_mode_unchanged
+and test_d_legacy_mode_byte_identical_after_fix) set
+cross_validation_mode="legacy" explicitly. I-7g flipped the Aggregator()
+default to "cross_validating" (2026-05-16), superseding the 2026-05-15
+decision that the bare default was "legacy".
 """
 
 from __future__ import annotations
@@ -217,7 +223,9 @@ class TestLegacyParity:
             confidence=0.9,
             source="context.kombination",
         )
-        result_a = Aggregator().aggregate([kombination], ["combination"])
+        result_a = Aggregator(cross_validation_mode="legacy").aggregate(
+            [kombination], ["combination"],
+        )
 
         assert result_a.identifiability == Identifiability.INDIRECT
         assert result_a.data_class == DataClass.NONE
@@ -238,7 +246,7 @@ class TestLegacyParity:
         org1 = _f(Category.ORGANISATION, 0, 15, source="entity.spacy_ORG")
         org2 = _f(Category.ORGANISATION, 20, 50, source="entity.spacy_ORG")
         a9 = _f(Category.HALSODATA, 70, 80, source="article9.halsodata")
-        result_b = Aggregator().aggregate(
+        result_b = Aggregator(cross_validation_mode="legacy").aggregate(
             [komb_b, org1, org2, a9], ["entity", "article9", "combination"],
         )
 
@@ -521,7 +529,7 @@ class TestI7eSourceAwareEvidenceCounting:
             source="entity.spacy_ORG",
         )
 
-        result = Aggregator().aggregate(
+        result = Aggregator(cross_validation_mode="legacy").aggregate(
             [kombination, plats_llm, plats_spacy, org_llm, org_spacy],
             ["entity", "combination"],
         )
