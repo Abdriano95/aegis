@@ -145,6 +145,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | (I-7a) | Designspecifikation för Cross-Validating Aggregator (§9.6 evidensvägningspolicy) | B | Gemensamt | ✅ Klar (2026-05-15) — utkast i [`arkitektur_9_6_utkast.md`](arkitektur_9_6_utkast.md), väntar arkitekt-agent-granskning | Inga | Ny §9.6 i SSOT (`docs/arkitektur.md`); underlag för DP/arkitekturkapitel. |
 | (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ✅ Klar (2026-05-16) — §9.6 implementerad i kod, default `legacy`, 214/214 tester gröna; default-flipp efter I-7d (se sessionspost 2026-05-16) | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
 | (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ✅ Klar (2026-05-16) — `_label_map` LOC → `Category.PLATS` (source bevarad), §5 uppdaterad, 217/217 tester gröna; mätbar effekt → I-7d, matcher-alias kvarstår (omprövas efter I-7d) (se sessionspost 2026-05-16) | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
+| (I-7d) | Dubbel baslinjemätning `legacy` mot `cross_validating` (evidence_basis-rapportering, H1/H2/H3) | B | Gemensamt | ✅ Klar (2026-05-16) — H1/H2/H3 infriade mot it2-baslinjen (P 64,00→75,18 %, R 89,27→90,99 %), `legacy` ≡ `cross_validating` (0/159 sanity-avvikelser), Del 8 i [`iteration_3_utvardering.md`](iteration_3_utvardering.md) (se sessionspost 2026-05-16) | I-7a, I-7b, I-7c | Empirisk dubbelmätning; underlag för §9.6.4-defaultfrågan och kapitel 6; ny `docs/iteration_3_utvardering.md` Del 8. |
 
 > I-7a/b/c är en nedbrytning av den arkitektoniska rotorsaken i `docs/kodanalys_precision_och_falska_positiva.md` §15 (delvis realiserad korsverifiering). Skild från I-7/#107 (modellskalningsprobe). GitHub-nummer tilldelas vid skapande per intro-noten ovan; ID-kolumnen bär tills vidare enbart det iterationsinterna ID:t.
 
@@ -1212,3 +1213,34 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 - Matcher-aliaset `{ADRESS, PLATS}` (Beslut 45 / §9.2.1) kvarstår tills vidare; behovet omprövas efter I-7d.
 - Default-flipp `legacy` → `cross_validating`: separat senare åtgärd efter I-7d.
 - Loggboks-beslut om Beslut 11 + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7d (Dubbel baslinjemätning legacy mot cross_validating)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Cross-Validating Aggregator-arbetsströmmens enda mätfokuserade leverans: kvantifiera den samlade effekten av I-7b + I-7c mot iteration-2-baslinjen (64,00 / 89,27 / 74,55) i båda aggregator-lägena och utvärdera H1 (precision), H2 (artikel 9-skydd) och H3 (transparens). Strategi: *detect-once, aggregate-twice* — fyra lager körs en gång per text, identisk fyndlista matas genom `Aggregator()` (legacy) och `Aggregator(cross_validation_mode="cross_validating")` → exakt kontrollerad mode-jämförelse, halverad LLM-tid.
+
+**Ändrade filer:**
+- `scripts/run_i7d_baseline.py` — **ny fil**. Offline-harness som speglar `build_demo_snapshot.py`/`runner.py`-mönstren (`check_ollama`, `get_git_commit`, `_calc_metrics`, snapshot-schemat). Detect-once aggregate-twice; per-text sanity-assert (identiska `identifiability`/`data_class`/`sensitivity`, graderat utfall 0 / 1–2 / >2); per-`evidence_basis`-fångst (total + `context.kombination`-restringerad, TP/FP-uppdelad); mätinstrument-FN-fångst (`article4.adress`-FN överlappad av `entity.spacy_LOC`); `--degerfors`-läge. **Ingen ändring i `gdpr_classifier/` eller `evaluation/`** — allt importeras read-only.
+- `demo/snapshots/i7d_legacy.json`, `demo/snapshots/i7d_cross_validating.json` — **nya filer**. Build_demo_snapshot-schemat utökat med `cross_validation_mode`, `baseline_iteration_2`, `instrument_fn`, `sanity_check`; cross_validating-snapshotten även `evidence_basis_breakdown`.
+- `docs/iteration_3_utvardering.md` — **ny fil**, endast Del 8 (ingen titel/preamble, användarval). 8.1–8.7 med konkreta tal, prosa + markdown-tabeller i `iteration_2_utvardering.md` Del 6/7-stil.
+- `docs/iteration_3_implementation.md` — I-7d-rad tillagd ⬜→🔄 Pågår (2026-05-16) som **första edit** (raden saknades; samma mönster som I-7a/b/c), → ✅ Klar (2026-05-16) vid sessionsslut; denna sessionspost.
+
+**Gjort:**
+- Statusedit (I-7d-radstillägg vid 🔄 Pågår) som första åtgärd (CLAUDE.md §4 steg 2).
+- Fas 0-verifieringar (read-only): `Aggregator.__init__` har `cross_validation_mode` (defaults 0.7/0.85/2); `_label_map["LOC"] = (Category.PLATS, "entity.spacy_LOC")`; Ollama uppe, `qwen2.5:7b-instruct` pullad. Inga avvikelser.
+- Full korpus (159 texter): **0/159 sanity-avvikelser** — `legacy` och `cross_validating` byte-identiska på alla mätvärden (bekräftar I-7b:s `test_legacy_mode_unchanged` på korpusskala). Totalt TP=212, FP=70, FN=21 → **P 75,18 %, R 90,99 %, F1 82,33 %** i båda lägena (it2: 64,00 / 89,27 / 74,55 → ΔP +11,18, ΔR +1,72, ΔF1 +7,78 pe). Mätinstrument-FN = 0 (matcher-aliaset `{ADRESS, PLATS}` absorberade kategoriskiftet). evidence_basis (`context.kombination`, 20 fynd): 95,0 % `high_confidence_no_support` (9 TP / 10 FP), 5,0 % `structural_support` (0/1), 0 % `no_support_required`.
+- Fas 2 `--degerfors`: 4 körningar, identiska mellan lägena; båda texter → enbart `context.plats` (`entity.spacy_LOC`), `identifiability=none`, inget `context.kombination` (kontrasten exercerade ej evidensvägningen — ärligt redovisat i 8.5).
+- Del 8 producerad med strukturerade tabeller och explicit H1/H2/H3-hypotesanalys, konkreta tal genomgående (inga platshållare).
+- **Cosmetisk fix:** harnessens slututskrift kraschade på Windows cp1252-konsol (`UnicodeEncodeError` på "→"); JSON skrevs alltid med explicit `encoding="utf-8"` och var opåverkad (snapshots giltiga, skrivna före kraschen). `sys.stdout/stderr.reconfigure(encoding="utf-8")` tillagd; `--degerfors` återkörd → ren UTF-8-utdata, exit 0. Full-korpus-snapshotsen behölls (genererade av den fullbordade körningen; LLM-omkörning hade gett ny nondeterministisk output som inte längre matchat Del 8:s tal).
+
+**Befintliga tester — räkning:** **0 befintliga tester påverkade.** Inga ändringar i `gdpr_classifier/`, `evaluation/` eller `tests/`; harnessen importerar dem read-only. Den empiriska 0/159-sanityn bekräftar I-7b:s `test_legacy_mode_unchanged` på hela korpusen utöver enhetstestnivå.
+
+**Beslut fattade:** Inga nya arkitekturbeslut i koden. Arbetsströmmens **vetenskapliga utfall är dubbelt** och båda bidragen ska finnas för framtida rapportskrivande: (1) en mätbar precisionseffekt mot iteration-2-baslinjen (H1 infriad rått **och** justerat — instrument-FN = 0), driven av I-7c-mappningen och synlig identiskt i båda lägena; (2) en arkitektonisk designprincip-kandidat för fas 4 — det generaliserade Mekanism 3-mönstret med deklarativ beslutstabell (R1–R7) och `evidence_basis`-transparens. H1/H2-utfallet redovisas mot iteration-2-baslinjen, **inte** mot legacy/cross_validating-skillnaden (den är noll per arkitektur). `cross_validating`-modes bidrag (H3) är **transparens, inte precision** — vad designcykel 3 faktiskt levererade. Loggboks-beslut om default-flipp (`legacy` → `cross_validating`) och om eventuell framtida dimensions-gating-policy skrivs in **manuellt av användaren** i Loggboken iteration 3 utanför agent-flödet.
+
+**Öppet/Nästa steg:**
+- Cross-Validating Aggregator-arbetsströmmen (I-7a/b/c/d) är därmed **konstruktionsmässigt komplett**.
+- Default-flipp `legacy` → `cross_validating`: transparens-fråga (modes ger identiska klassifikationsutfall), separat senare Loggbok-beslut + ev. ombaslinje.
+- Matcher-aliaset `{ADRESS, PLATS}` (Beslut 45 / §9.2.1) är fortfarande aktivt och neutraliserade det förväntade mätinstrumentskiftet; omprövning av aliaset kvarstår som öppen punkt efter I-7d.
+- Eventuell framtida dimensions-gating av `cross_validating` skulle invalidera I-7b:s `test_legacy_mode_unchanged` och kräva omarbetning av legacy-paritetsantagandena — separat fas 4-designval.
+- Loggboks-beslut + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
