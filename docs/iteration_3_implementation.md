@@ -1348,3 +1348,29 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 - **I-7h** (modellprob `qwen3:14b`) är nästa planerade issue i arbetsströmmen — separat senare session.
 - Cross-Validating Aggregator-arbetsströmmen är därmed både konstruktions- och defaultmässigt komplett; `cross_validating` är artefaktens standardbeteende från och med denna commit.
 - Loggboks-tilläggsbeslut (formell default-flipp-motivering, iteration 3-fliken) + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16b - Claude Code (Opus 4.7) — Git-konsolidering: fast-forward av I-7a→g-kedjan in på probe-branchen #107
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Konsolidera sidospårskedjan I-7a→g (#133–#140) på probe-branchen `107-probe-...` via en ren fast-forward, så att probe-branchen blir den enhetliga arbetsytan för fortsatt probe-arbete ovanpå sidospårskoden. Ingen merge mot main i denna session.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — denna sessionspost. Statustabellen (Issue-specifikationer) avsiktligt orörd, se Beslut fattade.
+
+**Gjort:**
+- **Read-only-verifiering före åtgärd:** probe-branch stod på `a29fbf5`; branch `140-i-7g-...` stod på `ec61f62`; `git merge-base --is-ancestor a29fbf5 ec61f62` = sant (ren ff möjlig); merge-base(107,140) = `a29fbf5` (äkta fast-forward, ingen merge-commit); working tree rent; inga stashes; lokal 107 i synk med origin/107.
+- **Avstämd inkonsekvens:** arkitekt-instansens förväntade 18 commits var antalet mot `origin/main` (10 probe + 8 sidospår). Faktiskt tillskott på probe-branchen vid ff från probe-tippen = **8 commits** (`f8193ba` I-7a → `ec61f62` I-7g); probe-historiken låg redan på branchen. Bekräftat med användaren som korrekt och förväntat innan körning.
+- **Fast-forward utförd** efter explicit användargodkännande: `git checkout 107-probe-...`; `git merge --ff-only 140-i-7g-...` (`Updating a29fbf5..ec61f62`, fast-forward, 14 filer, +10822/−29); `git push origin 107-probe-...` (`a29fbf5..ec61f62`, ren ff-push, ingen force).
+- **Efterverifiering:** probe-branchens nya tip = `ec61f62` (lokalt och `origin/107`); branch 140 orörd, pekar kvar på `ec61f62` (samlokaliserad, förväntat); lokal 107 i synk med origin/107.
+- Ingen annan git-åtgärd. Branch 140 lämnad stående.
+
+**Kod-/teständringar:** Inga. Fast-forwarden flyttar enbart branch-pekaren och tar med redan författade I-7a→g-commits; ingen kod författades i denna session. Sessionsposten är en ocommittad working-tree-ändring på probe-branchen som committas manuellt av användaren (nio-stegs-loopen steg 8).
+
+**Beslut fattade:** Inga arkitekturbeslut. Operativt git-arbetsflödesbeslut enligt den plan som tagits fram med arkitekt-instansen: I-7a→g fast-forwardas in på probe-branchen #107 (som blir enhetlig arbetsyta), sidospårsissuerna #133–#140 stängs manuellt av användaren med hänvisning till att koden lever på probe-branchen, och allt I-7-arbete går till main via en samlad PR från probe-branchen när probe-arbetet är slutfört. Issue #107 förblir 🔄 Pågår — statustabellen avsiktligt orörd i denna session (probe-arbetet är inte avslutat). I-7a→g-raderna är redan ✅ Klar och lämnas ifred. Formell motivering förs in i Loggboken iteration 3 av användaren utanför agent-flödet om det bedöms behövas.
+
+**Öppet/Nästa steg:**
+- Probe-arbetet fortsätter på probe-branchen `107-probe-...` ovanpå sidospårskoden: probe-syntes för rapportens kapitel 6.5/6.7, eventuell ny lokal modell, eventuell molnprovider-test.
+- **Användarens manuella steg (utanför agent-flödet):** stänga issues #133, #134, #135, #136, #138, #139, #140 på GitHub med kort kommentar om att koden lever på probe-branchen; flytta dem till Done på Kanban-boarden; kontrollera om Projects-automation kan återöppna dem när probe-branchen senare PR:as till main.
+- Den slutliga samlade PR:en probe-branch → main planeras när probe-arbetet är slutfört. Den automatiska issue-stängningsfrasen för #107 används i den PR:en, inte i denna session eller sessionspost.
+- Branch 140 lämnas stående tills vidare; borttagning är inte beslutat och utanför denna sessions scope.
