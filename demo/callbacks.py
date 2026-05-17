@@ -490,6 +490,20 @@ def build_summary(classification: Classification) -> html.Div:
         for layer, count in sorted(per_layer.items())
     ]
 
+    sorted_findings = sorted(classification.findings, key=lambda f: f.start)
+    all_finding_rows = [
+        html.Tr(
+            [
+                html.Td(f.text_span, style=cell_style),
+                html.Td(f.category.value, style=cell_style),
+                html.Td(f.source.split(".")[0], style=cell_style),
+                html.Td(f"{f.confidence:.0%}", style=cell_style),
+                html.Td(f"{f.start}–{f.end}", style=cell_style),
+            ]
+        )
+        for f in sorted_findings
+    ]
+
     return html.Div(
         [
             html.Hr(),
@@ -627,6 +641,35 @@ def build_summary(classification: Classification) -> html.Div:
                                 style=table_style,
                             )
                             if layer_rows
+                            else html.P("Inga fynd."),
+                        ],
+                        style={
+                            "marginRight": "40px",
+                            "display": "inline-block",
+                            "verticalAlign": "top",
+                        },
+                    ),
+                    html.Div(
+                        [
+                            html.Strong("Alla fynd"),
+                            html.Table(
+                                [
+                                    html.Thead(
+                                        html.Tr(
+                                            [
+                                                html.Th("Text", style=cell_style),
+                                                html.Th("Kategori", style=cell_style),
+                                                html.Th("Lager", style=cell_style),
+                                                html.Th("Konfidens", style=cell_style),
+                                                html.Th("Position", style=cell_style),
+                                            ]
+                                        )
+                                    ),
+                                    html.Tbody(all_finding_rows),
+                                ],
+                                style=table_style,
+                            )
+                            if all_finding_rows
                             else html.P("Inga fynd."),
                         ],
                         style={"display": "inline-block", "verticalAlign": "top"},
