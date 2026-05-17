@@ -6,7 +6,7 @@ import logging
 
 from ...core.category import Category
 from ...core.finding import Finding
-from ...prompts.loader import load_prompt
+from ...prompts.loader import load_prompt, resolve_prompt_version
 from ..llm.provider import LLMProvider
 
 logger = logging.getLogger(__name__)
@@ -38,6 +38,17 @@ class Article9Layer:
     def name(self) -> str:
         """Name of the layer."""
         return "article9"
+
+    @property
+    def prompt_version(self) -> str:
+        """The concrete prompt version this layer resolves to.
+
+        For the default ``"latest"`` request this applies the loader's
+        ``status: "experimental"`` filtering (e.g. resolves to ``"v5"`` while
+        article9 v6 is experimental). An explicitly pinned version is returned
+        as-is. Resolution is a pure filesystem read; the provider is not used.
+        """
+        return resolve_prompt_version("article9", self._prompt_version)
 
     def detect(self, text: str) -> list[Finding]:
         """Detect Article 9 data in the provided text.

@@ -28,11 +28,14 @@ References:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 import re
 
 import yaml
+
+_LOG = logging.getLogger(__name__)
 
 
 # --- Exceptions ---
@@ -110,6 +113,42 @@ def load_prompt(
         PromptValidationError: If required fields are missing, fields have
             wrong types, or examples have invalid structure.
     """
+    yaml_path = _resolve_yaml_path(layer, version, base_dir)
+    raw = _load_yaml(yaml_path)
+    _validate(raw, yaml_path)
+
+    return Prompt(
+        metadata=raw["metadata"],
+        system_prompt=raw["system_prompt"].strip(),
+        assembled_prompt=_assemble(raw),
+    )
+
+
+def resolve_prompt_version(
+    layer: str,
+    version: str = "latest",
+    base_dir: Path | None = None,
+) -> str:
+    """Resolve a version request to the concrete version string it selects.
+
+    Mirrors :func:`load_prompt`'s path resolution (including the
+    ``status: "experimental"`` filtering applied to ``"latest"``) but only
+    returns the version stem (e.g. ``"v5"``) without loading or validating
+    the prompt body. ``base_dir`` exists for test dependency injection.
+
+    Raises:
+        PromptLoadError: Same conditions as :func:`load_prompt` path resolution.
+    """
+    return _resolve_yaml_path(layer, version, base_dir).stem
+
+
+# --- Internal helpers ---
+
+
+def _resolve_yaml_path(
+    layer: str, version: str, base_dir: Path | None
+) -> Path:
+    """Validate the layer and resolve ``version`` to a concrete YAML path."""
     prompts_dir = base_dir if base_dir is not None else _PROMPTS_DIR
     resolved_prompts_dir = prompts_dir.resolve()
 
@@ -124,18 +163,7 @@ def load_prompt(
     if not layer_dir.is_dir():
         raise PromptLoadError(f"Layer directory not found: {layer_dir}")
 
-    yaml_path = _resolve_version(layer_dir, version, resolved_prompts_dir)
-    raw = _load_yaml(yaml_path)
-    _validate(raw, yaml_path)
-
-    return Prompt(
-        metadata=raw["metadata"],
-        system_prompt=raw["system_prompt"].strip(),
-        assembled_prompt=_assemble(raw),
-    )
-
-
-# --- Internal helpers ---
+    return _resolve_version(layer_dir, version, resolved_prompts_dir)
 
 
 def _resolve_version(layer_dir: Path, version: str, prompts_root: Path) -> Path:
@@ -160,8 +188,46 @@ def _resolve_version(layer_dir: Path, version: str, prompts_root: Path) -> Path:
             raise PromptLoadError(
                 f"No valid versioned prompt files (vN.yaml) found in {layer_dir}"
             )
-        candidates.sort(key=lambda x: x[0])
-        return candidates[-1][1]
+        # Highest version first; skip versions marked experimental in their
+        # YAML metadata. Explicit version requests (handled below) bypass this
+        # so probe/reproducibility runs can still pin an experimental prompt.
+        # Malformed candidates are skipped so a valid lower version can still
+        # be selected, but the parse error is preserved and re-raised if no
+        # valid candidate remains (keeps diagnostics for the all-broken case).
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        last_load_error: PromptLoadError | None = None
+        for _, path in candidates:
+            try:
+                data = yaml.safe_load(path.read_text(encoding="utf-8"))
+            except (yaml.YAMLError, UnicodeError, OSError) as exc:
+                # UnicodeError (e.g. invalid UTF-8) is a ValueError, not an
+                # OSError — catch it explicitly so a non-decodable candidate
+                # is skipped (per the design intent above) instead of
+                # aborting "latest" resolution.
+                _LOG.warning("Skipping unreadable prompt candidate %s: %s", path, exc)
+                last_load_error = PromptLoadError(
+                    f"YAML parse error in {path}: {exc}"
+                )
+                continue
+            if not isinstance(data, dict):
+                _LOG.warning(
+                    "Skipping prompt candidate %s: top-level YAML is not a mapping",
+                    path,
+                )
+                last_load_error = PromptLoadError(
+                    f"Expected YAML mapping at top level in {path}, "
+                    f"got {type(data).__name__}"
+                )
+                continue
+            metadata = data.get("metadata")
+            if isinstance(metadata, dict) and metadata.get("status") == "experimental":
+                continue
+            return path
+        if last_load_error is not None:
+            raise last_load_error
+        raise PromptLoadError(
+            f"No non-experimental versioned prompt files found in {layer_dir}"
+        )
 
     # Explicit version
     path = (layer_dir / f"{version}.yaml").resolve()

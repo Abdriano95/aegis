@@ -8,41 +8,101 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from pathlib import Path
 
 from evaluation.dataset.labeled_finding import LabeledFinding
 from evaluation.report import DimensionStats, Report, RunMetrics, SampleResult
 from gdpr_classifier.core.category import Category
 from gdpr_classifier.core.finding import Finding
+from demo.snapshot_descriptions import get_description
 
 _LOG = logging.getLogger(__name__)
 
 _SNAPSHOT_PATH = (
-    Path(__file__).resolve().parent / "snapshots" / "iteration_3_post_I5_fixup.json"
+    Path(__file__).resolve().parent / "snapshots" / "i7d_cross_validating.json"
 )
 
 
 @dataclass(frozen=True)
 class SnapshotData:
-    """Container for a loaded and rehydrated evaluation snapshot."""
+    """Container for a loaded and rehydrated evaluation snapshot.
+
+    ``evidence_basis_breakdown`` carries the optional top-level
+    cross-validating mechanism breakdown (present in i7d-snapshots only);
+    it is exposed raw so the report/analysis views can render it.
+    """
 
     metadata: dict
     report: Report
+    evidence_basis_breakdown: dict | None = None
+
+
+@dataclass(frozen=True)
+class SnapshotInfo:
+    """Lightweight catalogue entry for a discoverable snapshot file."""
+
+    filename: str
+    path: Path
+    metadata: dict
+    description: str
 
 
 def load_snapshot() -> SnapshotData | None:
-    """Load the snapshot file and return a rehydrated SnapshotData, or None on failure."""
-    if not _SNAPSHOT_PATH.exists():
-        _LOG.info("Snapshot file not found at %s", _SNAPSHOT_PATH)
+    """Load the default snapshot and return a rehydrated SnapshotData, or None."""
+    return load_snapshot_file(_SNAPSHOT_PATH)
+
+
+def load_snapshot_file(path: Path) -> SnapshotData | None:
+    """Load and rehydrate an arbitrary snapshot file, or None on failure.
+
+    Extra top-level keys (cross_validation_mode, baseline_iteration_2,
+    instrument_fn, sanity_check, llm_failures, ...) are ignored;
+    ``evidence_basis_breakdown`` is captured when present.
+    """
+    if not path.is_file():
+        _LOG.info("Snapshot file not found at %s", path)
         return None
     try:
-        raw = json.loads(_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+        raw = json.loads(path.read_text(encoding="utf-8"))
         report = _rehydrate_report(raw["report"])
-        return SnapshotData(metadata=raw.get("metadata", {}), report=report)
-    except (json.JSONDecodeError, FileNotFoundError, KeyError, ValueError):
-        _LOG.exception("Failed to load or rehydrate snapshot from %s", _SNAPSHOT_PATH)
+        return SnapshotData(
+            metadata=raw.get("metadata", {}),
+            report=report,
+            evidence_basis_breakdown=raw.get("evidence_basis_breakdown"),
+        )
+    except (json.JSONDecodeError, OSError, KeyError, TypeError, ValueError):
+        # Any malformed/unreadable snapshot degrades to None so a single bad
+        # file never aborts list_snapshots() (covers I/O errors from
+        # read_text and TypeErrors from schema drift in _rehydrate_report).
+        _LOG.exception("Failed to load or rehydrate snapshot from %s", path)
         return None
+
+
+def list_snapshots() -> list[SnapshotInfo]:
+    """Discover loadable top-level snapshots in the snapshots directory.
+
+    Scans ``*.json`` at the top level only (non-recursive → the
+    ``pre_num_ctx_fix/`` subdirectory and ``.log``/``.gitkeep`` files are
+    excluded). Files that fail to load/rehydrate are skipped with a warning
+    rather than aborting the scan. Sorted by filename.
+    """
+    snapshots_dir = _SNAPSHOT_PATH.parent
+    infos: list[SnapshotInfo] = []
+    for path in sorted(snapshots_dir.glob("*.json")):
+        data = load_snapshot_file(path)
+        if data is None:
+            _LOG.warning("Skipping unloadable snapshot %s", path.name)
+            continue
+        infos.append(
+            SnapshotInfo(
+                filename=path.name,
+                path=path,
+                metadata=data.metadata,
+                description=get_description(path.name),
+            )
+        )
+    return infos
 
 
 def _rehydrate_report(data: dict) -> Report:
@@ -51,6 +111,12 @@ def _rehydrate_report(data: dict) -> Report:
     Iteration 2-snapshot innehåller en ``per_mechanism``-nyckel som hörde
     till en tidigare modell (MechanismStats borttagen i fixup av Beslut 49
     reviderad). Nyckeln ignoreras tyst om den finns.
+
+    Pre-I-5-snapshots bär ett äldre ``per_dimension``-schema
+    (identifiability_low/medium/high, data_class_ordinary). Ett
+    inkompatibelt schema degraderas tyst till tom DimensionStats — vi
+    fabricerar inte värden — så att övriga nivåer ändå kan jämföras och
+    analysvyn visar "Data saknas för denna nivå".
     """
     total = RunMetrics(**data["total"])
     per_category = {
@@ -60,7 +126,11 @@ def _rehydrate_report(data: dict) -> Report:
     per_layer = {k: RunMetrics(**v) for k, v in data["per_layer"].items()}
     samples = [_rehydrate_sample(s) for s in data.get("samples", [])]
     pd_data = data.get("per_dimension", {})
-    per_dimension = DimensionStats(**pd_data) if pd_data else DimensionStats()
+    _dim_fields = {f.name for f in fields(DimensionStats)}
+    if pd_data and set(pd_data).issubset(_dim_fields):
+        per_dimension = DimensionStats(**pd_data)
+    else:
+        per_dimension = DimensionStats()
     return Report(
         total=total,
         per_category=per_category,

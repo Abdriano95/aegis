@@ -22,8 +22,14 @@ from gdpr_classifier.layers.combination import CombinationLayer
 from gdpr_classifier.layers.entity import EntityLayer
 from gdpr_classifier.layers.llm.provider import LLMProviderError
 from gdpr_classifier.layers.pattern import PatternLayer
-from demo.layout import _DEMO_TEXTS, freetext_tab_layout
-from demo.snapshot_loader import SnapshotData, load_snapshot
+from demo.layout import _DEMO_TEXTS, analysis_tab_layout, freetext_tab_layout
+from demo.snapshot_loader import (
+    SnapshotData,
+    SnapshotInfo,
+    list_snapshots,
+    load_snapshot,
+    load_snapshot_file,
+)
 
 _LOG = logging.getLogger(__name__)
 
@@ -95,8 +101,16 @@ def _get_snapshot() -> SnapshotData | None:
 
 
 def _make_table(
-    table_id: str, columns: list[dict], data: list[dict]
+    table_id: str,
+    columns: list[dict],
+    data: list[dict],
+    extra_conditional: list[dict] | None = None,
 ) -> dash_table.DataTable:
+    conditional: list[dict] = [
+        {"if": {"row_index": "odd"}, "backgroundColor": "#f9f9f9"},
+    ]
+    if extra_conditional:
+        conditional = conditional + extra_conditional
     return dash_table.DataTable(
         id=table_id,
         columns=columns,
@@ -112,12 +126,7 @@ def _make_table(
             "padding": "8px",
             "minWidth": "80px",
         },
-        style_data_conditional=[
-            {
-                "if": {"row_index": "odd"},
-                "backgroundColor": "#f9f9f9",
-            },
-        ],
+        style_data_conditional=conditional,
     )
 
 
@@ -289,6 +298,303 @@ def _testdata_rows(dataset: list) -> list[dict]:
         }
         for i, item in enumerate(dataset)
     ]
+
+
+# ---------------------------------------------------------------------------
+# Curated metadata row + badges (shared by report & analysis tabs)
+# ---------------------------------------------------------------------------
+
+
+def _meta_mode(meta: dict) -> str:
+    """Aggregator mode, defaulting to 'legacy' for pre-I-7g snapshots."""
+    return meta.get("cross_validation_mode") or meta.get("mode") or "legacy"
+
+
+def _badge(text: str, bg: str) -> html.Span:
+    return html.Span(
+        text,
+        style={
+            "backgroundColor": bg,
+            "color": "white",
+            "fontWeight": "bold",
+            "borderRadius": "4px",
+            "padding": "2px 8px",
+            "marginRight": "8px",
+            "fontSize": "12px",
+        },
+    )
+
+
+def _metadata_row(meta: dict, prefix: str = "") -> html.Div:
+    """Compact curated metadata row: model + mode badges then labelled text.
+
+    Every field is read defensively so older snapshots that lack a field
+    degrade to '?' rather than raising.
+    """
+    mode = _meta_mode(meta)
+    mode_bg = "#27ae60" if mode == "cross_validating" else "#7f8c8d"
+    date = (meta.get("generated_at") or "?")[:10]
+    commit = (meta.get("git_commit") or "?")[:8]
+    subset = meta.get("subset") or "all"
+    texts = (meta.get("dataset") or {}).get("total_texts", "?")
+    pv = meta.get("prompt_versions") or {}
+    children: list = []
+    if prefix:
+        children.append(html.Strong(prefix))
+    children.extend(
+        [
+            _badge(meta.get("model", "?"), "#2c3e50"),
+            _badge(mode, mode_bg),
+            html.Span(
+                f"Datum: {date} · Commit: {commit} · Subset: {subset} · "
+                f"Texter: {texts} · Prompts: article9 {pv.get('article9', '?')}, "
+                f"combination {pv.get('combination', '?')}"
+            ),
+        ]
+    )
+    return html.Div(
+        children,
+        style={"marginBottom": "12px", "fontSize": "13px", "color": "#555"},
+    )
+
+
+def _snapshot_option_label(info: SnapshotInfo) -> str:
+    """Dropdown label: description + filename + model + mode + subset (issue AC)."""
+    m = info.metadata
+    return (
+        f"{info.description} — {info.filename} · "
+        f"{m.get('model', '?')} · {_meta_mode(m)} · {m.get('subset') or 'all'}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Evidence basis breakdown (i7d-snapshots only)
+# ---------------------------------------------------------------------------
+
+_EBB_MECHANISMS = (
+    "structural_support",
+    "high_confidence_no_support",
+    "no_support_required",
+)
+
+_EBB_COLUMNS = [
+    {"name": "Mekanism", "id": "mechanism"},
+    {"name": "TP", "id": "tp"},
+    {"name": "FP", "id": "fp"},
+]
+
+
+def _ebb_rows(block: dict) -> list[dict]:
+    rows = []
+    for m in _EBB_MECHANISMS:
+        cell = block.get(m) or {}
+        rows.append(
+            {"mechanism": m, "tp": cell.get("tp", "–"), "fp": cell.get("fp", "–")}
+        )
+    return rows
+
+
+def _evidence_basis_section(
+    ebb: dict | None,
+    heading: str,
+    id_prefix: str,
+) -> list:
+    """Render the evidence-basis breakdown (total + context_kombination_only).
+
+    Returns [] when ``ebb`` is missing/empty (section stays invisible).
+    Falls back to a notice instead of crashing on an unexpected structure.
+    """
+    if not ebb:
+        return []
+    try:
+        children: list = [html.H3(heading)]
+        for key, label in (
+            ("total", "Total"),
+            ("context_kombination_only", "Endast context.kombination"),
+        ):
+            block = ebb.get(key)
+            if not isinstance(block, dict):
+                continue
+            children.append(html.H4(label, style={"marginBottom": "4px"}))
+            children.append(
+                _make_table(f"{id_prefix}-ebb-{key}", _EBB_COLUMNS, _ebb_rows(block))
+            )
+        note = ebb.get("note")
+        if note:
+            children.append(
+                html.P(
+                    note,
+                    style={
+                        "fontSize": "12px",
+                        "color": "#555",
+                        "fontStyle": "italic",
+                    },
+                )
+            )
+        return children
+    except (KeyError, TypeError, AttributeError):
+        return [
+            html.H3(heading),
+            html.P("Evidence basis-data finns men kan inte renderas"),
+        ]
+
+
+# ---------------------------------------------------------------------------
+# Snapshot comparison (analysis tab)
+# ---------------------------------------------------------------------------
+
+_COMPARE_DIMENSION_COLUMNS = [
+    {"name": "Dimension", "id": "dimension"},
+    {"name": "Nivå", "id": "level"},
+    {"name": "A Antal", "id": "a_count"},
+    {"name": "B Antal", "id": "b_count"},
+    {"name": "Δ", "id": "d_count"},
+]
+
+
+def _compare_columns(level_name: str) -> list[dict]:
+    cols = [{"name": level_name, "id": "level"}]
+    for side in ("A", "B"):
+        for f in ("TP", "FP", "FN", "P", "R", "F1"):
+            cols.append({"name": f"{side} {f}", "id": f"{side.lower()}_{f.lower()}"})
+    for f in ("P", "R", "F1"):
+        cols.append({"name": f"Δ {f}", "id": f"d_{f.lower()}"})
+    return cols
+
+
+def _fmt_pct(x) -> str:
+    return f"{x:.2%}" if isinstance(x, (int, float)) else "–"
+
+
+def _delta_pp(a, b) -> str:
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return f"{(b - a) * 100:+.1f} pp"
+    return "—"
+
+
+def _compare_metric_row(level: str, a, b, *, suppress_rf: bool = False) -> dict:
+    """One comparison row for a pair of optional RunMetrics (A vs B).
+
+    ``suppress_rf`` mirrors the report tab's per-layer convention where
+    recall/F1 are not meaningful (cross-layer FN attribution) → shown N/A.
+    """
+    row: dict = {"level": level}
+    for side, m in (("a", a), ("b", b)):
+        if m is None:
+            for k in ("tp", "fp", "fn", "p", "r", "f1"):
+                row[f"{side}_{k}"] = "–"
+            continue
+        row[f"{side}_tp"] = m.tp
+        row[f"{side}_fp"] = m.fp
+        row[f"{side}_fn"] = m.fn
+        row[f"{side}_p"] = _fmt_pct(m.precision)
+        row[f"{side}_r"] = "N/A" if suppress_rf else _fmt_pct(m.recall)
+        row[f"{side}_f1"] = "N/A" if suppress_rf else _fmt_pct(m.f1)
+    row["d_p"] = _delta_pp(
+        a.precision if a else None, b.precision if b else None
+    )
+    if suppress_rf:
+        row["d_r"] = row["d_f1"] = "—"
+    else:
+        row["d_r"] = _delta_pp(a.recall if a else None, b.recall if b else None)
+        row["d_f1"] = _delta_pp(a.f1 if a else None, b.f1 if b else None)
+    return row
+
+
+def _compare_total_rows(a_rep, b_rep) -> list[dict]:
+    return [_compare_metric_row("Totalt", a_rep.total, b_rep.total)]
+
+
+def _compare_category_rows(a_rep, b_rep) -> list[dict]:
+    cats = sorted(
+        set(a_rep.per_category) | set(b_rep.per_category), key=lambda c: c.value
+    )
+    return [
+        _compare_metric_row(
+            c.value, a_rep.per_category.get(c), b_rep.per_category.get(c)
+        )
+        for c in cats
+    ]
+
+
+def _compare_layer_rows(a_rep, b_rep) -> list[dict]:
+    layers = sorted(set(a_rep.per_layer) | set(b_rep.per_layer))
+    return [
+        _compare_metric_row(
+            layer,
+            a_rep.per_layer.get(layer),
+            b_rep.per_layer.get(layer),
+            suppress_rf=True,
+        )
+        for layer in layers
+    ]
+
+
+_DIMENSION_SPEC = [
+    ("Identifiability", "NONE", "identifiability_none"),
+    ("Identifiability", "INDIRECT", "identifiability_indirect"),
+    ("Identifiability", "DIRECT", "identifiability_direct"),
+    ("Data class", "NONE", "data_class_none"),
+    ("Data class", "SPECIAL", "data_class_special"),
+    ("Data class", "CRIMINAL", "data_class_criminal"),
+]
+
+
+def _dimension_is_empty(stats) -> bool:
+    return all(getattr(stats, attr) == 0 for _, _, attr in _DIMENSION_SPEC)
+
+
+def _compare_dimension_rows(a_rep, b_rep) -> list[dict]:
+    a, b = a_rep.per_dimension, b_rep.per_dimension
+    rows = []
+    for dim, lvl, attr in _DIMENSION_SPEC:
+        av, bv = getattr(a, attr), getattr(b, attr)
+        rows.append(
+            {
+                "dimension": dim,
+                "level": lvl,
+                "a_count": av,
+                "b_count": bv,
+                "d_count": f"{bv - av:+d}",
+            }
+        )
+    return rows
+
+
+def _delta_conditional(col_ids: list[str]) -> list[dict]:
+    """Green for improvements (+), red for regressions (-); neutral otherwise."""
+    rules: list[dict] = []
+    for cid in col_ids:
+        rules.append(
+            {
+                "if": {"filter_query": f'{{{cid}}} contains "-"', "column_id": cid},
+                "color": "#c0392b",
+                "fontWeight": "bold",
+            }
+        )
+        rules.append(
+            {
+                "if": {"filter_query": f'{{{cid}}} contains "+"', "column_id": cid},
+                "color": "#1e8449",
+                "fontWeight": "bold",
+            }
+        )
+    return rules
+
+
+def _side_by_side(left, right) -> html.Div:
+    """Two equal-width columns that wrap to two stacked rows on narrow viewports.
+
+    ``left``/``right`` may be a single component or a list of components.
+    """
+    col_style = {"flex": "1", "minWidth": "300px"}
+    return html.Div(
+        [
+            html.Div(left, style=col_style),
+            html.Div(right, style=col_style),
+        ],
+        style={"display": "flex", "gap": "16px", "flexWrap": "wrap"},
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -705,6 +1011,12 @@ def render_tab(tab: str) -> html.Div:
                 html.Div(id="report-content"),
             ],
         )
+    if tab == "tab-analysis":
+        options = [
+            {"label": _snapshot_option_label(info), "value": info.filename}
+            for info in list_snapshots()
+        ]
+        return analysis_tab_layout(options)
     if tab == "tab-testdata":
         try:
             d1 = load_dataset(str(_DATASET_PATHS["iteration_1"]))
@@ -759,17 +1071,8 @@ def update_report(verbose_values: list[str]) -> list:
     meta = snapshot.metadata
     verbose = "verbose" in (verbose_values or [])
 
-    ds = meta.get("dataset", {})
-    meta_div = html.Div(
-        f"Snapshot genererad: {meta.get('generated_at', '?')[:10]}, "
-        f"modell: {meta.get('model', '?')}, "
-        f"dataset: {ds.get('total_texts', '?')} texter, "
-        f"commit: {meta.get('git_commit', '?')[:8]}",
-        style={"marginBottom": "16px", "fontSize": "13px", "color": "#555"},
-    )
-
     children: list = [
-        meta_div,
+        _metadata_row(meta),
         html.H3("Totala mätvärden"),
         _make_table("total-table", _TOTAL_COLUMNS, _total_rows(report)),
         html.H3("Per kategori"),
@@ -779,6 +1082,13 @@ def update_report(verbose_values: list[str]) -> list:
         html.H3("Per dimension"),
         _make_table("dimension-table", _DIMENSION_COLUMNS, _dimension_rows(report.per_dimension)),
     ]
+    children.extend(
+        _evidence_basis_section(
+            snapshot.evidence_basis_breakdown,
+            "Evidence basis (cross-validating-mekanismer)",
+            id_prefix="report",
+        )
+    )
 
     if verbose:
         fp_data = _fp_rows(report)
@@ -798,6 +1108,125 @@ def update_report(verbose_values: list[str]) -> list:
                     else html.P("Inga false negatives.")
                 ),
             ],
+        )
+
+    return children
+
+
+_DELTA_METRIC_COLS = ["d_p", "d_r", "d_f1"]
+
+
+def _comparison_level(
+    level: str, a_rep, b_rep
+) -> list:
+    """Render one comparison level, or a 'data saknas' notice if absent in both."""
+    if level == "total":
+        return [
+            html.H3("Total"),
+            _make_table(
+                "cmp-total",
+                _compare_columns("Metric"),
+                _compare_total_rows(a_rep, b_rep),
+                extra_conditional=_delta_conditional(_DELTA_METRIC_COLS),
+            ),
+        ]
+    if level == "category":
+        if not a_rep.per_category or not b_rep.per_category:
+            return [html.H3("Per kategori"), html.P("Data saknas för denna nivå")]
+        return [
+            html.H3("Per kategori"),
+            _make_table(
+                "cmp-category",
+                _compare_columns("Kategori"),
+                _compare_category_rows(a_rep, b_rep),
+                extra_conditional=_delta_conditional(_DELTA_METRIC_COLS),
+            ),
+        ]
+    if level == "layer":
+        if not a_rep.per_layer or not b_rep.per_layer:
+            return [html.H3("Per lager"), html.P("Data saknas för denna nivå")]
+        return [
+            html.H3("Per lager"),
+            _make_table(
+                "cmp-layer",
+                _compare_columns("Lager"),
+                _compare_layer_rows(a_rep, b_rep),
+                extra_conditional=_delta_conditional(["d_p"]),
+            ),
+        ]
+    if level == "dimension":
+        if _dimension_is_empty(a_rep.per_dimension) or _dimension_is_empty(
+            b_rep.per_dimension
+        ):
+            return [html.H3("Per dimension"), html.P("Data saknas för denna nivå")]
+        return [
+            html.H3("Per dimension"),
+            _make_table(
+                "cmp-dimension",
+                _COMPARE_DIMENSION_COLUMNS,
+                _compare_dimension_rows(a_rep, b_rep),
+                extra_conditional=_delta_conditional(["d_count"]),
+            ),
+        ]
+    return []
+
+
+@callback(
+    Output("analysis-content", "children"),
+    Input("snapshot-a", "value"),
+    Input("snapshot-b", "value"),
+    Input("analysis-levels", "value"),
+)
+def update_analysis(
+    file_a: str | None, file_b: str | None, levels: list[str] | None
+) -> list:
+    """Render the A/B snapshot comparison for the selected levels."""
+    if not file_a or not file_b:
+        return [html.P("Välj snapshot A och B för att jämföra.")]
+
+    infos = {info.filename: info for info in list_snapshots()}
+    info_a, info_b = infos.get(file_a), infos.get(file_b)
+    if info_a is None or info_b is None:
+        return [html.P("En av de valda snapshotsen kunde inte hittas.")]
+
+    data_a = load_snapshot_file(info_a.path)
+    data_b = load_snapshot_file(info_b.path)
+    if data_a is None or data_b is None:
+        return [html.P("En av de valda snapshotsen kunde inte laddas.")]
+
+    children: list = [
+        _side_by_side(
+            _metadata_row(data_a.metadata, prefix="A: "),
+            _metadata_row(data_b.metadata, prefix="B: "),
+        ),
+    ]
+
+    selected = levels or []
+    for level in ("total", "category", "layer", "dimension"):
+        if level in selected:
+            children.extend(_comparison_level(level, data_a.report, data_b.report))
+
+    ebb_a, ebb_b = data_a.evidence_basis_breakdown, data_b.evidence_basis_breakdown
+    if ebb_a and ebb_b:
+        children.append(
+            _side_by_side(
+                _evidence_basis_section(ebb_a, "A: Evidence basis", id_prefix="a"),
+                _evidence_basis_section(ebb_b, "B: Evidence basis", id_prefix="b"),
+            )
+        )
+    elif ebb_a:
+        children.extend(
+            _evidence_basis_section(ebb_a, "A: Evidence basis", id_prefix="a")
+        )
+        children.append(
+            html.P(f"Snapshot B ({file_b}) saknar evidence_basis_breakdown")
+        )
+    elif ebb_b:
+        children.extend(
+            _evidence_basis_section(ebb_b, "B: Evidence basis", id_prefix="b")
+        )
+        children.append(
+            html.P(f"Snapshot A ({file_a}) saknar evidence_basis_breakdown")
         )
 
     return children
