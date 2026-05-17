@@ -39,7 +39,7 @@ Iteration 3 har tre primära mål:
 
 **Lågprioriterade utforskningar i mån av tid:**
 - Modellskalningsprob via större molnmodell (V4:s rekommendation från iteration 2)
-- Narrativ specificitet som strukturerad output i CombinationLayers JSON (med revideringsklausul: omprövas efter att övriga issues är committade)
+- Narrativ specificitet som strukturerad output i CombinationLayers JSON — **stängd (omprövad bort, Beslut 61, 2026-05-17; se sessionspost 2026-05-17e)**
 
 **Out of scope för iteration 3** — dokumenteras som framtida arbete i rapportens kapitel 6.10:
 - Schemautvidgning av CombinationLayers `allowed_signals` (Beslut 43)
@@ -129,7 +129,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
 | [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ✅ Klar (omformulerad) — 2026-05-14, trösklar behålls vid Beslut 20-defaults, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md) och Beslut 51 (Loggbok iteration 3) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
 | [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ✅ Klar (2026-05-17) — probe-konstruktion (checkpoint 1-7) klar; resultat dokumenterade i [iteration_3_utvardering.md](iteration_3_utvardering.md) Del 9/10 + Beslut 59/60 (Loggbok it. 3); återstående rapportintegration är styckenivå, ej separat syntes | Inga (efter I-1–I-5) | Underlag till rapport: 5.2 (teknisk prestanda), 6.9 (begränsningar), 6.10 (framtida forskning). |
-| [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
+| [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ✅ Klar (omprövad bort — Beslut 61, 2026-05-17) — revideringsklausulen utlöst (I-1 #101 klar 2026-05-12); Regel C-recall 2/2 i alla fyra datapunkter, aggregatrecall 88,89–100 %; stäng-villkoret uppfyllt (se sessionspost 2026-05-17e) | Inga (revideras efter I-1) | Nollutfall: arkitekturell observation (strukturell asymmetri annoteringsguide §4.4 vs artefakt-output) bevaras som framtida arbete i kapitel 6.10. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
 | [#110](https://github.com/Abdriano95/aegis/issues/110) (I-10) | Villkorad formulering av DP6 | B | Abdulla | ⬜ Ej startad | I-5, I-18 | Detta ÄR formaliseringsarbetet (DP6 i 5.5 eller observation i 4.4.3/6). |
 | [#111](https://github.com/Abdriano95/aegis/issues/111) (I-11) | Spårbarhetsmatris DP × iteration 1-2-empiri | B | Johanna | ⬜ Ej startad | I-9 | 5.4.4 eller bilaga får spårbarhetsmatris. |
@@ -1492,3 +1492,25 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 **Statustabell - ändrad.** #107 (I-7): 🔄 Pågår → ✅ Klar (2026-05-17).
 
 **Out of scope för denna session:** Kod, snapshots, Loggbok-redigering, commits/git (användaren manuellt), historiska sessionsloggar (ej retroaktiv redigering), CodeRabbit-svar K2/K3/K4 (PR-tråd).
+
+### Session 2026-05-17e - Claude Code (Opus 4.7) — Issue #108 (I-8) stängd (omprövad bort, Beslut 61)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Stänga #108 (I-8, "Narrativ specificitet som strukturerad output") som omprövad bort efter att revideringsklausulens stäng-villkor uppfyllts. Operativ dokumentation; full motivering i Beslut 61 (Loggbok iteration 3, inskriven av användaren utanför agent-flödet) — dupliceras ej här.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — #108-statusraden → ✅ Klar (omprövad bort — Beslut 61, 2026-05-17); formaliseringskonsekvens-cellen → nollutfall/kapitel 6.10; "Lågprioriterade utforskningar"-bulleten markerad stängd; denna sessionspost.
+- GitHub-issue #108 — sammanfattande kommentar + stängd (`not planned`). Issue-body orörd (bevarar planeringsfas-motivering som historisk kontext).
+
+**Gjort:**
+- Revideringsklausulen utlöstes när I-1 (#101) avslutades 2026-05-12. Regel C-recall mättes 2026-05-17 (slängbart temp-skript, samma dags Claude Code-session): 2/2 i qwen2.5 PRE-I-7e, qwen2.5 POST-stack, qwen3:14b checkpoint 6, Opus 4.7 checkpoint 7. Aggregat-`context.kombination`-recall 88,89–100 % över mätrymden. Stäng-villkoret ("Regel C-recall ej låg → issue onödig") uppfyllt.
+- Statustabell och lågprio-sektion uppdaterade; GitHub-issue kommenterad och stängd med orsak `not planned`; stängning verifierad via återläsning.
+
+**Beslut fattade:** Inga arkitekturbeslut i agent-flödet. **Beslut 61** (Loggbok iteration 3, formulerad av användaren): #108 omprövad bort — narrativ specificitet behöver inte exponeras som strukturerat output-fält; den strukturella asymmetrin (annoteringsguide §4.4 vs artefakt-output) bevaras som framtida arbete i AEGIS-rapportens kapitel 6.10. Full motivering i Loggboken.
+
+**Öppet/Nästa steg:** Den arkitekturella observationen dokumenteras som framtida arbete i kapitel 6.10 (rapportarbete, utanför issue-flödet). Inga uppföljande issues.
+
+**Statustabell - ändrad.** #108 (I-8): ⬜ Ej startad → ✅ Klar (omprövad bort — Beslut 61, 2026-05-17).
+
+**Out of scope för denna session:** Kod (`gdpr_classifier/` m.fl.) orörd; git (commit/push/branch) hanteras av användaren; Loggboken redigeras ej av agenten (Beslut 61 redan inskriven). Korsfilskontroll (read-only): `docs/arkitektur.md:582` "Issue #75 / I-8" avser iteration 2:s I-8 (#75), ej #108 — lämnad orörd; `CLAUDE.md` och `docs/iteration_3_utvardering.md` saknar #108-referenser — lämnade orörda. #107-bulleten på rad 41 i samma lågprio-sektion utanför scope (separat hanterad, sessionspost 2026-05-17d).
