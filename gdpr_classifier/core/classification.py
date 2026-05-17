@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Literal
 
 from .finding import Finding
 
@@ -63,3 +64,13 @@ class Classification:
     overlapping_findings: list[tuple[Finding, Finding]]
     identifiability: Identifiability = Identifiability.NONE
     data_class: DataClass = DataClass.NONE
+    weakest_evidence_basis: Literal[
+        "structural_support",
+        "high_confidence_no_support",
+        "no_support_required",
+    ] | None = None
+    # Härlett sammandrag: svagaste evidence_basis bland de fynd som faktiskt
+    # bar identifiability/data_class ("den svagaste länken i klassningen").
+    # Sätts av aggregatorn enbart i cross_validating-läget; None i legacy och
+    # när inga fynd bar dimensionerna (arkitektur.md §9.6.3). Duplicerar inte
+    # per-fynd-värdet på Finding.evidence_basis och är inte sanningskälla.

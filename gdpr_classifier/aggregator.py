@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import replace
 from itertools import combinations
+from typing import Literal
 
 from gdpr_classifier.core import (
     Category,
@@ -14,6 +15,22 @@ from gdpr_classifier.core import (
     Identifiability,
     SensitivityLevel,
 )
+
+EvidenceBasis = Literal[
+    "structural_support",
+    "high_confidence_no_support",
+    "no_support_required",
+]
+
+# Ordning svagast → starkast (arkitektur.md §9.6.3, användarbeslut 2026-05-16):
+# en fail-safe-bypass utan strukturellt stöd är den svagaste länken; ett
+# självvaliderande fynd som inte ens kräver stöd (checksum-mönster, PRS,
+# article9) är den starkaste.
+_EVIDENCE_BASIS_RANK: dict[str, int] = {
+    "high_confidence_no_support": 0,
+    "structural_support": 1,
+    "no_support_required": 2,
+}
 
 
 def derive_sensitivity(
@@ -56,6 +73,9 @@ class Aggregator:
         medium_threshold: float = 0.7,
         high_confidence_bypass: float = 0.85,
         min_evidence_count: int = 2,
+        cross_validation_mode: Literal[
+            "legacy", "cross_validating"
+        ] = "cross_validating",
     ) -> None:
         if not (0.0 <= medium_threshold <= 1.0):
             raise ValueError("medium_threshold must be between 0.0 and 1.0")
@@ -65,10 +85,23 @@ class Aggregator:
             raise ValueError("high_confidence_bypass must be >= medium_threshold")
         if min_evidence_count < 1:
             raise ValueError("min_evidence_count must be a positive integer")
-        
+        if cross_validation_mode not in ("legacy", "cross_validating"):
+            raise ValueError(
+                "cross_validation_mode must be 'legacy' or 'cross_validating'"
+            )
+
         self.medium_threshold = medium_threshold
         self.high_confidence_bypass = high_confidence_bypass
         self.min_evidence_count = min_evidence_count
+        # Default "cross_validating" (I-7g, 2026-05-16): I-7f visade att de
+        # två lägena ger byte-identiska klassifikationsutfall (0/159 sanity-
+        # avvikelser, oförändrad konfusionsmatris) men att cross_validating
+        # ger mer rättvisande evidensredovisning (5 TP context.kombination →
+        # structural_support i stället för bypass-tagg). "legacy" är opt-in
+        # via explicit cross_validation_mode="legacy" för bakåtkompatibilitet
+        # och reproduktion av iteration 2- samt I-7d/pre-I-7f-baslinjer
+        # (mätinstrumentpåverkan: kodanalys §10; arkitektur.md §9.6.4).
+        self.cross_validation_mode = cross_validation_mode
 
     def aggregate(
         self,
@@ -77,8 +110,12 @@ class Aggregator:
     ) -> Classification:
         filtered = self._apply_containment_rules(findings)
         filtered = self._deduplicate_same_category_overlap(filtered)
+        if self.cross_validation_mode == "cross_validating":
+            filtered = self._apply_evidence_weighting(filtered)
         overlaps = self._find_overlaps(filtered)
-        identifiability, data_class = self._determine_dimensions(filtered)
+        identifiability, data_class, weakest_evidence_basis = (
+            self._determine_dimensions(filtered)
+        )
         sensitivity = derive_sensitivity(identifiability, data_class)
         return Classification(
             findings=filtered,
@@ -87,6 +124,7 @@ class Aggregator:
             overlapping_findings=overlaps,
             identifiability=identifiability,
             data_class=data_class,
+            weakest_evidence_basis=weakest_evidence_basis,
         )
 
     def _apply_containment_rules(
@@ -219,6 +257,52 @@ class Aggregator:
             result.append(f)
         return result
 
+    def _apply_evidence_weighting(
+        self, findings: list[Finding],
+    ) -> list[Finding]:
+        """Tagga evidence_basis per beslutstabell R1–R7 (arkitektur.md §9.6.2).
+
+        Körs endast i cross_validating-läget, efter containment/dedup och
+        före dimensionsbestämning (§9.6.3). Default evidence_basis är redan
+        "no_support_required" (R1 pattern.*, R2/R3/R4 entity.*, R5
+        article9.*, R7 isolerade context.*), så endast R6
+        (context.kombination) kan ändra taggen. Returnerar en ny lista;
+        ändrade fynd är taggade kopior via dataclasses.replace (samma mönster
+        som _deduplicate_same_category_overlap), oförändrade fynd passeras
+        igenom som samma objekt.
+
+        Passen ändrar INTE vilka fynd som bidrar till dimensionsbestämningen
+        — _has_validated_kombination och article4/article9-existenskollarna
+        är oförändrade i båda lägena (prompt punkt e, §9.6.4). I-7b lägger
+        transparenstaggar; den faktiska dimensions-/precisionsändringen hör
+        till I-7c. R3/R4 (entity.spacy_LOC/_ORG) bidrar som strukturellt
+        stöd för R6 via entity.*-prefixet i _count_structural_support —
+        källdrivet, fungerar oavsett I-7c-mappning.
+        """
+        result: list[Finding] = []
+        for f in findings:
+            if f.source != "context.kombination":  # R1/R2/R3/R4/R5/R7
+                result.append(f)  # default no_support_required, oförändrat
+                continue
+            # R6 context.kombination: generaliserad Mekanism 3.
+            count = self._count_structural_support(
+                f, findings, ("pattern.", "entity."),
+            )
+            if count >= self.min_evidence_count:
+                result.append(
+                    replace(f, evidence_basis="structural_support")
+                )
+            elif f.confidence >= self.high_confidence_bypass:
+                result.append(
+                    replace(f, evidence_basis="high_confidence_no_support")
+                )
+            else:
+                # Passerar inte Mekanism 3 och ingen bypass: behåll default
+                # "no_support_required". Bidrar ej till dimensionen
+                # (_has_validated_kombination oförändrad).
+                result.append(f)
+        return result
+
     def _find_overlaps(
         self, findings: list[Finding],
     ) -> list[tuple[Finding, Finding]]:
@@ -236,8 +320,8 @@ class Aggregator:
 
     def _determine_dimensions(
         self, findings: list[Finding],
-    ) -> tuple[Identifiability, DataClass]:
-        """Bestämmer (identifiability, data_class) från fynd.
+    ) -> tuple[Identifiability, DataClass, EvidenceBasis | None]:
+        """Bestämmer (identifiability, data_class, weakest_evidence_basis).
 
         Identifiability:
             NONE     ingen article4.*-fynd och ingen validerad kombination.
@@ -251,34 +335,47 @@ class Aggregator:
             SPECIAL  minst ett article9.*-fynd.
             CRIMINAL passiv i v0.3.0 (Beslut 40).
 
-        Returnerar paret (identifiability, data_class). mechanism_used är
-        borttagen från modellen (Beslut 49 reviderad) — klassifikationen
-        kommuniceras helt av paret.
+        weakest_evidence_basis: härlett sammandrag — svagaste evidence_basis
+        bland de fynd som FAKTISKT bar identifiability/data_class
+        (arkitektur.md §9.6.3). None i legacy och när inga fynd bar
+        dimensionerna. Identifiability/data_class-logiken är oförändrad mot
+        legacy: I-7b lägger enbart transparenstaggar + sammandrag, den
+        faktiska dimensions-/precisionsändringen hör till I-7c.
+
+        mechanism_used är borttagen från modellen (Beslut 49 reviderad) —
+        klassifikationen kommuniceras helt av paret.
 
         D5-korrigering: isolerade context.*-fynd (source != "context.kombination")
         ignoreras vid dimensionsbestämning men bevaras i Classification.findings
         (Beslut 11, Loggbok iteration 1; Beslut 19, Loggbok iteration 2).
         """
-        has_article4 = any(
-            f.category.value.startswith("article4.") for f in findings
-        )
-        has_article9 = any(
-            f.category.value.startswith("article9.") for f in findings
-        )
+        article4_findings = [
+            f for f in findings if f.category.value.startswith("article4.")
+        ]
+        article9_findings = [
+            f for f in findings if f.category.value.startswith("article9.")
+        ]
 
-        if has_article4:
+        if article4_findings:
             identifiability = Identifiability.DIRECT
         elif self._has_validated_kombination(findings):
             identifiability = Identifiability.INDIRECT
         else:
             identifiability = Identifiability.NONE
 
-        if has_article9:
+        if article9_findings:
             data_class = DataClass.SPECIAL
         else:
             data_class = DataClass.NONE
 
-        return identifiability, data_class
+        weakest_evidence_basis = self._derive_weakest_evidence_basis(
+            findings,
+            identifiability,
+            data_class,
+            article4_findings,
+            article9_findings,
+        )
+        return identifiability, data_class, weakest_evidence_basis
 
     def _has_validated_kombination(
         self, findings: list[Finding],
@@ -303,6 +400,122 @@ class Aggregator:
                 return True
         return False
 
+    def _validated_kombination_findings(
+        self, findings: list[Finding],
+    ) -> list[Finding]:
+        """De context.kombination-fynd som faktiskt validerar (bär INDIRECT).
+
+        Speglar avsiktligt _has_validated_kombination-predikatet
+        (medium_threshold-golv + bypass eller Mekanism 3) men returnerar de
+        bidragande fynden i stället för en bool, för weakest_evidence_basis-
+        härledningen (arkitektur.md §9.6.3). _has_validated_kombination
+        lämnas oförändrad (prompt punkt e); detta är en separat ren läsväg
+        utan sidoeffekt på legacy.
+        """
+        return [
+            f for f in findings
+            if f.source == "context.kombination"
+            and f.confidence >= self.medium_threshold
+            and (
+                f.confidence >= self.high_confidence_bypass
+                or self._passes_mechanism_3(f, findings)
+            )
+        ]
+
+    def _derive_weakest_evidence_basis(
+        self,
+        findings: list[Finding],
+        identifiability: Identifiability,
+        data_class: DataClass,
+        article4_findings: list[Finding],
+        article9_findings: list[Finding],
+    ) -> EvidenceBasis | None:
+        """Svagaste evidence_basis bland fynd som FAKTISKT bar slutdimensionen.
+
+        Endast i cross_validating-läget; None i legacy och när ingen
+        dimension bars (arkitektur.md §9.6.3, användarbeslut 2026-05-16).
+
+        Bidragande mängd (de fynd som faktiskt bar slutvärdet):
+          - DIRECT   → article4.*-fynden. En context.kombination som
+                       trumfats av DIRECT ingår INTE (bar inte
+                       identifiability).
+          - INDIRECT → de context.kombination-fynd som faktiskt validerade.
+          - SPECIAL  → article9.*-fynden (union, oberoende av
+                       identifiability).
+
+        Svagast → starkast enligt _EVIDENCE_BASIS_RANK:
+        high_confidence_no_support < structural_support < no_support_required.
+        """
+        if self.cross_validation_mode != "cross_validating":
+            return None
+
+        contributing: list[Finding] = []
+        if identifiability == Identifiability.DIRECT:
+            contributing.extend(article4_findings)
+        elif identifiability == Identifiability.INDIRECT:
+            contributing.extend(
+                self._validated_kombination_findings(findings)
+            )
+        if data_class == DataClass.SPECIAL:
+            contributing.extend(article9_findings)
+
+        if not contributing:
+            return None
+
+        return min(
+            (f.evidence_basis for f in contributing),
+            key=lambda eb: _EVIDENCE_BASIS_RANK[eb],
+        )
+
+    def _count_structural_support(
+        self,
+        target: Finding,
+        all_findings: list[Finding],
+        valid_source_prefixes: tuple[str, ...],
+    ) -> int:
+        """Antal fynd vars source matchar valid_source_prefixes och vars
+        span strikt överlappar target-spannet.
+
+        Generaliserad evidensräknings-primitiv (arkitektur.md §9.6.5).
+        Mekanism 3 (Beslut 19) blir en konfigurerad instans av denna
+        primitiv via _passes_mechanism_3. Stöddefinitionen är strikt
+        span-överlapp, inget närhetsbaserat stöd (designprincip 2).
+
+        I cross_validating-läget konsulteras även
+        ``f.metadata["deduplicated_sources"]`` (I-7e): en source-tagg som
+        _deduplicate_same_category_overlap tog bort vid
+        same-category-källkollaps återupptäcks så att Mekanism 3 ser
+        stödet igen. Mode-gaten är ett medvetet avsteg från primitivens
+        annars källdrivna, mode-agnostiska karaktär; utan den skulle
+        tillägget ändra legacy-lägets identifiability-beslut (via
+        _has_validated_kombination → _passes_mechanism_3) och bryta
+        bakåtkompatibilitet (I-7e:s acceptanskriterium, alternativ iii).
+        Ett fynd räknas högst en gång (``continue`` efter primärträff).
+
+        Containment-borttagning (t.ex. _remove_context_covered_by_article9)
+        propagerar inte source och fångas INTE av denna mekanism — en
+        parallell, oadresserad kollaps-väg, öppen punkt för framtida
+        arbete (ev. I-7g). Defensiv metadata-läsning: ``metadata`` kan
+        vara None eller sakna nyckeln (fynd som inte dedupats).
+        """
+        count = 0
+        for f in all_findings:
+            if not (f.start < target.end and target.start < f.end):
+                continue
+            if f.source.startswith(valid_source_prefixes):
+                count += 1
+                continue
+            if self.cross_validation_mode == "cross_validating":
+                dedup_sources = (f.metadata or {}).get(
+                    "deduplicated_sources", []
+                )
+                if any(
+                    s.startswith(valid_source_prefixes)
+                    for s in dedup_sources
+                ):
+                    count += 1
+        return count
+
     def _passes_mechanism_3(
         self, kombination: Finding, all_findings: list[Finding],
     ) -> bool:
@@ -314,11 +527,13 @@ class Aggregator:
         som separata Finding-objekt. Mekanism 3 räknar överlappande fynd från
         Lager 1 (source börjar på "pattern.") och Lager 2 (source börjar på
         "entity.") mot kombination-fyndets totala span.
+
+        Tunn anropare av _count_structural_support (arkitektur.md §9.6.5):
+        context.kombination är en konfigurerad instans med
+        valid_source_prefixes=("pattern.", "entity."). Semantik oförändrad,
+        Beslut 19 bevarad.
         """
-        evidence = [
-            f for f in all_findings
-            if (f.source.startswith("pattern.") or f.source.startswith("entity."))
-            and f.start < kombination.end
-            and kombination.start < f.end
-        ]
-        return len(evidence) >= self.min_evidence_count
+        count = self._count_structural_support(
+            kombination, all_findings, ("pattern.", "entity."),
+        )
+        return count >= self.min_evidence_count

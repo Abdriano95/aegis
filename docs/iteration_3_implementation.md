@@ -128,7 +128,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
 | [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ✅ Klar (omformulerad) — 2026-05-14, trösklar behålls vid Beslut 20-defaults, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md) och Beslut 51 (Loggbok iteration 3) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
-| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ⬜ Ej startad | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
+| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | 🔄 Pågår (probe-arbetet konstruktionsmässigt klart, checkpoint 1-7; syntes till rapport kapitel 6 kvarstår) | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
 | [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
 | [#110](https://github.com/Abdriano95/aegis/issues/110) (I-10) | Villkorad formulering av DP6 | B | Abdulla | ⬜ Ej startad | I-5, I-18 | Detta ÄR formaliseringsarbetet (DP6 i 5.5 eller observation i 4.4.3/6). |
@@ -142,12 +142,15 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#118](https://github.com/Abdriano95/aegis/issues/118) (I-18) | Iteration 3:s naturalistiska utvärdering med V1, V2 och V4 | C | Gemensamt | ⬜ Ej startad | I-6, I-19 | Genererar input till I-15, I-17, I-10. |
 | [#119](https://github.com/Abdriano95/aegis/issues/119) (I-19) | Intervjuguide-revidering för iteration 3 | C | Gemensamt | ⬜ Ej startad | Inga | Styr I-18; ingen direkt rapportsektion. |
 | [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
-| [#133](https://github.com/Abdriano95/aegis/issues/133) (I-7a) | Designspecifikation för Cross-Validating Aggregator (SSOT 9.6) | A2 | Abdulla | ⬜ Ej startad | Inga (måste låsas före I-7b) | `arkitektur.md` §9.6 (ny); DP7/DP1-kandidat i 5.5; omprövar Beslut 11, 19, 21. |
-| [#134](https://github.com/Abdriano95/aegis/issues/134) (I-7b) | Implementation av Cross-Validating Aggregator | A2 | Abdulla | ⬜ Ej startad | I-7a (spec låst) | 5.3 arkitekturbeskrivning + klassdiagram. |
-| [#135](https://github.com/Abdriano95/aegis/issues/135) (I-7c) | EntityLayer LOC-mappning och context.plats i Mekanism 3 | A2 | Abdulla | ⬜ Ej startad | I-7a; parallellt med I-7b | 5.3 (EntityLayer-mappning); omprövar Beslut 11. |
-| [#136](https://github.com/Abdriano95/aegis/issues/136) (I-7d) | Dubbel baslinjemätning legacy mot cross_validating | A4 | Abdulla | ⬜ Ej startad | I-7b, I-7c | 5.4 utvärderingssyntes; 4.5 designcykel 3. |
+| (I-7a) | Designspecifikation för Cross-Validating Aggregator (§9.6 evidensvägningspolicy) | B | Gemensamt | ✅ Klar (2026-05-15) — utkast i [`arkitektur_9_6_utkast.md`](arkitektur_9_6_utkast.md), väntar arkitekt-agent-granskning | Inga | Ny §9.6 i SSOT (`docs/arkitektur.md`); underlag för DP/arkitekturkapitel. |
+| (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ✅ Klar (2026-05-16) — §9.6 implementerad i kod, default `legacy`, 214/214 tester gröna; default-flipp efter I-7d (se sessionspost 2026-05-16) | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
+| (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ✅ Klar (2026-05-16) — `_label_map` LOC → `Category.PLATS` (source bevarad), §5 uppdaterad, 217/217 tester gröna; mätbar effekt → I-7d, matcher-alias kvarstår (omprövas efter I-7d) (se sessionspost 2026-05-16) | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
+| (I-7d) | Dubbel baslinjemätning `legacy` mot `cross_validating` (evidence_basis-rapportering, H1/H2/H3) | B | Gemensamt | ✅ Klar (2026-05-16) — H1/H2/H3 infriade mot it2-baslinjen (P 64,00→75,18 %, R 89,27→90,99 %), `legacy` ≡ `cross_validating` (0/159 sanity-avvikelser), Del 8 i [`iteration_3_utvardering.md`](iteration_3_utvardering.md) (se sessionspost 2026-05-16) | I-7a, I-7b, I-7c | Empirisk dubbelmätning; underlag för §9.6.4-defaultfrågan och kapitel 6; ny `docs/iteration_3_utvardering.md` Del 8. |
+| (I-7e) | Source-medveten evidensräkning via deduplicated_sources-propagering | A2 | Abdriano95 | ✅ Klar (2026-05-16) — `_count_structural_support` mode-gateat `deduplicated_sources`-tillägg (alternativ iii), §9.6.5 uppdaterad, 222/222 tester gröna (5 nya); containment-kollaps öppen punkt → ev. I-7g, omkörning I-7f (se sessionspost 2026-05-16) | I-7b, I-7c, I-7d | §9.6.5 utökas inom I-7e; empiriskt material för designprincip om aggregator-passens ordning. |
+| (I-7f) | Omkörning av baslinjemätning post-I-7e och uppdatering av Del 8 | A4 | Abdriano95 | ✅ Klar (2026-05-16) — omkörd på `2d6c302`; legacy byte-identiskt mot pre-I-7e (TP/FP/FN 212/70/21, per-kategori/-lager/-dimension), 0/159 sanity; `cross_validating` bypass `context.kombination` **95,0 % → 65,0 %** (6 fynd → `structural_support`, 5 TP/1 FP); Degerfors oförändrat (inget kombinationsfynd); Del 8 uppdaterad pre/post (se sessionspost 2026-05-16) | I-7e | Del 8 uppdateras med post-I-7e-tal; slutgiltig rapportering av arbetsströmmens utfall för kapitel 5. |
+| (I-7g) | Default-flipp legacy → cross_validating i Aggregator | A2 | Abdriano95 | ✅ Klar (2026-05-16) — default flippad till `cross_validating` (aggregator.py:76); `legacy` opt-in; reproducerbarhets-fix run_i7d_baseline.py:276,477; §9.6.4 stängd + minimal §9.6.3 rad-996-fix; legacy-paritetstester pinnade explicit (test_aggregator_evidence_weighting.py:220/241/524 + docstring); 222/222 tester gröna (se sessionspost 2026-05-16) | I-7f | Stänger §9.6.4-defaultfrågan; transparens-leverans till I-18; reproducerbarhetsnot för iteration 2-baslinjen. |
 
-> **Not — Cross-Validating Aggregator-arbetsströmmen (I-7a–I-7d):** Raderna I-7a (#133), I-7b (#134), I-7c (#135) och I-7d (#136) bryter ut en ny arbetsström från ursprungliga I-7 (#107) baserat på kodanalys 2026-05-15 (`docs/kodanalys_precision_och_falska_positiva.md`). Den arkitektoniska luckan mellan tänkt och byggd aggregator är den dominerande precisionskällan; Mekanism 3 generaliseras till en evidensvägningspolicy för hela aggregatorn. Ursprungliga I-7 (#107) pausas implicit tills I-7d är klar — **#107:s rad/status ändras medvetet INTE i denna session**. Sekvens: I-7a (låst spec) → I-7b + I-7c → I-7d (before/after-evidens för designcykel 3).
+> I-7a/b/c är en nedbrytning av den arkitektoniska rotorsaken i `docs/kodanalys_precision_och_falska_positiva.md` §15 (delvis realiserad korsverifiering). Skild från I-7/#107 (modellskalningsprobe). GitHub-nummer tilldelas vid skapande per intro-noten ovan; ID-kolumnen bär tills vidare enbart det iterationsinterna ID:t.
 
 ### Separat buggfix (utanför iterationsplanen)
 
@@ -912,6 +915,177 @@ Per layer: pattern oförändrad (förväntat); entity TP+1/FP−1 (matcher-attri
 - Push av denna commit sker först efter Abdullas explicita bekräftelse av rapportens innehåll.
 - Referenser: [docs/iteration_3_temp_instrumentation_archive.md](iteration_3_temp_instrumentation_archive.md) (arkiv), [docs/iteration_3_threshold_calibration.md](iteration_3_threshold_calibration.md) (fas 1-data som grund för omformulering), [docs/iteration_3_num_ctx_fix.md](iteration_3_num_ctx_fix.md) (försumbar delta).
 
+### Session 2026-05-15 - Claude Code (Opus 4.7) - Issue #107 (I-7) - Probe-checkpoint 1 (smoke-test qwen3:14b)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Smoke-testa qwen3:14b lokalt via `scripts/probe_llm_models.py` som första checkpoint inom Issue #107. Verifiera att modellen laddar, svarar på svenska, producerar giltig JSON och håller acceptabel latens innan vidare arbete planeras.
+
+**Sammanfattning:** Smoke-testet passerade på alla fyra kriterier (laddning, svenska, giltig JSON, acceptabel latens). JSON-validiteten var 5/5 över kategori A-prompts. Svensk-korrektheten var 8/9 över kategori B-prompts; det enda felet är ett semantiskt grannfel inom artikel 9-domänen och inte en felklassificering över sensitivitetsgränsen. Snittlatensen 2.81s per prompt är hanterbar för full evaluation-skala. Beslut: gå vidare med qwen3:14b till checkpoint 2.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` - denna sessionspost tillagd. Inga kodändringar.
+
+**Gjort:**
+
+Probe-skriptet kördes med 14 prompts fördelade över två kategorier. Kategori A täcker generella JSON-extraktionsuppgifter på svenska (extrahera namn, lista poster, kategorisera, räkna ord, plocka datum). Kategori B täcker svenska sensitivitetsfraser från artikel 9 (hälsodata, etniskt ursprung, religiös övertygelse, sexuell läggning, politisk åsikt, fackmedlemskap och kombinationer av dessa). Rådata och per-prompt-utfall skrevs till `scripts/probe_results_2026-05-14.md`.
+
+JSON-validiteten var 5/5 över kategori A. Svensk-korrektheten var 8/9 över kategori B. Det enda felet (b5_politics_positive) klassade frasen om "politisk åsikt" som "fackmedlemskap". Båda kategorier är artikel 9-kategorier, så felet är ett semantiskt grannfel och inte en sensitivitets-felklassificering.
+
+Snittlatensen blev 2.81s per prompt. Första prompten (a1_extract_name) tog 6.17s; övriga tretton låg jämnt mellan 2.35s och 2.72s. Tolkningen är att 6.17s-utfallet är modell-warmup eller initial GPU-allokering, inte representativ latens. Modellen laddade utan problem på lokal hårdvara (RX 9070 XT, 16 GB VRAM, ROCm-konfigurerad Ollama).
+
+**Beslut fattade:**
+
+Operativt val: gå vidare med qwen3:14b till nästa checkpoint. Smoke-kriterierna (modellen laddar, svarar, håller svenska, producerar giltig JSON) är passerade. Det enda felet är ett semantiskt grannfel inom rätt artikel 9-domän, inte ett klassmässigt sammanbrott. Latensen är hanterbar för full evaluation-skala (uppskattat 50 procent längre än qwen2.5:7b, vilket håller full pipeline-körning praktiskt genomförbar). Inga arkitektoniska beslut.
+
+**Öppet/Nästa steg:**
+
+Nästa checkpoint kommer röra utvärdering på en delmängd av iteration 2-datasetet, för att börja addressera probe-frågan om modellbegränsning kontra uppgiftens inneboende svårighet. Exakt val av delmängd och utvärderingsform avgörs i kommande session. Issue #107-status oförändrad i statustabellen tills checkpoint 2 är planerad och dokumenterad.
+
+Referenser: [scripts/probe_results_2026-05-14.md](../scripts/probe_results_2026-05-14.md) - rådata från smoke-testet med per-prompt-utfall, JSON-validering, svensk-korrekthet och latens.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) - Issue #107 (I-7) - Probe-checkpoint 2 (infrastruktur för delmängdsutvärdering)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Möjliggöra checkpoint 2-utvärderingar på delmängder av iteration 2-datasetet (artikel 9 separat, kombination separat, eller hela uppsättningen) med valbar LLM-modell, utan att behöva redigera scripten mellan körningar. Förberedelse för att svara på probe-frågan om Layer 3/4-tak är modell- eller uppgiftsbundet.
+
+**Sammanfattning:** Lade till `--subset {iteration_1,article9,combination,all}` i `scripts/build_demo_snapshot.py` och miljövariabel `AEGIS_MODEL` i både `scripts/build_demo_snapshot.py` och `run_evaluation.py`. Snapshotens `metadata.dataset`-block fortsätter ha alla tre subset-räknare (med 0 för ej laddade), bakåtkompatibelt med `demo/callbacks.py` och `tests/unit/test_snapshot_loader.py`. Nytt fält `metadata.subset` för spårbarhet. Inga ändringar i pipeline, lager eller utvärderingskärnan.
+
+**Ändrade filer:**
+- `run_evaluation.py` - `import os` tillagd; `_MODEL` läser `AEGIS_MODEL` med default `qwen2.5:7b-instruct`.
+- `scripts/build_demo_snapshot.py` - `import os` tillagd; `_MODEL` läser `AEGIS_MODEL`; ny konstant `_SUBSET_KEYS` med val-mappning; `--subset` CLI-flagga; dataset-laddning omskriven till per-subset-loop med `subset_counts`-dict; metadata uppdaterad (nytt `subset`-fält, `dataset`-räknare härleds från `subset_counts`); modul-docstring uppdaterad med två nya användarexempel.
+- `README.md` - ny sektion #7 "Generera demo-snapshot" som dokumenterar `build_demo_snapshot.py` med `--subset` och `AEGIS_MODEL`.
+- `docs/iteration_3_implementation.md` - statusrad för #107 uppdaterad till 🔄 Pågår; denna sessionspost tillagd.
+
+**Gjort:**
+
+Identifierade två kontaktpunkter där modell och datasetval var hårdkodat: `_MODEL`-konstanten i båda scripten och tre eager `load_dataset`-anrop i `build_demo_snapshot.main()`. Valde miljövariabel `AEGIS_MODEL` framför CLI-flagga för modellbyte eftersom `run_evaluation.py` inte har CLI-infrastruktur och scopen begränsades till minimal förändring. Valde dict-baserad `_SUBSET_KEYS`-mappning framför if/elif-kedja för symmetri med befintliga `_DATASET_PATHS` och för att hålla `choices` och loop-logik DRY mot samma sanningskälla.
+
+Metadata-blocket behåller alla tre subset-räknare (`iteration_1_texts`, `article9_texts`, `combination_texts`) men de härleds nu från en `subset_counts`-dict som default-initieras till 0. Bakåtkompatibilitet är verifierad mot `demo/callbacks.py:719-723` (läser endast `total_texts` via `.get(...)`) och mot `tests/unit/test_snapshot_loader.py:59` (vars fixture redan använder `0` för ej laddade subset).
+
+README utökades med en kort sektion #7 som speglar mönstret från sektion #1 (run_evaluation.py): tre kommandoexempel (default, --subset article9, AEGIS_MODEL=qwen3:14b) plus en mening om var snapshoten skrivs och vilka konsumenter som läser den.
+
+`python scripts/build_demo_snapshot.py --help` verifierades och visar `--subset {all,iteration_1,article9,combination}` med default `all` enligt förväntan. Inga befintliga tester täcker dessa script (`tests/integration/test_end_to_end.py` och `tests/unit/test_evaluation_flow.py` testar `evaluation.runner.run_evaluation`-funktionen, inte CLI-skripten; `tests/unit/test_snapshot_loader.py` testar snapshot-läsaren `demo/snapshot_loader.py`, inte byggaren). Detta noteras explicit utan att nya tester adderas — checkpoint 2 är infrastruktur, inte logik som kräver enhetstest.
+
+**Beslut fattade:** Inga arkitektoniska beslut. Operativa val: (a) env-var `AEGIS_MODEL` snarare än CLI-flagga på `run_evaluation.py` för att hålla scope minimal; (b) dict-baserat subset-val för symmetri och DRY; (c) behålla alla tre dataset-räknare i metadata med 0 för ej laddade subset, för bakåtkompatibilitet mot existerande snapshot-konsumenter; (d) `subset`-fält placerat direkt efter `model` i metadata då båda är runtime-kontroller; (e) Issue #107-status förblir 🔄 Pågår efter checkpoint 2 eftersom probe-frågan om modell- vs uppgiftsbundet tak inte är besvarad förrän jämförande evalueringskörningar är genomförda.
+
+**Öppet/Nästa steg:**
+
+Nästa checkpoint kör faktisk evaluation: `AEGIS_MODEL=qwen3:14b python scripts/build_demo_snapshot.py --subset article9 --output probe_checkpoint2_qwen3_article9.json` och motsvarande för `combination`. Resultaten jämförs mot iteration 2-baseline (`qwen2.5:7b-instruct`) per-lager (Layer 3 vs Layer 4) för att besvara probe-frågan om modell- vs uppgiftsbundet tak. Issue #107-status förblir 🔄 Pågår tills alla checkpoints är genomförda och syntetiserade i ett diskussionsunderlag för kapitel 6.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) - Issue #107 (I-7) - Probe-checkpoint 3 (jämförande körning Lager 3)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Producera den första jämförande datapunkten för probe-frågan genom att köra qwen2.5:7b-instruct och qwen3:14b mot samma article9-subset (52 texter) via `scripts/build_demo_snapshot.py --subset article9`, så att skillnader i utfall är attributerbara till modellen och inte till data eller pipeline-version.
+
+**Sammanfattning:** Båda modellerna kördes mot article9-subsetet med oförändrad pipeline (prompt_versions article9=v5, combination=v5). qwen2.5:7b-instruct gav TP=36, FP=33, FN=8, Recall=0.8182, Precision=0.5217, F1=0.6372. qwen3:14b gav TP=38, FP=21, FN=6, Recall=0.8636, Precision=0.6441, F1=0.7379. Modellbytet lyfter total-F1 med 10.07 procentenheter, drivet primärt av precision-vinst (+12.23 procentenheter, FP-minskning från 33 till 21) snarare än recall-vinst (+4.55 procentenheter). Två article9-kategorier förbättras materiellt över 10-procentenheterströskeln och en kategori regredierar strax under den. Inga kodändringar; två snapshots producerade av oförändrat skript.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` - statusrad för #107 utökad med "checkpoint 3 klar" (status oförändrad 🔄 Pågår); denna sessionspost tillagd. Inga kodändringar.
+
+**Gjort:**
+
+Subsetkörningen utfördes för båda modellerna med identiskt dataset och identisk pipeline. Totalsiffrorna visar att qwen3:14b förbättrar samtliga aggregatmått jämfört med qwen2.5:7b-instruct, som fungerar som baslinje för subsetet: två fler sanna positiva, tolv färre falska positiva och två färre falska negativa. Total-F1 går från 0.6372 till 0.7379, en ökning på 10.07 procentenheter. Uppdelat på komponenterna kommer förbättringen huvudsakligen från precision (0.5217 till 0.6441, +12.23 procentenheter) medan recall ökar mer blygsamt (0.8182 till 0.8636, +4.55 procentenheter).
+
+På article9-kategorinivå visar två kategorier materiell förbättring över 10-procentenheterströskeln. article9.religios_overtygelse går från F1 0.83 till 1.00 (+16.7 procentenheter) och article9.sexuell_laggning från F1 0.80 till 1.00 (+20.0 procentenheter). En kategori regredierar strax under tröskeln: article9.politisk_asikt går från F1 1.00 till 0.91 (-9.1 procentenheter, en falsk negativ tillkom). Övriga article9-kategorier (biometrisk_data, fackmedlemskap, genetisk_data, halsodata) är i stort sett oförändrade mellan modellerna.
+
+En spårbarhetsfråga noteras i `report.per_layer`. Entity-lagret skiljer sig mellan körningarna: qwen2.5-körningen ger 0/8/0 i TP/FP/FN och qwen3-körningen 0/7/0. Lager 2 är SpaCy-baserat och LLM-fritt, så att dess siffror skiljer sig mellan två körningar som endast varierar LLM-modell är oväntat. Trolig förklaring är att per_layer-räkningen plockar upp downstream-aggregator-beslut som har LLM-beroende komponenter. Detta är inte ett tillfälle för buggrapportering men dokumenteras som spårbarhetsfråga inför formaliseringsfasen. Pattern-lagret saknas som nyckel i `report.per_layer` i båda körningarna.
+
+Latensen mättes från launcher-loggens starttidsstämpel mot snapshotens `metadata.generated_at`. qwen2.5:7b-instruct tog cirka 10 minuter 23 sekunder och qwen3:14b cirka 13 minuter 32 sekunder. qwen2.5-modellen var varm vid körningens start från tidigare avbrutna wrapper-försök, vilket kan ha förkortat dess laddningstid och därmed gör latensjämförelsen inte strikt likvärdig.
+
+En avvikelse från planen på exekveringsmekanik-nivå uppstod. Den ursprungliga `run_in_background` PowerShell-wrapper-metoden visade sig instabil och avslutades med exit 255 utan python-traceback. Metoden byttes till `Win32_Process.Create` via WMI, som detacherar python-processen helt utanför wrapperns job-object och låter python skriva sina egna ut- och felströmmar via cmd-redirigering. Båda slutgiltiga snapshots producerades av oförändrad `scripts/build_demo_snapshot.py`, inga pipeline-parametrar ändrades och inga repo-filer modifierades. De diagnostiska launcher-loggarna har en UTF-16-kodningsartefakt på WMI-ReturnValue-raden som inte påverkar snapshot-JSON eller någon rapporterad siffra.
+
+**Producerade filer:**
+- `demo/snapshots/iteration_3_probe_qwen25_7b_article9.json` - baslinje för subsetet, qwen2.5:7b-instruct.
+- `demo/snapshots/iteration_3_probe_qwen3_14b_article9.json` - probe-kandidaten, qwen3:14b.
+- Diagnostiska hjälpfiler under `demo/snapshots/_probe_*` är otrackade och kan raderas.
+
+**Beslut fattade:** Inga arkitektoniska beslut. Operativa val: (a) byte av exekveringsmekanik till WMI-detachment för att kringgå den instabila bakgrunds-wrappern utan att röra skript eller pipeline; (b) Issue #107-status förblir 🔄 Pågår eftersom Lager 4 ännu inte är täckt och probe-frågan inte är fullständigt besvarad.
+
+**Tolkning för probe-frågan (preliminär, Lager 3):** Modellbytet ger en materiell förbättring på cirka 10 procentenheter total-F1 driven av precision, vilket indikerar att taket är åtminstone delvis modellbundet. Recall-vinsten är dock blygsam (+4.5 procentenheter), vilket pekar mot att uppgiften har en egen inneboende svårighet som inte löses enbart av en större modell. Den preliminära slutsatsen för Lager 3 är att taket är både modell- och uppgiftsbundet, med modell-axeln tydligare på precision och uppgifts-axeln tydligare på recall. Lager 4 (CombinationLayer) är inte testat i denna checkpoint; kombinationssubsetet återstår.
+
+**Öppet/Nästa steg:**
+
+Checkpoint 4 körs mot kombinationssubsetet (27 texter) för att täcka Lager 4 (CombinationLayer) på samma jämförande sätt som Lager 3 nu är täckt. Issue #107-status förblir 🔄 Pågår tills samtliga checkpoints är genomförda och syntetiserade i ett diskussionsunderlag för kapitel 6.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) - Issue #107 (I-7) - Probe-checkpoint 4 (jämförande körning Lager 4)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Producera den jämförande datapunkten för Lager 4 (CombinationLayer) genom att köra qwen2.5:7b-instruct och qwen3:14b mot samma kombinationssubset (27 texter) via `scripts/build_demo_snapshot.py --subset combination`, så att skillnader i utfall är attributerbara till modellen och inte till data eller pipeline-version. Tillsammans med checkpoint 3 täcker detta båda LLM-baserade lagren i pipelinen.
+
+**Sammanfattning:** Båda modellerna kördes mot kombinationssubsetet med oförändrad pipeline (prompt_versions article9=v5, combination=v5). qwen2.5:7b-instruct gav TP=47, FP=29, FN=8, Recall=0.8545, Precision=0.6184, F1=0.7176. qwen3:14b gav TP=49, FP=31, FN=6, Recall=0.8909, Precision=0.6125, F1=0.7259. Modellbytet ändrar total-F1 med 0.84 procentenheter, vilket ligger inom brusnivå för ett subset på 27 texter. Recall stiger något (+3.64 procentenheter) medan precision sjunker något (-0.59 procentenheter) och FP ökar från 29 till 31. Det är en kvalitativt annan signatur än checkpoint 3, där F1 lyfte med tio procentenheter drivet av precision på Lager 3. På Lager 4 finns ingen sådan global förbättring. Inga kodändringar; två snapshots producerade av oförändrat skript.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` - statusrad för #107 utökad med "checkpoint 4 klar" (status oförändrad 🔄 Pågår); denna sessionspost tillagd. Inga kodändringar.
+
+**Gjort:**
+
+Subsetkörningen utfördes för båda modellerna med identiskt dataset och identisk pipeline. Totalsiffrorna visar att qwen3:14b ger två fler sanna positiva och två färre falska negativa men också två fler falska positiva jämfört med qwen2.5:7b-instruct, som fungerar som baslinje för subsetet. Total-F1 går från 0.7176 till 0.7259, en skillnad på 0.84 procentenheter som ligger inom brusnivå för 27 texter. Recall ökar med 3.64 procentenheter medan precision sjunker med 0.59 procentenheter. Detta skiljer sig kvalitativt från Lager 3 i checkpoint 3, där modellbytet gav en samlad förbättring på cirka tio procentenheter driven av precision. På Lager 4 finns ingen motsvarande global förbättring.
+
+På kategorinivå rör sig två kategorier över 10-procentenheterströskeln, och de drar i motsatta riktningar. context.organisation går från F1 0.70 till 0.86 (+16.15 procentenheter); qwen3 förbättrar både antalet sanna positiva och precisionen för organisationsdetektion. context.plats regredierar från F1 0.97 till 0.85 (-11.70 procentenheter); qwen3 adderar fyra extra falska positiva utan motsvarande vinst i sanna positiva. context.kombination ligger strax under tröskeln men sjunker (-9.09 procentenheter) genom att en falsk negativ tillkom. Den kategorin är den mest direkta operativa outputen av CombinationLayer enligt Beslut 19 (kombinationslogiken bor i Lager 4), så regressionen är värd att flagga särskilt.
+
+På lagernivå ger context-aggregatet (Lager 4) 44/11/0 i TP/FP/FN med F1 0.8889 för qwen2.5 och 48/13/0 med F1 0.8807 för qwen3. Skillnaden ligger i falska positiva (11 mot 13) och sanna positiva (44 mot 48); recall är 1.0 i båda eftersom inga falska negativa finns på lagernivå. Två separata spårbarhetsfrågor i `report.per_layer` förstärker mönstret från checkpoint 3. För det första skiljer sig entity-lagret återigen mellan körningarna, denna gång i både sanna positiva (3 mot 1) och falska positiva (17 mot 18); i checkpoint 3 varierade endast falska positiva. Att Lager 2, som är SpaCy-baserat och LLM-fritt, visar olika räknare för olika LLM-modeller stärker hypotesen att `report.per_layer` plockar upp aggregator-beslut med LLM-beroende komponenter snarare än utgör ren lager-isolering. För det andra saknas article9-nyckeln helt i qwen3-körningens `per_layer`, medan den i qwen2.5-körningen finns som 0/1/0; antingen detekterade qwen3 noll Article 9-fynd på kombinationssubsetet eller så är detta en attributions-quirk i aggregatorn. Sammantaget bör `report.per_layer` inte användas oprövad för per-lager-attribution i thesis-rapporten utan att aggregatorns räkningslogik först granskas. Detta flaggas inför formaliseringsfasen.
+
+Hallucinationsdetektering observerades i qwen2.5-körningen. Dess stderr loggade en (1) avvisning från CombinationLayers span-validering: spannet "ansvarigen för logistikstrategen som flyttat hit från huvudkontoret i Stockholm" kunde inte rekonstrueras från valid evidence och avvisades. Det är skyddsmekanismen från Beslut 19 som arbetar korrekt. qwen3-körningens stderr var tom. En indirekt observation är att 7b-modellen genererade en hallucination som behövde fångas av efter-LLM-skyddet medan 14b-modellen inte genererade någon sådan i den här körningen.
+
+Latensen mättes från launcher-loggens starttidsstämpel mot snapshotens `metadata.generated_at`. qwen2.5:7b-instruct tog cirka 5 minuter 47 sekunder och qwen3:14b cirka 7 minuter 47 sekunder. qwen2.5-modellen var laddad i Ollama vid qwen3-körningens start eftersom modellerna kördes sekventiellt.
+
+**Producerade filer:**
+- `demo/snapshots/iteration_3_probe_qwen25_7b_combination.json` - baslinje för subsetet, qwen2.5:7b-instruct.
+- `demo/snapshots/iteration_3_probe_qwen3_14b_combination.json` - probe-kandidaten, qwen3:14b.
+- Diagnostiska hjälpfiler under `demo/snapshots/_probe_*_combination_*` är otrackade och kan raderas.
+
+**Beslut fattade:** Inga arkitektoniska beslut. Operativa val: (a) samma WMI-detachment-mekanik som checkpoint 3 återanvänd utan ändringar i skript eller pipeline; (b) Issue #107-status förblir 🔄 Pågår eftersom checkpoint 5 (fullpipeline mot 159-datasetet) återstår innan probe-frågan kan syntetiseras.
+
+**Tolkning för probe-frågan (preliminär, Lager 4):** Modellbytet ger ingen materiell förbättring av total-F1 på Lager 4, vilket är en kvalitativt annan signatur än Lager 3 i checkpoint 3. F1-deltat ligger inom brusnivå för stickprovsstorleken och precision-utvecklingen är till och med svagt negativ. Kategori-internt finns rörelse: context.organisation lyfter materiellt (+16.15 procentenheter), context.plats regredierar materiellt (-11.70 procentenheter) och context.kombination regredierar strax under tröskeln (-9.09 procentenheter), men dessa rörelser summerar inte till någon global förbättring. Den preliminära slutsatsen för Lager 4 är att taket primärt är uppgiftsbundet snarare än modellbundet på den här testpopulationen. CombinationLayers uppgift är en kvalitativ resonemangsbedömning av pusselbitseffekten enligt GDPR skäl 26, och en större modell inom samma familj löser inte den uppgiften påtagligt bättre. Försiktighet flaggas: 27 texter är ett litet stickprov och en F1-skillnad på 0.84 procentenheter kan inte säkras statistiskt mot brus, men de kvalitativa observationerna bedöms robusta nog att rapportera. Sammantaget för checkpoint 3 och 4 framträder ett asymmetriskt resultat per lager: för Lager 3 är taket åtminstone delvis modellbundet med en precision-driven förbättring, för Lager 4 primärt uppgiftsbundet utan materiell förbättring. Det besvarar probe-frågan med större nyans än ett enskilt tal.
+
+**Öppet/Nästa steg:**
+
+Checkpoint 5 kör qwen3:14b mot hela 159-datasetet via `scripts/build_demo_snapshot.py` utan `--subset`-flagga (default all) och jämför mot den existerande post-num_ctx-fix-baslinjen `iteration_3_post_num_ctx_fix.json` (F1 79.33 procent). Det producerar det globala rapporterbara F1-talet plus en kontroll mot fullpipeline-baslinjen och kompletterar checkpoint 3 och 4:s per-lager-isolering. Issue #107-status förblir 🔄 Pågår tills checkpoint 5 är genomförd och samtliga checkpoints är syntetiserade i ett diskussionsunderlag för kapitel 6.
+
+### Session 2026-05-15 - Claude Code (Opus 4.7) - Issue #107 (I-7) - Probe-checkpoint 5 (fullpipeline mot 159-datasetet)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Producera det globala fullpipeline-talet för qwen3:14b genom att köra hela 159-datasetet via `scripts/build_demo_snapshot.py` utan `--subset`-flagga och ställa det mot den etablerade fullpipeline-baslinjen `iteration_3_post_num_ctx_fix.json` (qwen2.5:7b-instruct, F1 79.33 procent), så att checkpoint 3 och 4:s per-lager-isolering kompletteras med ett rapporterbart aggregattal och probe-frågan kan syntetiseras över samtliga fem checkpoints.
+
+**Sammanfattning:** qwen3:14b kördes mot hela datasetet med oförändrad pipeline (prompt_versions article9=v5, combination=v5, identiska med baslinjen). Resultatet blev TP=214, FP=73, FN=19, Recall=0.9185, Precision=0.7456, F1=0.8231. Mot baslinjens TP=213, FP=91, FN=20, Recall=0.9142, Precision=0.7007, F1=0.7933 är skillnaden plus 2.98 procentenheter total-F1, driven av arton färre falska positiva med i stort sett oförändrad recall. Fem kategorier rör sig över 10-procentenheterströskeln, fyra uppåt och en nedåt. Per-lagermönstret från checkpoint 3 och 4 reproduceras inklusive den strukturella nollställningen av falska negativa på lagernivå, som nu flaggas tydligare som metodologisk fråga inför formaliseringen. Inga kodändringar; en snapshot producerad av oförändrat skript.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` - statusrad för #107 utökad till "checkpoint 1 till 5 klara" med syntesnotering (status oförändrad 🔄 Pågår); denna sessionspost tillagd. Inga kodändringar.
+
+**Gjort:**
+
+Körningen startades via samma WMI-detachment som checkpoint 3 och 4, med `AEGIS_MODEL=qwen3:14b` satt inuti cmd-anropet och launch utan `--subset` så att default all laddade alla 159 texter (80 iteration-1, 52 artikel-9, 27 kombination). WMI returnerade 0 med PID 25180. Den bakgrunds-poll-loop som skulle invänta färdig snapshot avslutades med exit 255 utan utdata, samma `run_in_background`-instabilitet som dokumenterades i checkpoint 3. Den loopen är dock skild från den WMI-detachade python-processen, som fortsatte oberoende och slutförde samtliga 159 texter och skrev sin snapshot. Verifieringen mot snapshoten passerade på samtliga sju kontrollpunkter: `metadata.model` qwen3:14b, `metadata.subset` all, dataset-räknarna 159 / 80 / 52 / 27 och fullständiga totalsiffror i `report.total`.
+
+Totalsiffrorna lästes direkt ur snapshotfilerna, inte ur den separata datarapporten. qwen3:14b ger en sann positiv mer, arton falska positiva färre och en falsk negativ färre än baslinjen. Recall rör sig marginellt (0.9142 till 0.9185, plus 0.43 procentenheter) medan precision lyfter tydligt (0.7007 till 0.7456, plus 4.50 procentenheter), vilket ger total-F1 0.7933 till 0.8231. Riktningen är densamma som på Lager 3-isoleringen i checkpoint 3: vinsten är precision-driven via färre falska positiva snarare än recall-driven via fler träffar. En asymmetri i metadata noteras för spårbarhet. Baslinjen genererades på commit 2f067ee innan checkpoint 2 införde fältet `metadata.subset`, så baslinjens metadata saknar det fältet. Jämförelsen vilar därför på modell- och dataseträknarna, vilka finns i båda snapshots, medan `subset` är verifierat enbart på den nya snapshoten.
+
+På kategorinivå passerar fem kategorier 10-procentenheterströskeln. Tre artikel 9-kategorier förbättras: article9.sexuell_laggning från F1 0.80 till 1.00 (plus 20.00 procentenheter), article9.religios_overtygelse från 0.83 till 1.00 (plus 16.67 procentenheter) och article9.halsodata från 0.63 till 0.73 (plus 10.23 procentenheter). De två första reproducerar exakt det mönster som sågs på article9-subsetet i checkpoint 3. Bland context-kategorierna lyfter context.yrke kraftigt, från F1 0.55 till 0.78 (plus 23.09 procentenheter, falska positiva ned från 20 till 6), medan context.plats regredierar från 0.88 till 0.68 (minus 19.21 procentenheter). Strax under tröskeln ligger article9.politisk_asikt som sjunker från 1.00 till 0.91 (en falsk negativ tillkom), samma riktning som i checkpoint 3. En kategori finns endast i baslinjens kategori-rymd: article9.etniskt_ursprung registrerades där som 0/1/0 med F1 0.00, men saknas helt som nyckel i qwen3-snapshoten, vilket innebär att qwen3 inte producerade något fynd taggat den kategorin på fullpipelinen.
+
+På lagernivå reproduceras checkpoint 3 och 4:s mönster. Lager 1 (pattern) är identiskt 68/0/0 med F1 1.0000 i båda snapshots, vilket är väntat eftersom lagret är regexbaserat och helt LLM-fritt; modellbytet kan per konstruktion inte påverka det. Lager 3 (article9) går från 36/3 i sanna och falska positiva med F1 0.9114 till 38/3 med F1 0.9620, plus 5.06 procentenheter, konsistent med Lager 3-isoleringen i checkpoint 3. Lager 4 (context) går från 63/49 med F1 0.7200 till 68/30 med F1 0.8193, plus 9.93 procentenheter på fullpipelinen, vilket är en starkare rörelse än den brusnivå som kombinationssubsetet visade i checkpoint 4 och förklaras av att fullpipelinen även innehåller de context-kategorier som lyfter tydligt. Lager 2 (entity) går från 46/35 med F1 0.7244 till 40/40 med F1 0.6667, minus 5.77 procentenheter. Den skillnaden tolkas inte som modellbunden. Lager 2 är SpaCy-baserat och LLM-oberoende, så att dess räknare skiljer sig mellan två körningar som endast varierar LLM-modell är samma spårbarhetsfråga som checkpoint 3 och 4 dokumenterade: `report.per_layer` plockar upp nedströms aggregator-beslut med LLM-beroende komponenter snarare än ren lager-isolering.
+
+context.plats-regressionen lyfts fram som spårbarhetspunkt och inte som ett buggfynd. Kategorin regredierar nu minus 19.21 procentenheter på fullpipelinen, och regredierade minus 11.70 procentenheter på kombinationssubsetet i checkpoint 4. Det är samma riktning i två oberoende körningar mot olika datapopulationer, och regressionen fördjupas på den större populationen. På fullpipelinen behåller qwen3 samma antal sanna positiva för context.plats men adderar nio extra falska positiva, ett kategori-internt mönster som inte löses av en större modell utan tvärtom förvärras med den. Detta är probe-arbetets enda materiella regression och flaggas som en spårbarhetspunkt värd uppföljning i diskussionen, inte som ett tekniskt fel att åtgärda inom probe-scopet.
+
+En metodologisk flagga reses kring per_layer-strukturen, tydligare formulerad än i tidigare checkpoints. I `scripts/build_demo_snapshot.py` byggs per_layer-mängden på raderna 245 till 248 enbart från nycklarna i `cm.layer_tp` och `cm.layer_fp`, utan att `layer_fn` ingår i nyckelmängden. Konsekvensen är att varje lager i `report.per_layer` rapporterar fn lika med noll och recall lika med 100 procent i samtliga snapshots, vilket bekräftas i både den nya och baslinjens per_layer. Per-lager-F1 är därmed artificiellt precision-driven och inte ett mått på lagrets faktiska recall. Det påverkar hur Lager 3-talet i checkpoint 3 och Lager 4-talet i checkpoint 4 ska läsas och refereras i kapitel 5: dessa per-lager-F1-värden får inte presenteras som om de inkluderar lagrets missade fynd, eftersom strukturen utesluter falska negativa per lager. Detta är inte en bug i pipelinen utan en egenskap hos snapshot-byggarens aggregeringsval, och det dokumenteras som en metodologisk flagga inför formaliseringsfasen så att kapitel 5 beskriver per-lager-måtten med rätt förbehåll.
+
+Latensen mättes från launcher-loggens starttidsstämpel mot snapshotens `metadata.generated_at`. qwen3:14b mot fullpipelinen tog cirka 40 minuter 37 sekunder, inom det förväntade intervallet 30 till 50 minuter och som väntat längre än subsetkörningarna eftersom datasetet är 159 texter i stället för 52 eller 27. Baslinjen `iteration_3_post_num_ctx_fix.json` har `metadata.generated_at` men ingen launcher-logg eftersom den kördes direkt utan WMI-detachment, så dess körtid är inte jämförbart mätbar och ingen baslinje-latenssiffra rapporteras. qwen3-snapshotens stderr var noll byte: inga hallucinationsavvisningar av den typ som qwen2.5 genererade på kombinationssubsetet i checkpoint 4, inga Ollama-fel och inga tracebacks. Launcher-loggen har samma kosmetiska UTF-16-artefakt på WMI-ReturnValue-raden som i checkpoint 3 och 4, utan effekt på snapshot eller någon rapporterad siffra.
+
+**Producerade filer:**
+- `demo/snapshots/iteration_3_probe_qwen3_14b_full_pipeline.json` - probe-kandidaten på fullpipelinen, qwen3:14b, producerad av oförändrat skript.
+- Diagnostiska hjälpfiler under `demo/snapshots/_probe_qwen3_full_pipeline_*` är otrackade och kan raderas.
+- Baslinjen `demo/snapshots/iteration_3_post_num_ctx_fix.json` lästes oförändrad och modifierades inte.
+
+**Beslut fattade:** Inga arkitektoniska beslut. Operativa val: (a) samma WMI-detachment-mekanik som checkpoint 3 och 4 återanvänd utan ändringar i skript eller pipeline; (b) per_layer-strukturens nollställning av falska negativa lyfts från spårbarhetsfråga till uttalad metodologisk flagga inför kapitel 5; (c) Issue #107-status går från checkpoint-räknande till "checkpoint 1 till 5 klara, syntes inför kapitel 6 återstår" eftersom körningsarbetet nu är komplett men issuen inte ska stängas förrän fynden är syntetiserade.
+
+**Syntes av probe-frågan (samlat fynd, samtliga fem checkpoints):** Resultatet är asymmetriskt per lager och formuleras direkt. Lager 3 är åtminstone delvis modellbundet. Modellbytet ger en precision-driven förbättring både på article9-subsetet i checkpoint 3 (plus 10.07 procentenheter total-F1 på subsetet) och på fullpipelinens Lager 3 i checkpoint 5 (plus 5.06 procentenheter), och de starkaste artikel 9-kategorierna, sexuell_laggning och religios_overtygelse, når full F1 med den större modellen. Lager 4 och context-kategorierna visar blandade resultat som pekar mot uppgiftsbunden komplexitet snarare än modelltak. På kombinationssubsetet i checkpoint 4 låg F1-skillnaden inom brus, och på fullpipelinen lyfter context.yrke och context.organisation samtidigt som context.plats regredierar materiellt, rörelser som inte summerar till en enhetlig modelldriven vinst utan speglar kategori-intern svårighet. Globalt ger modellbytet plus 2.98 procentenheter total-F1, från 79.33 till 82.31 procent, vilket är ett thesis-rapporterbart resultat. Samlat besvarar probe-arbetet frågan med nyans: taket är inte enhetligt vare sig modell- eller uppgiftsbundet, utan modellbundet på Lager 3:s precision och uppgiftsbundet på Lager 4:s kvalitativa pusselbitsbedömning, och en större modell inom samma familj höjer det globala talet utan att upphäva den uppgiftsbundna komponenten.
+
+**Öppet/Nästa steg:**
+
+Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras och inga fler körningar återstår. Nästa steg är att syntetisera fynden till diskussionsmaterial för kapitel 6, specifikt avsnitten 6.5 och 6.7 enligt issue-beskrivningen, samt att föra in per_layer-flaggan som förbehåll i kapitel 5:s beskrivning av per-lager-måtten. Issuen hålls 🔄 Pågår tills syntesen är införd; körningsarbetet är avslutat men issuen stängs inte förrän diskussionsunderlaget är skrivet.
+
 ### Session 2026-05-15 - Claude Code (Opus 4.7) — Dokumentationsstädning iteration 3-ramning
 
 **Iteration:** 3 / v0.3.0-dev
@@ -938,26 +1112,360 @@ Per layer: pattern oförändrad (förväntat); entity TP+1/FP−1 (matcher-attri
 - Loggboken iteration 3 (Google Docs) och AEGIS-rapporten (Google Docs) granskas separat av användaren parallellt med denna körning och ligger utanför agent-flödets scope. Eventuella motsvarande städningar i Loggboken hanteras manuellt.
 - Eventuella issue-titlar eller issue-beskrivningar på GitHub som speglar tidigare felramning behåller sina formuleringar — också utanför scope.
 
-### Session 2026-05-15 - Claude Code (Opus 4.7) — issue-skapande I-7a–I-7d (Cross-Validating Aggregator)
+### Session 2026-05-15 - Claude Code (Opus 4.7) — Issue I-7a (Designspecifikation Cross-Validating Aggregator)
 
 **Iteration:** 3 / v0.3.0-dev
 
-**Mål:** Bryta ut en ny arbetsström från ursprungliga I-7 (#107) baserat på kodanalys 2026-05-15: skapa fyra GitHub-issues (I-7a–I-7d) för Cross-Validating Aggregator och registrera dem i statustabellen. Ingen kodändring; ingen commit.
+**Mål:** Specificera (ej implementera) hur aggregatorns korsverifiering generaliseras från enbart `context.kombination` (Mekanism 3) till en evidensvägningspolicy per (lager, kategori), som ny sektion 9.6-utkast.
 
 **Ändrade filer:**
-- `docs/iteration_3_implementation.md` — fyra nya rader i Issue-specifikationer-tabellen (#133–#136 / I-7a–I-7d); breakout-not direkt efter huvudtabellen; första-edit-stub tillagd vid sessionsstart och slutförd till denna post. Enda fil som redigerades.
+- `docs/iteration_3_implementation.md` — Tre nya rader (I-7a/b/c) i Issue-specifikationer-tabellen; I-7a-status ⬜ → 🔄 Pågår (2026-05-15) som första edit vid sessionsstart, → ✅ Klar (2026-05-15) vid sessionsslut. Förklarande not om I-7a/b/c-nedbrytningen tillagd under tabellen. Denna sessionspost tillagd.
+- `docs/arkitektur_9_6_utkast.md` — **Ny fil.** Fullständigt granskningsutkast till §9.6 "Cross-Validating Aggregator: evidensvägningspolicy" (9.6.1–9.6.7), rubrikmarkerat "[UTKAST 2026-05-15, EJ LÅST]". Ingen ändring i `arkitektur.md` (utkastet hålls i separat fil per användarbeslut, output-form B).
 
 **Gjort:**
-- Skapat fyra GitHub-issues via `gh issue create` med `--body-file`, label `iteration-3` + `spar-A2`/`spar-A4` + `prio-hog`, assignee `Abdriano95`, milestone `iteration 3 / v0.3.0`. Bodies följer #101:s sektionsstruktur (Beskrivning, Spår, Beroenden, Acceptanskriterier, Formaliseringskonsekvens, Förankring, Out of scope); acceptanskriterier verbatim från arkitekt-promptens Body-block; I-7a behåller även Empirisk grund + de fyra designprinciperna (användarbeslut 2026-05-15).
-- **Nummer-mappning:** I-7a → [#133](https://github.com/Abdriano95/aegis/issues/133), I-7b → [#134](https://github.com/Abdriano95/aegis/issues/134), I-7c → [#135](https://github.com/Abdriano95/aegis/issues/135), I-7d → [#136](https://github.com/Abdriano95/aegis/issues/136). (Arkitekt-promptens gissning #121–124 var inaktuell — högsta issue var #131, högsta PR #132 i den delade nummerrymden; `gh` tilldelade #133–#136.)
-- Lagt till fyra tabellrader efter #120-raden i samma kolumnformat som befintliga rader.
-- Lagt till breakout-not direkt efter huvudtabellen som förklarar att I-7a–I-7d bryter ut från I-7 (#107) och att #107 pausas tills I-7d är klar.
-- Verifierat via `gh issue view` (titel, labels, milestone, assignee, body med branch-not), `gh issue list --label iteration-3`, samt `git status` (endast denna fil modifierad; inga ändringar under gdpr_classifier/, evaluation/, tests/, demo/).
+- Uppdaterade I-7a-status till 🔄 Pågår som första åtgärd (CLAUDE.md §4 steg 2) — implementerat som tillägg av I-7a-raden vid 🔄, eftersom raden inte fanns sedan tidigare.
+- Lade till I-7b (implementation) och I-7c (`LOC→context.plats`-ommappning) som ⬜-platshållarrader; de utgör nedbrytningen och refereras av I-7a.
+- Skrev §9.6-utkastet: beslutstabell per (lager, kategori) (9.6.2), `evidence_basis`-transparensflagga med Finding som primär hemvist (9.6.3), `legacy`/`cross_validating`-mode med default `legacy` (9.6.4), Mekanism 3-generalisering via Option 1 (9.6.5), spårbarhet mot Beslut 11/19/21 (9.6.6) och Degerfors-genomgång (9.6.7).
+- Verifierade att inga `.py/.yaml/.json` rörts och att `arkitektur.md` är oförändrad.
 
-**Beslut fattade:** Inga arkitektoniska beslut. Två operativa användarbeslut bekräftade via AskUserQuestion: (1) varje issue-body citerar `docs/kodanalys_precision_och_falska_positiva.md` men med en not om att doc:en just nu ligger på branch `107-probe-llm-...` (commit `8abc4c2`, ej på main/HEAD) i väntan på merge; (2) full label-konsistens med befintliga rader (`spar-*` + `prio-hog`) i stället för promptmallens minimala `iteration-3`-enbart.
+**Beslut fattade:** Inga *fattade* arkitekturbeslut — I-7a producerar ett **utkast** för arkitekt-agent-granskning. Specifikationen *föreslår*: (1) Mekanism 3 generaliseras (Option 1) på Open-Closed/SOLID-grund (Martin 2003); (2) `article9.*` förblir `no_support_required` utan stödkrav och utan bypass-tröskel (recall-prioritet total, enda producent, Beslut 21); (3) generell bypass-tröskel behålls på 0.85 (kalibreringskonsistens med Beslut 51), 0.9 förs vidare som kandidat till I-7b. Det formella Loggbok-beslutet förs in när policyn låsts (efter granskning), nummer tilldelas då av användaren.
 
 **Öppet/Nästa steg:**
-- Ursprungliga I-7 (#107) pausas tills I-7d (#136) är klar; **#107:s rad/status ändrades inte i denna session** (kvarstår `⬜ Ej startad`).
-- `docs/kodanalys_precision_och_falska_positiva.md` är ännu inte mergad till main — sökvägsreferenserna i de fyra issues blir giltiga på main först när branch `107-probe-llm-...`/dokumentet mergas (hanteras av användaren via git manuellt).
-- Sekvensberoende för implementation: I-7a:s spec måste låsas före I-7b; I-7d kräver I-7b + I-7c.
+- Utkastet ska granskas av arkitekt-agenten (granskningsfrågorna listade sist i utkastfilen). Efter godkännande: inplacering som §9.6 i `arkitektur.md` och Martin (2003) till §15 (lämpligen via I-20).
+- I-7b implementerar policyn i kod (`Finding.evidence_basis`, generaliserad `_count_structural_support`, mode-flagga) — ändrar mätinstrumentet → kräver Loggbok-beslut + ombaslinje.
+- I-7c utför `entity.spacy_LOC → context.plats`-ommappningen och omprövar matcher-aliaset `{ADRESS, PLATS}`.
+- Commit + push hanteras manuellt av användaren (nio-stegs-loopen steg 8).
 
+### Session 2026-05-15 (uppföljning) - Claude Code (Opus 4.7) — I-7a inplacering
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Slutföra I-7a genom att placera in §9.6-utkastet i SSOT och ta bort utkastfilen.
+
+**Ändrade filer:**
+- `docs/arkitektur.md` — ny sektion 9.6 (Cross-Validating Aggregator: evidensvägningspolicy) tillagd efter §9.5, före §10.
+- `docs/arkitektur_9_6_utkast.md` — borttagen.
+- `docs/iteration_3_implementation.md` — denna sessionspost.
+
+**Gjort:**
+- Inplacering av §9.6 i `docs/arkitektur.md` med utkastbanner och avslutande granskningsfrågor borttagna; allt övrigt innehåll (9.6.1–9.6.7 inkl. 9.6.2.1 och 9.6.2.2) bevarat ordagrant.
+- Borttagning av utkastfilen (`docs/arkitektur_9_6_utkast.md` var otrackad — skapad i förra sessionen, aldrig committad — så raderingen syns inte som git-`D`, endast som att filen försvinner ur arbetsträdet).
+- I-7a-statusraden var redan satt till ✅ Klar (2026-05-15) i förra sessionen och lämnas oförändrad per instruktion.
+- Uppföljningssessionspost (denna post).
+
+**Beslut fattade:** Inga nya. Loggboks-beslut för "Cross-Validating Aggregator: evidensvägningspolicy" skrivs in i Loggboken iteration 3 manuellt av användaren (utanför agent-flödet, Google Docs).
+
+**Öppet/Nästa steg:**
+- Loggboks-beslut förs in manuellt av användaren.
+- Martin (2003) bör läggas till `arkitektur.md` §15-referenser (lämpligen via I-20, SSOT-synk) — utanför I-7a:s scope.
+- Därefter initieras I-7b (implementation) i separat session.
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7b (Implementation Cross-Validating Aggregator)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Implementera §9.6-evidensvägningspolicyn i kod: `Finding.evidence_basis`, `Classification.weakest_evidence_basis`, generaliserad Mekanism 3-primitiv och `cross_validation_mode`-flagga med default `legacy`.
+
+**Ändrade filer:**
+- `gdpr_classifier/core/finding.py` — nytt fält `evidence_basis: Literal[...] = "no_support_required"` (sist, efter `metadata`). `Finding` förblir `@dataclass(frozen=True)`.
+- `gdpr_classifier/core/classification.py` — nytt fält `weakest_evidence_basis: Literal[...] | None = None` (sist, efter `data_class`).
+- `gdpr_classifier/aggregator.py` — `cross_validation_mode`-parameter på `__init__` (default `legacy`, validerad); `_count_structural_support`-primitiv extraherad ur `_passes_mechanism_3` (som blev tunn anropare, Beslut 19 semantiskt bevarad); ny `_apply_evidence_weighting` (R1–R7-taggning, mode-gated); `_validated_kombination_findings`- och `_derive_weakest_evidence_basis`-hjälpare; `_determine_dimensions` returnerar nu trippeln `(identifiability, data_class, weakest_evidence_basis)`; modulkonstant `EvidenceBasis`/`_EVIDENCE_BASIS_RANK`. `_has_validated_kombination` lämnad ordagrant oförändrad.
+- `tests/unit/test_aggregator_evidence_weighting.py` — **ny fil**, 11 tester (R1–R7, legacy-paritet, weakest-härledning, DIRECT-överkörningsexkludering).
+- `docs/iteration_3_implementation.md` — I-7b-status ⬜ → 🔄 Pågår (2026-05-16) som första edit, → ✅ Klar (2026-05-16) vid sessionsslut; denna sessionspost.
+
+**Gjort:**
+- Statusedit till 🔄 Pågår som första åtgärd (CLAUDE.md §4 steg 2).
+- Fas 1 (datamodell + primitiv, ingen policy-aktivering); mellanverifieringsgate godkänd: 203/203 befintliga tester gröna utan ändrad fixtur, smoke-test (default `legacy`, default `evidence_basis`), `git diff` på finding.py = enbart fälttillägg.
+- Fas 2 (policy-aktivering i `cross_validating`): R6-taggning via generaliserad Mekanism 3, weakest-härledning över de fynd som faktiskt bar slutdimensionen, integrering i `aggregate()` efter dedup och före dimensionsbestämning, mode-gated.
+- Slutverifiering: 214/214 tester gröna (203 befintliga + 11 nya); ändrade filer exakt de fem planerade, inga utanför listan.
+- Bekräftat bakåtkompatibelt: `Finding`/`Classification` är core-modeller; båda fälten har defaultar (`"no_support_required"` resp. `None`) → alla befintliga konstruktioner och `legacy`-vägen oförändrade. Ingen `to_dict`/`from_dict`/JSON-serialisering finns för dessa modeller i kodbasen, så specens villkorade serialiseringskrav var icke tillämpligt.
+
+**Beslut fattade:** Inga nya arkitekturbeslut (Loggboks-beslutet "Cross-Validating Aggregator: evidensvägningspolicy" är redan inskrivet under I-7a). Två tolkningsbeslut bekräftades av användaren 2026-05-16 och styrde implementationen: (1) i I-7b ger `cross_validating` *identiska* identifiability/data_class/sensitivity som `legacy` — endast `evidence_basis` + `weakest_evidence_basis` skiljer; dimensions-/precisionsändringen hör till I-7c (§9.6.7 "efter I-7c"); (2) `weakest_evidence_basis` härleds enbart över de fynd som faktiskt bar slutdimensionen (en `article4`-trumfad `context.kombination` exkluderas, §9.6.3 "faktiskt bar"). **Inga avvikelser från §9.6 uppstod.** Skenkonflikten (R3/R4 "triggar ej dimension ensam" vs. att `entity.spacy_LOC` före I-7c fortfarande mappas till `article4.adress`) är ingen konflikt: §9.6.6 markerar Beslut 11 som "Omprövas (av I-7c)" och §9.6.7 bracketerar fixen som "efter I-7c".
+
+**Öppet/Nästa steg:**
+- Default-flippen från `legacy` till `cross_validating` är en **separat senare åtgärd efter I-7d** (kräver dokumenterat Loggbok-beslut + fullständig ombaslinje, §9.6.3-/§9.6.4-varningen om mätinstrumentpåverkan). Inte del av I-7b.
+- I-7c: `entity.spacy_LOC → context.plats`-ommappning + omprövning av matcher-aliaset `{ADRESS, PLATS}`.
+- I-7d: dubbel baslinjemätning `legacy` mot `cross_validating` samt rapport-aggregering per `evidence_basis` (`report.py`/`confusion_matrix.py`).
+- Commit + push hanteras manuellt av användaren (nio-stegs-loopen steg 8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7c (EntityLayer LOC → context.plats)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Beteendeändringen som löser precisionsproblemet: EntityLayer slutar mappa SpaCys `LOC` till `article4.adress` och mappar den till `context.plats` (omprövning av Beslut 11). Source-taggen `entity.spacy_LOC` bevaras så generaliserad Mekanism 3 fortsatt räknar LOC som strukturellt stöd (§9.6.7 Degerfors-fallet).
+
+**Ändrade filer:**
+- `gdpr_classifier/layers/entity/entity_layer.py` — **en rad** i `_label_map` (rad 21): `"LOC": (Category.ADRESS, "entity.spacy_LOC")` → `"LOC": (Category.PLATS, "entity.spacy_LOC")`. Source-tagg oförändrad; PRS/ORG orörda. Modul-docstringen skrevs om så den inte längre hårdkodar per-etikett-mappningen (`LOC -> Category.ADRESS` borttaget) utan hänvisar till SSOT §5 — håller `grep "LOC"` till en enda relevant träff (i `_label_map`) och eliminerar dubbel sanningskälla.
+- `docs/arkitektur.md` — endast §5 (Entitetsmappning): LOC-punkten → `Category.PLATS` (`context.plats`); nytt prosastycke med GDPR-motivering (en SpaCy-LOC är ett geografiskt namn, inte per definition en gatuadress till en fysisk person enligt art. 4; pusselbitsroll enligt skäl 26; source-tagg bevarad → Mekanism 3-stöd) + historisk not med korsreferens §9.6.6/§9.6.7, kodanalys 2026-05-15 §4/§14, `iteration_2_utvardering.md` Del 7 och Loggbok it. 3. Ingen annan SSOT-sektion ändrad (§9.6.2 R3 och §9.6.7 var redan formulerade "(efter I-7c)"; §9.2.1:s Beslut 11-not lämnad medvetet — matcher-alias-omprövning skjuten till efter I-7d).
+- `tests/unit/test_aggregator_evidence_weighting.py` — fixtur rad 93 (`test_R3_R4_entity_loc_org_as_support`): `_f(Category.ADRESS, ...)` → `_f(Category.PLATS, ...)`, beteendeneutralt (assertionen är source-prefix-driven; testet förblir grönt); ny klass `TestI7cLocAsKombinationSupport` med `test_loc_supports_kombination_via_mekanism_3`.
+- `tests/unit/test_entity_layer.py` — **ny fil**, 2 tester: `test_label_map_loc_maps_to_context_plats` (strukturell backstop på `_label_map`, robust mot SpaCy-NER-variation) och `test_loc_maps_to_context_plats` (end-to-end på riktig `sv_core_news_lg`: "Jag bor i Göteborg" → `Category.PLATS`, source `entity.spacy_LOC`, aldrig `Category.ADRESS`).
+- `docs/iteration_3_implementation.md` — I-7c-status ⬜ → 🔄 Pågår (2026-05-16) som första edit, → ✅ Klar (2026-05-16) vid sessionsslut; denna sessionspost.
+
+**Gjort:**
+- Statusedit till 🔄 Pågår som första åtgärd (CLAUDE.md §4 steg 2).
+- Fas 0-verifieringar (read-only): I-7b-fundamentet på branchen (`cross_validation_mode`, `_apply_evidence_weighting`, `_count_structural_support`, `_passes_mechanism_3` med `("pattern.", "entity.")`); `Category.PLATS` = `"context.plats"`; `_label_map` LOC = `(Category.ADRESS, "entity.spacy_LOC")` som väntat. Inga avvikelser → fortsatt.
+- Kod- + SSOT-ändring + testtillägg enligt plan.
+- Slutverifiering: `pytest tests/` = **217/217 gröna** (214 tidigare + 3 nya: 2 i `test_entity_layer.py`, 1 i `test_aggregator_evidence_weighting.py`). Stickprov: `EntityLayer().detect("Jag bor i Göteborg")` → `[(Category.PLATS, 'Göteborg', 'entity.spacy_LOC')]`. `git status` = exakt de fem planerade filerna, inga utanför listan.
+
+**Befintliga tester — räkning:** **0 befintliga tester behövde uppdateras pga fallering.** Inget test asserterade `LOC → article4.adress` (ingen `test_entity_layer.py` fanns före denna session; enda integrationstestet `test_end_to_end.py` asserterar mönsterdrivet `recall > 0`, och matcher-aliaset `{ADRESS, PLATS}` (Beslut 45, §9.2.1) absorberar kategoriskiftet på utvärderingssidan). Endast **1** *semantiskt inaktuell* fixtur refreshades — `test_aggregator_evidence_weighting.py:93` (`Category.ADRESS` → `Category.PLATS` med oförändrad source `entity.spacy_LOC`), beteendeneutralt. `tests/unit/test_aggregator_deduplication.py` lämnades **helt orörd** (alternativ B, användarbeslut 2026-05-16): den testar dedup-scope, inte LOC-mappning, och ett PLATS+PLATS-fall hade gjort `test_cross_category_overlap_both_kept` till ett samma-kategori-fall som felar.
+
+**Beslut fattade:** Inga nya arkitekturbeslut i koden. Loggboks-beslutet om omprövning av **Beslut 11** (`LOC → context.plats`) skrivs in **manuellt av användaren** i Loggboken iteration 3 utanför agent-flödet. Två sessionsbeslut (användaren 2026-05-16): (1) endast `test_aggregator_evidence_weighting.py`-fixturen refreshas, `test_aggregator_deduplication.py` orörd (alternativ B); (2) test 3c (Stockholm/Degerfors-kontrast) medvetet skippad — beror på LLM-driven CombinationLayer; kontrasten verifieras integralt i I-7d:s dubbla baslinjemätning (promptens explicita undantag).
+
+**Öppet/Nästa steg:**
+- Den **mätbara effekten** (precision/recall/F1) av ommappningen kvantifieras separat i **I-7d** (dubbel baslinje `legacy` vs `cross_validating`). I-7c ändrar koden, I-7d mäter. De 12 nakna städerna som i facit är annoterade `article4.adress` förväntas bli FN efter I-7c — korrekt mätinstrumentskifte, dokumenteras i I-7d, ingen testdata-städning här.
+- Matcher-aliaset `{ADRESS, PLATS}` (Beslut 45 / §9.2.1) kvarstår tills vidare; behovet omprövas efter I-7d.
+- Default-flipp `legacy` → `cross_validating`: separat senare åtgärd efter I-7d.
+- Loggboks-beslut om Beslut 11 + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7d (Dubbel baslinjemätning legacy mot cross_validating)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Cross-Validating Aggregator-arbetsströmmens enda mätfokuserade leverans: kvantifiera den samlade effekten av I-7b + I-7c mot iteration-2-baslinjen (64,00 / 89,27 / 74,55) i båda aggregator-lägena och utvärdera H1 (precision), H2 (artikel 9-skydd) och H3 (transparens). Strategi: *detect-once, aggregate-twice* — fyra lager körs en gång per text, identisk fyndlista matas genom `Aggregator()` (legacy) och `Aggregator(cross_validation_mode="cross_validating")` → exakt kontrollerad mode-jämförelse, halverad LLM-tid.
+
+**Ändrade filer:**
+- `scripts/run_i7d_baseline.py` — **ny fil**. Offline-harness som speglar `build_demo_snapshot.py`/`runner.py`-mönstren (`check_ollama`, `get_git_commit`, `_calc_metrics`, snapshot-schemat). Detect-once aggregate-twice; per-text sanity-assert (identiska `identifiability`/`data_class`/`sensitivity`, graderat utfall 0 / 1–2 / >2); per-`evidence_basis`-fångst (total + `context.kombination`-restringerad, TP/FP-uppdelad); mätinstrument-FN-fångst (`article4.adress`-FN överlappad av `entity.spacy_LOC`); `--degerfors`-läge. **Ingen ändring i `gdpr_classifier/` eller `evaluation/`** — allt importeras read-only.
+- `demo/snapshots/i7d_legacy.json`, `demo/snapshots/i7d_cross_validating.json` — **nya filer**. Build_demo_snapshot-schemat utökat med `cross_validation_mode`, `baseline_iteration_2`, `instrument_fn`, `sanity_check`; cross_validating-snapshotten även `evidence_basis_breakdown`.
+- `docs/iteration_3_utvardering.md` — **ny fil**, endast Del 8 (ingen titel/preamble, användarval). 8.1–8.7 med konkreta tal, prosa + markdown-tabeller i `iteration_2_utvardering.md` Del 6/7-stil.
+- `docs/iteration_3_implementation.md` — I-7d-rad tillagd ⬜→🔄 Pågår (2026-05-16) som **första edit** (raden saknades; samma mönster som I-7a/b/c), → ✅ Klar (2026-05-16) vid sessionsslut; denna sessionspost.
+
+**Gjort:**
+- Statusedit (I-7d-radstillägg vid 🔄 Pågår) som första åtgärd (CLAUDE.md §4 steg 2).
+- Fas 0-verifieringar (read-only): `Aggregator.__init__` har `cross_validation_mode` (defaults 0.7/0.85/2); `_label_map["LOC"] = (Category.PLATS, "entity.spacy_LOC")`; Ollama uppe, `qwen2.5:7b-instruct` pullad. Inga avvikelser.
+- Full korpus (159 texter): **0/159 sanity-avvikelser** — `legacy` och `cross_validating` byte-identiska på alla mätvärden (bekräftar I-7b:s `test_legacy_mode_unchanged` på korpusskala). Totalt TP=212, FP=70, FN=21 → **P 75,18 %, R 90,99 %, F1 82,33 %** i båda lägena (it2: 64,00 / 89,27 / 74,55 → ΔP +11,18, ΔR +1,72, ΔF1 +7,78 pe). Mätinstrument-FN = 0 (matcher-aliaset `{ADRESS, PLATS}` absorberade kategoriskiftet). evidence_basis (`context.kombination`, 20 fynd): 95,0 % `high_confidence_no_support` (9 TP / 10 FP), 5,0 % `structural_support` (0/1), 0 % `no_support_required`.
+- Fas 2 `--degerfors`: 4 körningar, identiska mellan lägena; båda texter → enbart `context.plats` (`entity.spacy_LOC`), `identifiability=none`, inget `context.kombination` (kontrasten exercerade ej evidensvägningen — ärligt redovisat i 8.5).
+- Del 8 producerad med strukturerade tabeller och explicit H1/H2/H3-hypotesanalys, konkreta tal genomgående (inga platshållare).
+- **Cosmetisk fix:** harnessens slututskrift kraschade på Windows cp1252-konsol (`UnicodeEncodeError` på "→"); JSON skrevs alltid med explicit `encoding="utf-8"` och var opåverkad (snapshots giltiga, skrivna före kraschen). `sys.stdout/stderr.reconfigure(encoding="utf-8")` tillagd; `--degerfors` återkörd → ren UTF-8-utdata, exit 0. Full-korpus-snapshotsen behölls (genererade av den fullbordade körningen; LLM-omkörning hade gett ny nondeterministisk output som inte längre matchat Del 8:s tal).
+
+**Befintliga tester — räkning:** **0 befintliga tester påverkade.** Inga ändringar i `gdpr_classifier/`, `evaluation/` eller `tests/`; harnessen importerar dem read-only. Den empiriska 0/159-sanityn bekräftar I-7b:s `test_legacy_mode_unchanged` på hela korpusen utöver enhetstestnivå.
+
+**Beslut fattade:** Inga nya arkitekturbeslut i koden. Arbetsströmmens **vetenskapliga utfall är dubbelt** och båda bidragen ska finnas för framtida rapportskrivande: (1) en mätbar precisionseffekt mot iteration-2-baslinjen (H1 infriad rått **och** justerat — instrument-FN = 0), driven av I-7c-mappningen och synlig identiskt i båda lägena; (2) en arkitektonisk designprincip-kandidat för fas 4 — det generaliserade Mekanism 3-mönstret med deklarativ beslutstabell (R1–R7) och `evidence_basis`-transparens. H1/H2-utfallet redovisas mot iteration-2-baslinjen, **inte** mot legacy/cross_validating-skillnaden (den är noll per arkitektur). `cross_validating`-modes bidrag (H3) är **transparens, inte precision** — vad designcykel 3 faktiskt levererade. Loggboks-beslut om default-flipp (`legacy` → `cross_validating`) och om eventuell framtida dimensions-gating-policy skrivs in **manuellt av användaren** i Loggboken iteration 3 utanför agent-flödet.
+
+**Öppet/Nästa steg:**
+- Cross-Validating Aggregator-arbetsströmmen (I-7a/b/c/d) är därmed **konstruktionsmässigt komplett**.
+- Default-flipp `legacy` → `cross_validating`: transparens-fråga (modes ger identiska klassifikationsutfall), separat senare Loggbok-beslut + ev. ombaslinje.
+- Matcher-aliaset `{ADRESS, PLATS}` (Beslut 45 / §9.2.1) är fortfarande aktivt och neutraliserade det förväntade mätinstrumentskiftet; omprövning av aliaset kvarstår som öppen punkt efter I-7d.
+- Eventuell framtida dimensions-gating av `cross_validating` skulle invalidera I-7b:s `test_legacy_mode_unchanged` och kräva omarbetning av legacy-paritetsantagandena — separat fas 4-designval.
+- Loggboks-beslut + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7e (Source-medveten evidensräkning via deduplicated_sources-propagering)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Åtgärda den arkitektoniska interaktionen från I-7d:s live-trace: `_deduplicate_same_category_overlap` körs före `_apply_evidence_weighting`, så `entity.spacy_LOC` som kategorikrockar med CombinationLayers `context.plats` deduperas bort och blir osynlig för Mekanism 3 (`_count_structural_support` matchar bara `pattern.`/`entity.`-prefix). Kirurgisk fix (alternativ A′): låt primitiven även läsa `metadata["deduplicated_sources"]`. Dedupliceringen, mätinstrumentet och legacy-läget ska vara oförändrade.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — `_count_structural_support` omskriven: behåller exakt span-överlapp + primärsource-prefixträff (oförändrad semantik), lägger `continue` efter primärträff (ett fynd räknas högst en gång) och en **mode-gatead** gren som i `cross_validating` även konsulterar `(f.metadata or {}).get("deduplicated_sources", [])`. Docstring uppdaterad. `_deduplicate_same_category_overlap` **orört**.
+- `tests/unit/test_aggregator_evidence_weighting.py` — ny klass `TestI7eSourceAwareEvidenceCounting` med 5 tester (a/b/c/d/e). Återanvänder befintliga `_f`/`_cv`-helpers.
+- `docs/arkitektur.md` — §9.6.5 utökad med två stycken: source-medveten räkning + mode-gate-motivering, samt containment-kollaps som öppen punkt (SSOT före kod, CLAUDE.md §8).
+- `docs/iteration_3_implementation.md` — I-7e-rad 🔄→✅ Klar (2026-05-16); denna sessionspost.
+
+**Gjort (inkl. två Fas 0-upptäckter som styrde designen):**
+- **Statusedit** I-7e-rad → 🔄 Pågår som första åtgärd vid sessionsstart (CLAUDE.md §4 steg 2), nu → ✅ Klar.
+- **Fas 0-upptäckt 1 (fixturkorrigering):** den litterala Hudiksvall-meningen når *inte* `structural_support` med A′ ensam — dess andra stödsignal (`entity.spacy_ORG` "Vänsterpartiet") togs bort av `_remove_context_covered_by_article9`-**containment** (täcks av `article9.politisk_asikt`), inte av dedup, och containment propagerar inte source. Endast `entity.spacy_LOC` är dedup-dödad → count = 1 < `min_evidence_count` = 2. Vägval (användare/arkitekt): **Alternativ 1** — kanoniskt test (`test_a_dedup_kollision_via_propagerad_source`) använder två dedup-dödade källor (`context.plats`←`entity.spacy_LOC`, `context.organisation`←`entity.spacy_ORG`, ingen article9) → count = 2 → `structural_support`.
+- **Fas 0-upptäckt 2 (mode-gate nödvändig):** `_count_structural_support` anropas i **legacy** via `_determine_dimensions → _has_validated_kombination → _passes_mechanism_3` (ej mode-gateat, körs i båda lägena). Ett naivt deduplicated_sources-tillägg hade flippat legacy-fixtur (a) `NONE → INDIRECT` och brutit I-7e:s bakåtkompatibilitetskrav. Vägval: **Alternativ iii** — `deduplicated_sources` konsulteras endast när `self.cross_validation_mode == "cross_validating"`. `test_d_legacy_mode_byte_identical_after_fix` bevisar legacy byte-identiskt (NONE/NONE/NONE) för samma fixtur som test_a.
+- Mode-gaten är ett **medvetet avsteg** från primitivens ursprungligen källdrivna, mode-agnostiska design (§9.6.5), motiverat enbart av bakåtkompatibilitet.
+- Containment-källkollaps (t.ex. `_remove_context_covered_by_article9`) är en **separat, oadresserad parallell mekanism** — `test_e_containment_does_not_propagate_source` fryser nuvarande beteende som regression-tripwire. Hör till framtida arbete / hypotetisk **I-7g**.
+- §9.6.5:s formulering "källdriven, mode-agnostisk" reviderad till **"källdriven med mode-gateat `deduplicated_sources`-tillägg i `cross_validating`"**.
+
+**Befintliga tester — räkning:** **0 befintliga tester ändrade/trasiga.** Fixen är additiv för metadatalösa fynd (alla `_f`-fixturer) och mode-gatead → I-7b:s `test_legacy_mode_unchanged` och `TestI7cLocAsKombinationSupport` oförändrat gröna. Totalt **222/222** (217 + 5 nya); de 5 nya + `test_legacy_mode_unchanged` explicit verifierade (6/6).
+
+**Beslut fattade:** Inga nya numrerade arkitekturbeslut i koden. Mode-gate-avsteget och containment-kollapsen som öppen punkt bör föras in som **tilläggsanteckning/-beslut i Loggboken iteration 3 manuellt av användaren** (utanför agent-flödet). **Designprincip-kandidat för fas 4:** korsverifierings-primitiver bör vara mode-agnostiska som regel; undantag (mode-gate) ska vara explicit motiverade av bakåtkompatibilitetskrav och dokumenterade i SSOT.
+
+**Öppet/Nästa steg:**
+- **I-7f** (separat session): omkörning av I-7d-mätningen + uppdatering av `docs/iteration_3_utvardering.md` Del 8 med cross_validating-effekten av A′.
+- **Containment-källkollaps:** öppen punkt; ev. **I-7g** (skulle ändra `_remove_*`-containment till att propagera source — eget Loggbok-beslut, större blast radius).
+- Loggboks-tilläggsbeslut + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7f (Omkörning av baslinjemätning post-I-7e och uppdatering av Del 8)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Köra om I-7d:s dubbelmätning på post-I-7e-koden (commit `2d6c302`) och uppdatera `docs/iteration_3_utvardering.md` Del 8 med post-I-7e-tal plus delta-analys mot pre-I-7e. I-7e gjorde `_count_structural_support` source-medveten via ett mode-gateat `deduplicated_sources`-tillägg i `cross_validating`; I-7d:s H3-tal (95 % bypass) var därför inte längre representativt. Inga kodändringar, inga commits, ingen SSOT-ändring, ingen Loggbok.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — I-7f-rad tillagd (🔄 Pågår vid branch-start → ✅ Klar 2026-05-16); denna sessionspost.
+- `docs/iteration_3_utvardering.md` — Del 8 uppdaterad: uppdateringsnot (titel + ny ruta), 8.1-hypotesnot, 8.2 post-I-7e-setupruta + korpuskompositionskorrigering (fotnot ¹: 84/36/39 → 80/52/27), 8.3.1 två post-I-7e-rader + tolkningsstycke, **8.3.4 omskriven till pre/post-tabeller med Δ** (kärnredovisning), 8.4 mode-paritetsruta + **H3 omformulerad till delta-analys** + post-I-7e-sammanfattning, 8.5 post-I-7e Degerfors-tabell + "får-den-structural_support"-not, 8.6 post-I-7e default-frågestycke, 8.7 ny begränsningspunkt om I-7e som mätinstrumentrevision.
+- `demo/snapshots/i7d_legacy_pre_i7e.json`, `demo/snapshots/i7d_cross_validating_pre_i7e.json` — **nya arkivfiler** (byte-identiska kopior av pre-I-7e-snapshotsen, commit `e6ab2f8`).
+- `demo/snapshots/i7d_legacy.json`, `demo/snapshots/i7d_cross_validating.json` — **överskrivna** med post-I-7e-körningen (commit `2d6c302`).
+
+**Gjort:**
+- **Issue #139** skapad via `gh` (titel/labels `iteration-3`/`spar-A4`/`prio-hog`/milestone `iteration 3 / v0.3.0`/assignee `Abdriano95` verifierade). Hård STOPP för manuellt branch-skapande; branch `139-…` verifierad härstamma direkt från I-7e-commit `2d6c302` (0 commits emellan). **Statusedit** I-7f-rad → 🔄 Pågår som första filedit efter branch, nu → ✅ Klar.
+- **Förutsättningar verifierade (read-only):** Ollama uppe + `qwen2.5:7b-instruct` pullad; `.venv` har projekt + deps; I-7e mode-gate (`self.cross_validation_mode == "cross_validating"` + `deduplicated_sources`) på branch; `scripts/run_i7d_baseline.py` orörd sedan I-7d (`deff237`); pre-I-7e-snapshots fanns.
+- **Pre-I-7e-snapshots arkiverade** byte-identiskt till `_pre_i7e`-filerna före omkörning.
+- **Full-korpus-omkörning** (159 texter, detect-once aggregate-twice) körd i bakgrunden. **Degerfors-verifikation** (`--degerfors`) körd separat.
+- **Sanity (pre-I-7e legacy vs post-I-7e legacy):** **byte-identisk** i `report.total`, `per_category`, `per_layer`, `per_dimension` (endast `metadata.generated_at`/`git_commit` skiljer sig — `e6ab2f8` → `2d6c302`, väntat). Verifierar I-7e:s mode-gate på korpusskala. Harnessens interna sanity-assert: **0/159** avvikelser legacy↔cross_validating i omkörningen.
+- **Konfusionsmatris oförändrad** i båda lägena: TP/FP/FN = 212/70/21, P/R/F1 = 75,18 %/90,99 %/82,33 % (= pre-I-7e). `per_dimension` identifiability none/indirect/direct = 84/16/59 oförändrat.
+- **Konkret evidence_basis-delta (`cross_validating`, `context.kombination`, n=20):** `structural_support` 5,0 % → **35,0 %** (1 → 7 fynd), `high_confidence_no_support` 95,0 % → **65,0 %** (19 → 13). **6 fynd flyttade `high_confidence_no_support` → `structural_support` (5 TP + 1 FP).** `structural_support`-bucketens kvalitet: 0 TP/1 FP → 5 TP/2 FP (precision 71,4 %); bypass-bucket: 9 TP/10 FP → 4 TP/9 FP (FP-andel 52,6 % → 69,2 %).
+- **Degerfors post-I-7e:** byte-identiskt med pre-I-7e — inget `context.kombination`-fynd genereras för någondera meningen, så I-7e:s `deduplicated_sources`-mekanism exercerades aldrig i det isolerade paret. Får **inte** `structural_support`; arkitektoniskt väntat negativt delresultat, inte regression. I-7e:s effekt är synlig på korpusskala (8.3.4), inte i dessa två meningar.
+- **Del 8 uppdaterad** med post-I-7e-tal och **bevarad pre-I-7e-jämförelse** (8.3.4 visar pre/post i samma tabeller med Δ; H3 omformulerad till delta mellan två mätinstrumentversioner).
+
+**Kod-/teständringar:** **Inga.** `git diff` på `gdpr_classifier/`, `tests/`, `evaluation/`, `scripts/` och `demo/` (utöver de fyra snapshot-filerna) är tom. I-7f är rent mät- och dokumentationsarbete. Inga commits gjorda (hanteras manuellt av användaren).
+
+**Beslut fattade:** Inga nya numrerade arkitekturbeslut. Tolkningsbeslut redovisat i Del 8: pre/post-jämförelsen är en **mätinstrumentförbättring**, inte en systembeteendeförändring — 8.3.4:s delta kvantifierar hur mycket genuint strukturellt stöd som var *underrapporterat* i I-7d (osynligt för det dedup-blinda instrumentet), inte en ny klassificeringseffekt. `cross_validating`-modes bidrag är fortsatt transparens (inte precision), men efter I-7e *mer rättvisande* (`structural_support` 7/20 i stället för 1/20). Default-flipp och Loggboks-tilläggsbeslut skrivs **manuellt av användaren** i Loggboken iteration 3 utanför agent-flödet. **Korpuskompositionskorrigering (8.2):** I-7d:s pre-I-7e-tabellrad angav "84 it1 + 36 art9 + 39 kombination" — en transkriptionsmiss (summa 159 korrekt). Verifierat mot datasetfilerna (`tests/data/iteration_1/test_dataset.json`=80, `tests/data/iteration_2/article9_dataset.json`=52, `tests/data/iteration_2/combination_dataset.json`=27) och harnessens `load_dataset` samt snapshot-metadata (båda körningarna): korrekt komposition är **80 + 52 + 27 = 159**. Efter användar-/arkitektgodkännande (medveten liten scope-utvidgning utöver "bevara pre-I-7e-text ordagrant") **rättad i 8.2** med fotnot ¹ som dokumenterar I-7d-felet. Påverkar inga mätvärden — korpusen var hela tiden densamma, endast textbeskrivningen var fel.
+
+**Öppet/Nästa steg:**
+- Cross-Validating Aggregator-arbetsströmmen (I-7a/b/c/d/e/f) är därmed **konstruktionsmässigt komplett**; Del 8 är den slutgiltiga empiriska rapporteringen för rapportens kapitel 5.
+- **Containment-källkollaps:** kvarstående öppen punkt; hypotetisk **I-7g** (propagera source genom `_remove_*`-containment — eget Loggbok-beslut, större blast radius).
+- **Default-flipp `legacy` → `cross_validating`:** separat senare Loggbok-beslut + ev. ombaslinje; I-7f fattar inget default-beslut (out of scope).
+- Pre-existerande 8.2-kompositionsavvikelse (84/36/39): **utredd och rättad i I-7f** (korrekt 80/52/27, verifierat mot datasetfilerna; fotnot ¹ i 8.2) — ingen kvarstående åtgärd.
+- Loggboks-tilläggsbeslut + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16 - Claude Code (Opus 4.7) — Issue I-7g (Default-flipp legacy → cross_validating i Aggregator)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Flippa Aggregator-defaulten `legacy` → `cross_validating` så att I-18:s naturalistiska utvärdering (via `run_evaluation.py`, som default-instansierar `Aggregator()`) automatiskt levererar den utökade evidensredovisningen utan explicit opt-in. Stänga §9.6.4-defaultfrågan i SSOT, säkra reproducerbarheten för I-7d/I-7f:s legacy-mätning, och bevara grön testsvit. Transparens-leverans — ingen precisions- eller recall-ändring (I-7f bevisade byte-identiska klassifikationsutfall). Inga commits, ingen Loggbok-redigering.
+
+**Ändrade filer:**
+- `gdpr_classifier/aggregator.py` — default `cross_validation_mode` `"legacy"` → `"cross_validating"` (rad ~76); förklarande kommentar (rad ~94) omskriven (motiverar nya defaulten + `legacy` som opt-in för reproduktion).
+- `scripts/run_i7d_baseline.py` — rad 276 (`agg_legacy`) och rad 477 (`"legacy":`) gjorda explicita `Aggregator(cross_validation_mode="legacy")` (reproducerbarhets-fix; rad 277/478-480 var redan explicita).
+- `docs/arkitektur.md` — §9.6.4 omskriven (kodblock, lägesbeskrivnings-bullets, motiveringsstycke: defaultfrågan **stängd**); minimal en-menings-fix i §9.6.3 (rad 996, tidigare "default `legacy`" — nu stale, rättad).
+- `tests/unit/test_aggregator_evidence_weighting.py` — tre `Aggregator()`-default-instansieringar i legacy-paritetstester pinnade explicit `cross_validation_mode="legacy"` (rad 220 + 241 i `test_legacy_mode_unchanged`, rad 524 i `test_d_legacy_mode_byte_identical_after_fix`); moduldocstring rad 9 + 21-22 uppdaterad.
+- `docs/iteration_3_implementation.md` — I-7g-rad tillagd (🔄 Pågår vid sessionsstart → ✅ Klar 2026-05-16); denna sessionspost.
+
+**Gjort:**
+- **Statusedit** I-7g-rad → 🔄 Pågår som sessionens första filedit (CLAUDE.md §4 steg 2), nu → ✅ Klar.
+- **Fas 0 — grep efter alla `Aggregator(`-instansieringar** över `gdpr_classifier/`, `scripts/`, `tests/`, `evaluation/`, `demo/`. Klassificering:
+  - **Kategori (a) — redan explicit `cross_validation_mode`, ej påverkad:** `scripts/run_i7d_baseline.py:277` + `:478-480` (`cross_validating`), `tests/unit/test_aggregator_evidence_weighting.py:58` (`_cv()`-helper).
+  - **Kategori (b) — default `Aggregator()`, legacy-avsikt → explicitgjord:** `scripts/run_i7d_baseline.py:276` + `:477`.
+  - **Kategori (b) — default `Aggregator()`, ärver nu cross_validating:** `run_evaluation.py:29` (**avsiktligt** — så I-18 ärver transparensen); `tests/unit/test_aggregator_evidence_weighting.py:220/241/524` (**bröt** legacy-paritets-assertions → pinnade explicit, se nedan); övriga `tests/unit/test_aggregator_*.py` + `tests/integration/test_end_to_end.py:17` (asserterar **endast** identifiability/data_class/sensitivity/findings → I-7f-byte-identiska → förblev gröna; verifierat att endast `test_aggregator_evidence_weighting.py` matchar grep på `evidence_basis|weakest_evidence_basis`).
+  - `gdpr_classifier/pipeline.py` instansierar inte själv (constructor injection).
+- **Defaultflippen** genomförd i `aggregator.py` (rad ~76) + kommentar omskriven; validering rad 86-89 redan symmetrisk, oförändrad.
+- **Reproducerbarhets-fix** `run_i7d_baseline.py:276,477` — skyddar att I-7d/I-7f:s legacy-mätning fortsatt mäter legacy efter flippen.
+- **§9.6.4 stängd** i SSOT: motivering = I-7f (5 TP `context.kombination` → `structural_support`, oförändrad konfusionsmatris, 0/159 sanity, ingen precisions-/recall-kostnad), `legacy` opt-in, reproducerbarhetsnot, Beslut 39-precedensen stängd för denna flagga, hänvisning Loggboken iteration 3. Minimal §9.6.3 rad-996-fix för intern SSOT-konsistens (CLAUDE.md §8).
+- **Testsvit:** `pytest tests/` → **222 passed in 2.29s**, inklusive `test_legacy_mode_unchanged` och `test_d_legacy_mode_byte_identical_after_fix` (nu explicit `legacy`). Samma totalsumma som post-I-7e.
+
+**Kod-/teständringar:** Defaultflipp + kommentar i `aggregator.py`; två explicit-instansieringar i `run_i7d_baseline.py`; tre test-pinningar + docstring i `test_aggregator_evidence_weighting.py`. Inga andra `tests/`, `evaluation/`, `demo/`. Inga commits (hanteras manuellt av användaren).
+
+**Beslut fattade:** Inga nya numrerade arkitekturbeslut (defaultflippen loggas formellt av användaren i Loggboken iteration 3 utanför agent-flödet). Två **användar-/arkitektgodkända scope-utvidgningar** utöver promptens "endast §9.6.4 / inga teständringar":
+1. **Test-pinning** av `test_aggregator_evidence_weighting.py:220/241/524` + docstring — promptens antagande att legacy-paritetstesterna instansierar explicit var faktiskt felaktigt (de använde bare `Aggregator()`); pinning bevarar legacy-paritets-täckningen och håller sviten grön. Ersätter docstringens 2026-05-15-notering om att bare default = legacy.
+2. **Minimal §9.6.3 rad-996-fix** — flippen gjorde "default `legacy`" där internt motsägelsefullt; rättat för SSOT-konsistens (analogt I-7f:s 8.2-korrigering).
+- **Aktivt designval — kategori (b) demo-/snapshot-/demonstrationsfiler:** `demo/callbacks.py:58`, `scripts/build_demo_snapshot.py:195` och `scripts/demonstrations/stub_substitution.py:140,144` default-instansierar `Aggregator()` och lämnades **medvetet orörda**. Detta är ett aktivt beslut, inte en passiv observation: vi övervägde att pinna dem till `legacy` men beslöt att de **ska** ärva den nya `cross_validating`-defaulten. Demo-UI:t är en användarvänd artefakt inför I-18 och ska visa den mer rättvisande evidensredovisningen (`evidence_basis`-taggar); snapshot-byggaren och substituerbarhetsdemonstrationen ska spegla samma standardbeteende som den utvärderade artefakten. Ingen snapshot byggs om i I-7g (latent effekt tills `build_demo_snapshot.py` körs nästa gång).
+
+**Öppet/Nästa steg:**
+- **Dokumentationsnot — I-7g-etikettkollision:** tidigare I-7e/I-7f-sessionsposter (rad 1267/1276/1308) och I-7e-radens not hypotiserade "I-7g" = containment-källkollaps. Faktisk I-7g = denna default-flipp. **Containment-källkollaps** (propagera source genom `_remove_*`-containment) kvarstår som oadresserad öppen punkt för separat framtida arbete med eget Loggbok-beslut (större blast radius); `test_e_containment_does_not_propagate_source` fryser nuvarande beteende som regression-tripwire.
+- **I-7h** (modellprob `qwen3:14b`) är nästa planerade issue i arbetsströmmen — separat senare session.
+- Cross-Validating Aggregator-arbetsströmmen är därmed både konstruktions- och defaultmässigt komplett; `cross_validating` är artefaktens standardbeteende från och med denna commit.
+- Loggboks-tilläggsbeslut (formell default-flipp-motivering, iteration 3-fliken) + commit/push hanteras manuellt av användaren (nio-stegs-loopen steg 6/8).
+
+### Session 2026-05-16b - Claude Code (Opus 4.7) — Git-konsolidering: fast-forward av I-7a→g-kedjan in på probe-branchen #107
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Konsolidera sidospårskedjan I-7a→g (#133–#140) på probe-branchen `107-probe-...` via en ren fast-forward, så att probe-branchen blir den enhetliga arbetsytan för fortsatt probe-arbete ovanpå sidospårskoden. Ingen merge mot main i denna session.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — denna sessionspost. Statustabellen (Issue-specifikationer) avsiktligt orörd, se Beslut fattade.
+
+**Gjort:**
+- **Read-only-verifiering före åtgärd:** probe-branch stod på `a29fbf5`; branch `140-i-7g-...` stod på `ec61f62`; `git merge-base --is-ancestor a29fbf5 ec61f62` = sant (ren ff möjlig); merge-base(107,140) = `a29fbf5` (äkta fast-forward, ingen merge-commit); working tree rent; inga stashes; lokal 107 i synk med origin/107.
+- **Avstämd inkonsekvens:** arkitekt-instansens förväntade 18 commits var antalet mot `origin/main` (10 probe + 8 sidospår). Faktiskt tillskott på probe-branchen vid ff från probe-tippen = **8 commits** (`f8193ba` I-7a → `ec61f62` I-7g); probe-historiken låg redan på branchen. Bekräftat med användaren som korrekt och förväntat innan körning.
+- **Fast-forward utförd** efter explicit användargodkännande: `git checkout 107-probe-...`; `git merge --ff-only 140-i-7g-...` (`Updating a29fbf5..ec61f62`, fast-forward, 14 filer, +10822/−29); `git push origin 107-probe-...` (`a29fbf5..ec61f62`, ren ff-push, ingen force).
+- **Efterverifiering:** probe-branchens nya tip = `ec61f62` (lokalt och `origin/107`); branch 140 orörd, pekar kvar på `ec61f62` (samlokaliserad, förväntat); lokal 107 i synk med origin/107.
+- Ingen annan git-åtgärd. Branch 140 lämnad stående.
+
+**Kod-/teständringar:** Inga. Fast-forwarden flyttar enbart branch-pekaren och tar med redan författade I-7a→g-commits; ingen kod författades i denna session. Sessionsposten är en ocommittad working-tree-ändring på probe-branchen som committas manuellt av användaren (nio-stegs-loopen steg 8).
+
+**Beslut fattade:** Inga arkitekturbeslut. Operativt git-arbetsflödesbeslut enligt den plan som tagits fram med arkitekt-instansen: I-7a→g fast-forwardas in på probe-branchen #107 (som blir enhetlig arbetsyta), sidospårsissuerna #133–#140 stängs manuellt av användaren med hänvisning till att koden lever på probe-branchen, och allt I-7-arbete går till main via en samlad PR från probe-branchen när probe-arbetet är slutfört. Issue #107 förblir 🔄 Pågår — statustabellen avsiktligt orörd i denna session (probe-arbetet är inte avslutat). I-7a→g-raderna är redan ✅ Klar och lämnas ifred. Formell motivering förs in i Loggboken iteration 3 av användaren utanför agent-flödet om det bedöms behövas.
+
+**Öppet/Nästa steg:**
+- Probe-arbetet fortsätter på probe-branchen `107-probe-...` ovanpå sidospårskoden: probe-syntes för rapportens kapitel 6.5/6.7, eventuell ny lokal modell, eventuell molnprovider-test.
+- **Användarens manuella steg (utanför agent-flödet):** stänga issues #133, #134, #135, #136, #138, #139, #140 på GitHub med kort kommentar om att koden lever på probe-branchen; flytta dem till Done på Kanban-boarden; kontrollera om Projects-automation kan återöppna dem när probe-branchen senare PR:as till main.
+- Den slutliga samlade PR:en probe-branch → main planeras när probe-arbetet är slutfört. Den automatiska issue-stängningsfrasen för #107 används i den PR:en, inte i denna session eller sessionspost.
+- Branch 140 lämnas stående tills vidare; borttagning är inte beslutat och utanför denna sessions scope.
+
+### Session 2026-05-17 - Claude Code (Opus 4.7) — Probe #107 Checkpoint 6 + efteranalys (qwen3:14b fullpipeline mot post-I-7g qwen2.5:7b-baslinjen)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Köra qwen3:14b på post-I-7g-koden via `scripts/run_i7d_baseline.py` (fullpipeline, 159 texter, detect-once aggregate-twice) för att besvara probe #107:s fråga om Lager 3- och Lager 4-prestandataket är modell- eller uppgiftsbundet. Efterföljande read-only-efteranalys för att verifiera att precisionslyftet är ärligt och inte ett mätfel. Inga commits, ingen git, ingen kodändring — användaren hanterar manuellt.
+
+**Ändrade filer:**
+- `demo/snapshots/i7d_legacy.json`, `i7d_cross_validating.json` — överskrivna med qwen3:14b-körningen.
+- `demo/snapshots/i7d_legacy_qwen25_baseline.json`, `i7d_cross_validating_qwen25_baseline.json` — nya arkivkopior av qwen2.5:7b-baslinjen.
+- `demo/snapshots/_ckpt6_qwen3_run.log` — otrackad diagnostiklogg.
+- `docs/iteration_3_utvardering.md` — **ny Del 9** (probe #107 modelljämförelse: kvantitativt utfall + efteranalys; SSOT för probe-siffrorna).
+- `docs/iteration_3_implementation.md` — denna sessionspost. Statustabellen (Issue-specifikationer) avsiktligt orörd, se Beslut fattade.
+
+**Gjort:**
+
+- Arkiverade qwen2.5:7b-baslinjen (kopia, inte flytt) och verifierade arkivfilernas commit och konfusionsmatris innan körning.
+- Smoke-validerade qwen3-pipens fullväg via `scripts/run_i7d_baseline.py --degerfors` innan den långa körningen; upptäckte och kringgick PowerShell-tool↔python-stdout-buffringsartefakten (spurious exit 255, dokumenterad i checkpoint 3/5) genom Bash-bakgrundskörning med filredirect.
+- Körde fullpipeline qwen3:14b mot hela 159-korpusen via `scripts/run_i7d_baseline.py` (detect-once aggregate-twice); körningen slutförde rent utan sanity-avvikelser legacy↔cross_validating — **första qwen3-verifikationen av mode-pariteten** (I-7f:s motsvarande verifikation gällde qwen2.5).
+- Genomförde en read-only-efteranalys (slängbart temp-script, inget repo-avtryck) som verifierade att precisionslyftet är **ärligt och inte ett mät-/aggregeringsfel**.
+- **Allt kvantitativt utfall** (total-, per-kategori-, per-lager- och evidence_basis-tabeller, Δ-värden), efteranalysens detaljerade utfall, per-lager-mätinstrumentbegränsningen och I-7c-transparensnoteringen är flyttat till `docs/iteration_3_utvardering.md` **Del 9** (SSOT för probe #107:s siffror). Sessionsposten hålls medvetet kort per CLAUDE.md §8 (sessionslogg = vad som gjordes; kvantitativ analys hör hemma i utvärderingsdokumentet).
+
+**Beslut fattade:** Inga numrerade arkitekturbeslut i sessionsposten. Modellbytet — omprövning av Beslut 17 (`qwen2.5:7b-instruct` → `qwen3:14b` som lokal produktionsmodell) — loggas formellt av användaren i Loggboken iteration 3 utanför agent-flödet, med full motivering, övervägda alternativ och koppling till empiri. Operativa val i denna session: arkivering via kopia (inte flytt) för robusthet mot abort; Bash-bakgrundskörning i stället för PowerShell pga dokumenterad stdout-buffringsartefakt; efteranalys via slängbart temp-script utan repo-avtryck.
+
+**Probe-status #107:** Probe-frågan delvis besvarad. **Lager 3 (Article9Layer) är modellbundet** (precisionsvinst plus recall-vinst på indirekta `sexuell_laggning`/`religios_overtygelse`-ledtrådar). **Lager 4 (CombinationLayer) lyfter måttligt** — ej fullt avgjort om primärt uppgifts- eller modellbundet. Asymmetri-mönstret från checkpoint 3–5 (pre-I-7c) replikeras på post-I-7g-koden, inklusive en materiell `context.plats`-regression som fördjupas med större modell. Kvantifiering och fullständig tolkning: `docs/iteration_3_utvardering.md` Del 9 (§9.5).
+
+**Öppet/Nästa steg:**
+- Loggbok-beslut (omprövning av Beslut 17 → ny lokal produktionsmodell `qwen3:14b`) skrivs manuellt av användaren utanför agent-flödet.
+- AnthropicProvider-implementation enligt `GeminiProvider`-mönstret är fortsatt planerat utforskande steg inom probe #107 (molnmodell-jämförelse — utforskande, inte produktionsbeslut).
+- Mätinstrumentbegränsning i `_build_report` per_layer (`layer_fn` saknas i nyckelmängden → strukturell recall 100 %) noterad för framtida egen issue.
+- Issue #107 förblir 🔄 Pågår.
+- Probe-syntes till rapportens kapitel 6.5 och 6.7 sker när probe-arbetet är slutfört.
+
+**Statustabell — ingen ändring.** #107 förblir 🔄 Pågår; probe-arbetet är inte avslutat och statustabellen lämnas avsiktligt orörd (samma princip som checkpoint 3–5 och git-konsolideringssessionen).
+
+**Out of scope för denna session:** Loggbok-redigering, commits, git, kodändring, formell text för Beslut 17-omprövningen.
+
+### Session 2026-05-17b - Claude Code (Opus 4.7) — SSOT-audit, default-modellbyte qwen2.5:7b-instruct → qwen3:14b, issue #120-scope
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** SSOT-konsekvenser av Loggboksbeslutet 2026-05-17 (omprövning av Beslut 17, lokal produktionsmodell `qwen2.5:7b-instruct` → `qwen3:14b`, grundat på probe #107 checkpoint 6 / utvärdering Del 9): (a) read-only audit av `docs/arkitektur.md` mot iteration 3-förändringarna, (b) byt alla live default-modellvärden i exekverbar kod, (c) synka issue #120 med audit-fynden. Inga commits, ingen git — användaren hanterar manuellt.
+
+**Ändrade filer:**
+- `run_evaluation.py`, `scripts/run_i7d_baseline.py`, `scripts/build_demo_snapshot.py`, `demo/callbacks.py`, `scripts/demonstrations/stub_substitution.py` — default-modell `qwen2.5:7b-instruct` → `qwen3:14b` (12 edits: 5 live defaults + 2 användarvända felmeddelandesträngar i `callbacks.py` + 5 nu-stale docstrings/kommentarer i berörda filer).
+- `docs/iteration_3_implementation.md` — denna sessionspost. Statustabellen (Issue-specifikationer) avsiktligt orörd, se Beslut fattade.
+- (GitHub, ej repo) Issue #120-body uppdaterad två gånger via `gh issue edit` — temp-fil utanför repot, inget repo-avtryck.
+
+**Gjort:**
+
+- **Read-only SSOT-audit av `docs/arkitektur.md`** (hela dokumentet, §1–§15). Identifierade en hård intern motsägelse — §9.2.1:s LOC→ADRESS-motivering är stale post-I-7c och motsäger §5/§9.6.2/§9.6.6 — plus stale-puts: header-datum (rad 7), §6.1 Issue #70-rester (rad 329/338, `GENETISK_DATA` finns nu i `category.py:27`), §11.3 saknar probe #107 + I-7-arbetsströmmen, §12 fryst vid Beslut 21. §9.6.4 (I-7g default-flipp) och §9.6.5 (I-7e source-medveten räkning) samt Beslut 50/51 verifierades redan synkade. Rapport levererad till arkitekt-instansen i konversationen; `arkitektur.md` lämnades orörd (modellagnostisk; fångas av #120).
+- **Default-modellbytet:** 12 edits över 5 filer. Repo-wide grep bekräftade **noll kvarvarande live modell-defaults i exekverbar kod**; återstående `qwen2.5`-träffar är historiska records (snapshot-arkiv, sessionsloggar, utvärderingsdokument), en testfixtur, samt fyra avsiktligt oredigerade kod-referenser (tokenizer-jämförelselabel, usage-exempelargument, historisk förklaringskommentar). `pytest tests/` → 222 passed (bytet rör ej aggregator-/lager-/matcher-logik). Prompten avsåg 2 filer; `run_evaluation.py` (I-18-utvärderingens ingångspunkt, identiskt `AEGIS_MODEL`-mönster) m.fl. tillkom efter användarbeslut om full omfattning + docstring-puts.
+- **Issue #120 (GitHub):** body omskriven till audit-scopet (Måste/Bör fixas-struktur, uppdaterade Beroenden/Acceptanskriterier/Out of scope), därefter utökad med `README.md:141` doc-drift-kandidaten som upptäcktes under modellbytes-verifieringen. Metadata (titel/milestone/labels/assignee/state) bevarad; verifierad via återläsning båda gångerna.
+
+**Beslut fattade:** Inga numrerade arkitekturbeslut i sessionsposten. Beslut 17-omprövningen (`qwen2.5:7b-instruct` → `qwen3:14b` som lokal produktionsmodell) loggas formellt av användaren i Loggboken iteration 3 utanför agent-flödet, med full motivering, övervägda alternativ och empirisk koppling (probe #107 / Del 9). Operativa val: full omfattning på modellbytet (alla live kod-defaults, ej bara de 2 i prompten) + puts av stale docstrings i berörda filer, enligt användarbeslut; `arkitektur.md` orörd då den är modellagnostisk och fångas av #120; issue-body redigerad via temp-fil utan repo-avtryck.
+
+**Öppet/Nästa steg:**
+- Issue #120 utför de faktiska `arkitektur.md`-ändringarna, inkl. §9.2.1 LOC→ADRESS-motsägelsen (måste-fix), header-datum, §6.1/§11.3/§12, samt `README.md:141`-doc-driften.
+- `README.md:141` och `scripts/generate_combination_candidates.py:6` är doc-drift-kandidater (`qwen2.5`-referenser i icke-default-kontext) — flaggade i #120, medvetet ej ändrade i denna session.
+- Beslut 17-omprövningens formella text → Loggboken iteration 3 (användaren, utanför agent-flödet).
+- Issue #107 förblir 🔄 Pågår.
+
+**Statustabell — ingen ändring.** SSOT-auditen och modellbytet är spår-B-formalisering / SSOT-konsekvens, inte en spårad I-row med statusövergång; #120 är den spårade issuen och förblir OPEN. Samma princip som föregående iteration 3-sessioner.
+
+**Out of scope för denna session:** `docs/arkitektur.md`-redigering (→ #120), Loggbok-redigering, numrerade beslut i sessionsposten, commits, git, samt de fyra avsiktligt oredigerade kod-referenserna.
+
+### Session 2026-05-17c - Claude Code (Opus 4.7) - Probe #107 Checkpoint 7 + efteranalys + Beslut 60 (Claude Opus 4.7 vs qwen3:14b post-I-7g)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Genomföra probe #107:s molnmodell-jämförelse (checkpoint 7): Claude Opus 4.7 via AnthropicProvider mot qwen3:14b post-I-7g-baslinjen på fullpipeline (159 texter), följt av read-only textverifierande efteranalys, och synka repo-dokumentationen med Beslut 60. Inga commits, ingen git - användaren hanterar manuellt.
+
+**Ändrade filer:**
+- `demo/snapshots/i7d_legacy_opus47.json`, `i7d_cross_validating_opus47.json` - nya snapshots från Opus 4.7-körningen (suffix `_opus47`; qwen3:14b-baslinjen `i7d_legacy.json` orörd).
+- `docs/iteration_3_utvardering.md` - **ny Del 10** (probe #107 checkpoint 7: kvantitativt utfall + textverifierande efteranalys; SSOT för Opus-siffrorna).
+- `docs/iteration_3_implementation.md` - denna sessionspost samt statusrad #107 (se Statustabell nedan).
+
+**Gjort:**
+
+- Körde fullpipeline Claude Opus 4.7 via AnthropicProvider mot hela 159-korpusen (`scripts/run_i7d_baseline.py`, detect-once aggregate-twice, 318 LLM-anrop); AnthropicProvider (LLMProvider-abstraktionen från Beslut 17) var möjliggöraren för molnmodell-jämförelsen och implementerades enligt samma kontrakt som `OllamaProvider`/`GeminiProvider`.
+- Genomförde en read-only textverifierande efteranalys (slängbart temp-script, inget repo-avtryck) som kartlade fynd-deltat per text och kategori mot qwen3:14b och mot annoteringsguiderna.
+- **Allt kvantitativt utfall** (total-, per-lager-, per-kategori-tabeller, Δ-värden), per-text-deltakartan, FN→TP-verifieringen, Article9-FP-bedömningen mot facit och sanity-avvikelsen är flyttat till `docs/iteration_3_utvardering.md` **Del 10** (SSOT för checkpoint 7:s siffror). Sessionsposten hålls medvetet kort per CLAUDE.md §8 (sessionslogg = vad som gjordes; kvantitativ analys hör hemma i utvärderingsdokumentet).
+
+**Beslut fattade:** Inga numrerade arkitekturbeslut i sessionsposten. **Beslut 60** (Loggboken iteration 3, formulerad av användaren utanför agent-flödet): qwen3:14b behålls som lokal produktionsmodell per Beslut 17; probe #107:s Opus-utfall är ett vetenskapligt bidrag (modellkapacitet kontra uppgiftskomplexitet), inte underlag för produktionsbyte. Den förregistrerade vägledande beslutsregeln (P > 85 % OCH R > 90 %) uppfylldes inte: precisionströskeln missades med 1,86 pp (recall-tröskeln klarades). Operativt val: temperaturparametern utelämnas i AnthropicProvider eftersom Opus 4.7 avvisar explicit `temperature` med HTTP 400.
+
+**Probe-status #107:** Probe-frågan besvarad. Lokal modell är empiriskt tillräcklig: marginalen från qwen3:14b till Opus 4.7 är 0,26 pp precision, vilket indikerar att uppgiftens svårighet och prompt-konfigurationen sätter taket före modellkapaciteten. Lager 3/Lager 4-asymmetrins "inversion" från checkpoint 1-5 är delvis ett mätinstrumentfenomen (Article9-precisionstappet är facit-granularitetsdrivet, noll hallucinationer textverifierat; "Combination-lyftet" kommer från individuella signaler, ej pusselbits-logiken som regredierar svagt). Kvantifiering och full tolkning: `docs/iteration_3_utvardering.md` Del 10.
+
+**Öppet/Nästa steg:**
+- Facit-granskning av [95] biometri och [100] genetik som åtgärdskandidater för framtida revision (out of scope iteration 3; påverkar båda modeller symmetriskt, ändrar inte Beslut 60).
+- Modellfamiljsjämförelse (gemma/llama/mistral ej testade) som framtida arbete i rapportens kapitel 6.10.
+- Probe-syntes av checkpoint 1-7 till rapportens kapitel 6.5/6.7 kvarstår.
+
+**Statustabell - ändrad.** Till skillnad från checkpoint 3-6 (som avsiktligt lämnade #107-cellen orörd eftersom probe-konstruktionen pågick) uppdateras #107-statusraden nu: probe-arbetet är konstruktionsmässigt klart (checkpoint 1-7). Issuen förblir 🔄 Pågår eftersom rapport-syntesen kvarstår; issuen stängs inte (jfr GitHub-Projects-auto-close vid kortflytt till Done).
+
+**Out of scope för denna session:** `docs/arkitektur.md` (modellagnostisk SSOT), Loggbok-redigering (Beslut 60 inklistrad av användaren), commits, git, kodändring, README.md/CLAUDE.md.

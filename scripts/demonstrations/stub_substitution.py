@@ -3,7 +3,7 @@
 
 Loads combination_dataset.json and runs two pipeline configurations:
 
-  Run A: Full pipeline with CombinationLayer (requires Ollama + qwen2.5:7b-instruct).
+  Run A: Full pipeline with CombinationLayer (requires Ollama + qwen3:14b).
   Run B: Full pipeline with StubCombinationLayer (deterministic, no LLM for Layer 4).
 
 Both runs include Article9Layer which requires Ollama. The script exits with a
@@ -17,7 +17,7 @@ Usage:
 
 Requirements:
     - Ollama running locally on http://localhost:11434
-    - Model qwen2.5:7b-instruct pulled in Ollama
+    - Model qwen3:14b pulled in Ollama
     - pip install -e ".[all]"
 """
 
@@ -45,7 +45,7 @@ from tests.fixtures.stub_combination_layer import StubCombinationLayer
 _DATASET_PATH = _PROJECT_ROOT / "tests" / "data" / "iteration_2" / "combination_dataset.json"
 _DOCS_PATH = _PROJECT_ROOT / "docs" / "iteration_2_layer_substitutability.md"
 _PLACEHOLDER = "<!-- TABLE_PLACEHOLDER -->"
-_MODEL = "qwen2.5:7b-instruct"
+_MODEL = "qwen3:14b"
 _TEXT_TRUNCATE = 80
 
 

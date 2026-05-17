@@ -304,10 +304,12 @@ Implementeras i iteration 1 med SpaCy-modellen `sv_core_news_lg` för svenska NE
 **Entitetsmappning:**
 
 - `PRS` → `Category.NAMN`, `source="entity.spacy_PRS"`
-- `LOC` → `Category.ADRESS`, `source="entity.spacy_LOC"`
+- `LOC` → `Category.PLATS` (`context.plats`), `source="entity.spacy_LOC"`
 - `ORG` → `Category.ORGANISATION`, `source="entity.spacy_ORG"`
 
 ORG mappas medvetet till `Category.ORGANISATION` med prefixet `context.*`, inte till en `article4.*`-kategori. Organisationer är inte personuppgifter enligt GDPR artikel 4. De fungerar däremot som pusselbitar i sensitivity-bedömningen: ett företagsnamn tillsammans med en roll eller en ort kan göra en enskild individ identifierbar även när inga direkta identifierare förekommer (pusselbitseffekten, avsnitt 3.3). Att hålla ORG separat från `article4.namn` gör dessutom att utvärderingsmetriker per kategori blir meningsfulla - person-prestanda blandas inte med ORG-prestanda.
+
+LOC mappas av samma skäl till `Category.PLATS` (`context.plats`), inte till `Category.ADRESS`. En SpaCy-`LOC` är ett geografiskt namn (städer, regioner, stadsdelar, landmärken) och är inte per definition en gatuadress till en fysisk person enligt GDPR artikel 4. Ett naket ortnamn ("Göteborg", "Degerfors") gör inte i sig en individ direkt identifierbar; det fungerar däremot som en pusselbit som kan styrka *indirekt* identifierbarhet i kombination med andra signaler (pusselbitseffekten, avsnitt 3.3, GDPR skäl 26). Mappningen till `context.plats` är därför semantiskt korrekt. Source-taggen förblir `entity.spacy_LOC` (oförändrad per källformatet nedan), vilket gör att den generaliserade Mekanism 3 fortsatt räknar LOC-fynd som giltigt strukturellt stöd för en `context.kombination` via `entity.*`-prefixet — platssignalen flyttas alltså från en felaktig direkt-identifieringstrigger till sin korrekta roll som pusselbit, utan att tappas (verifieras i §9.6.7, Degerfors-fallet). Egentlig gatuadress-detektion är en dokumenterad framtida utvidgning. *Historisk not:* tidigare mappning till `article4.adress` (Beslut 11) omprövades i iteration 3 baserat på kodanalys 2026-05-15 §4 och §14 samt `iteration_2_utvardering.md` Del 7; se §9.6.6 och §9.6.7 samt Loggboken iteration 3.
 
 **Konfidens:** SpaCy exponerar inte per-entitets-konfidens via ett enkelt API i `sv_core_news_lg`. I iteration 1 sätts `Finding.confidence = 0.8` som fast värde för alla NER-fynd. Detta är ett medvetet iteration-1-val och kan revideras i iteration 2 om kalibreringsmetriker motiverar det (t.ex. via per-token-sannolikheter eller byte till KB-BERT).
 
@@ -707,6 +709,519 @@ Testdata skapas av Johanna och struktureras i JSON-format:
   }
 ]
 ```
+
+
+## 9.6 Cross-Validating Aggregator: evidensvägningspolicy
+
+### 9.6.1 Bakgrund och motivering
+
+Den avsedda arkitekturen (avsnitt 2.2, princip 1; avsnitt 7) är att
+lagren körs **oberoende och parallellt** mot samma råtext och att
+**aggregatorn korsverifierar lagrens fynd mot varandra** innan den
+fattar känslighetsbeslutet. Kodanalysen 2026-05-15
+(`docs/kodanalys_precision_och_falska_positiva.md`, §15) visade att
+denna arkitektur bara är *delvis* realiserad: korsverifiering finns
+implementerad men **endast för `context.kombination`** via Mekanism 3
+(`aggregator.py:306-324`, Beslut 19). Alla övriga lagers fynd accepteras
+i `_determine_dimensions` (`aggregator.py:262-281`) med en **ren
+existenskoll** — ett enda `article4.*`-fynd vippar identifiability till
+`DIRECT`, ett enda `article9.*`-fynd vippar data_class till `SPECIAL`,
+utan att något annat lager behöver hålla med.
+
+Konsekvensen är kvantifierad. Kodanalysen §4 och §5.2 visar att de 33
+deterministiska `entity.spacy_LOC → article4.adress`-falska-positiva
+överlever ända fram till siffrorna just för att aggregatorn inte
+korsverifierar NER-fynd mot ett mönsterlager med adresstruktur.
+FP-rotorsaksanalysen i `docs/iteration_2_utvardering.md` Del 7
+(2026-05-04) identifierade oberoende samma mekanism som "Rotorsak 1 —
+kategori-krock `article4.adress` / `context.plats`". Skyddsmatrisen
+(kodanalys §7) är medvetet gles: tre hårdkodade containment-/dedup-regler
+täcker tre specifika fall och lämnar exakt de par som dominerar
+felbudgeten oskyddade. **Gapet mellan tänkt arkitektur och byggd
+aggregator *är* precisionsproblemet, uttryckt på arkitekturnivå**
+(kodanalys §15).
+
+**Avgränsning mot tidigare beslut.** Denna policy generaliserar
+Mekanism 3 (Beslut 19, Loggbok iteration 2) men ersätter den inte:
+`context.kombination`-beteendet bevaras exakt som en konfigurerad
+specialinstans (se 9.6.5 och 9.6.6). Privacy by Design som fail-safe
+(Beslut 21, GDPR artikel 25) behålls; det enda som ändras är att
+fail-safe-passagen blir **explicit spårbar** via en transparensflagga
+i stället för en tyst tröskelpassage (9.6.3, 9.6.6).
+
+**Recall-versus-precision-avvägningen.** Iteration 1–2-empirin
+(`iteration_2_utvardering.md` Del 6, kodanalys §1, §10) ger ~89–92 %
+recall mot ~64 % precision. Kodanalysen §10 slår fast att den höga
+recallen och låga precisionen *delvis är `recall > precision`-designens
+avsedda utfall*: i ett GDPR-sammanhang är ett falskt negativt (missad
+identifierbar/känslig person) allvarligare än ett falskt positivt
+(överklassificering ger administrativ börda men inget lagbrott; Opitz,
+2024; avsnitt 9.2). Evidensvägningspolicyn är därför designad så att
+**ingen regel i `cross_validating`-läget får sänka recall jämfört med
+`legacy`-läget för artikel 9** (se 9.6.2, article9-raden, och 9.6.4).
+Policyn höjer precision genom att kräva korsverifiering där sådan är
+*strukturellt möjlig och meningsfull* (`context.kombination`,
+NER-härledda kontextsignaler), och avstår där korsverifiering är
+omöjlig eller skulle kosta recall (artikel 9, checksumvaliderade
+mönster).
+
+### 9.6.2 Evidensvägningspolicy: beslutstabell per (lager, kategori)
+
+Policyn uttrycks som en deklarativ beslutstabell. Varje rad anger,
+för ett (lager, kategori)-par: om strukturellt stöd krävs för att fyndet
+ska få *påverka dimensionsbestämningen* (`identifiability` /
+`data_class`), vilka källor som räknas som giltigt stöd, eventuell
+hög-konfidens-bypass, och det `evidence_basis`-värde fyndet får när det
+passerar (9.6.3). Tabellen är den enda auktoritativa policykällan;
+9.6.5 specificerar hur den drivs i kod.
+
+| # | Lager | Kategori / source | Stödkrav | Giltiga stödkällor | Bypass-tröskel | Default `evidence_basis` |
+|---|---|---|---|---|---|---|
+| R1 | 1 Pattern | `pattern.*` (personnummer, e-post, telefon, IBAN, betalkort) | **Nej** | — | Ej tillämpligt | `no_support_required` |
+| R2 | 2 Entity | `entity.spacy_PRS` → `article4.namn` | **Nej** | — | Ej tillämpligt | `no_support_required` |
+| R3 | 2 Entity | `entity.spacy_LOC` → `context.plats` (efter I-7c) | Villkorat¹ | — | — | bidrar som *stöd* (R6), triggar ej dimension ensam |
+| R4 | 2 Entity | `entity.spacy_ORG` → `context.organisation` | Villkorat¹ | — | — | bidrar som *stöd* (R6), triggar ej dimension ensam |
+| R5 | 3 Article9 | `article9.*` (alla sju kategorier) | **Nej** | — (ingen annan producent finns) | **Ingen tröskel** | `no_support_required` |
+| R6 | 4 Combination | `context.kombination` | **Ja** | `pattern.*`, `entity.*` (inkl. ny `entity.spacy_LOC`/`_ORG` från I-7c) | `high_confidence_no_support` ≥ 0.85 | `structural_support` vid Mekanism 3-pass, annars `high_confidence_no_support` |
+| R7 | 4 Combination | `context.{yrke,plats,organisation}` isolerade (utan matchande `context.kombination`) | Villkorat¹ | — | — | D5-bevaras i `findings`, påverkar ej `sensitivity` |
+
+¹ "Villkorat" = fyndet **bevaras alltid** i `Classification.findings`
+för spårbarhet (designprincip 3) men påverkar `identifiability` /
+`data_class` *enbart* genom att räknas som stöd för en `context.kombination`
+(R6) eller via en `article4.*`/`article9.*`-trigger (R1/R2/R5). Detta är
+exakt nuvarande D5-korrigering (Beslut 11, Beslut 19), nu uttryckt i
+tabellform.
+
+**Radvis motivering.**
+
+- **R1 `pattern.*` — inget stödkrav.** Lager 1:s recognizers är
+  självvaliderande: personnummer, IBAN och betalkort via checksumma
+  (Luhn/mod97, `confidence=1.0`), e-post och telefon via regex
+  (`confidence=1.0`/`0.9`). Att kräva korsverifiering av ett
+  mod97-validerat IBAN vore meningslöst — ingen annan signal är
+  starkare. `evidence_basis = no_support_required`. (Kodanalys §6,
+  §13 om checksum-distinktionen.)
+
+- **R2 `entity.spacy_PRS → article4.namn` — inget stödkrav.** NER för
+  personnamn är historiskt tillräckligt pålitlig i denna pipeline:
+  Beslut 30:s tokenantalsfilter (PRS-fynd med < 2 tokens utesluts,
+  `arkitektur.md` §14.2) eliminerade redan den största enskilda
+  `article4.namn`-FP-källan. Kvarvarande PRS-FP är 3 av 73 (kodanalys
+  §5.2, per-källa-tabellen) — för litet för att motivera ett stödkrav
+  som skulle riskera recall på namn (ett missat namn = direkt
+  identifierare missad). `evidence_basis = no_support_required`.
+
+- **R3/R4 `entity.spacy_LOC/_ORG` — kontextsignaler, ej självständig
+  trigger.** Efter I-7c mappas `LOC → context.plats` (i stället för
+  `article4.adress`) och `ORG` förblir `context.organisation`. Båda är
+  `context.*` — alltså pusselbitar, inte direkta artikel 4-identifierare
+  (`arkitektur.md` §5: "Organisationer är inte personuppgifter enligt
+  GDPR artikel 4"). De får därför **inte** ensamma trigga `DIRECT`.
+  De bidrar i stället som *giltigt strukturellt stöd* för en
+  `context.kombination` (R6) eftersom deras source-tagg förblir
+  `entity.spacy_LOC`/`entity.spacy_ORG` (oförändrad per `arkitektur.md`
+  §5 källformat) och därmed matchar `entity.*`-prefixet i den
+  generaliserade Mekanism 3. Detta är kärnan i designprincip 4 och
+  verifieras explicit i 9.6.7.
+
+- **R5 `article9.*` — inget stödkrav, ingen tröskel (mildaste regeln).**
+  Detta är policyns mest recall-prioriterade rad och motiveras
+  utförligt i 9.6.2.1 nedan.
+
+- **R6 `context.kombination` — stöd krävs (generaliserad Mekanism 3).**
+  Detta är den enda raden där korsverifiering är både strukturellt
+  möjlig och empiriskt motiverad: kombinationsclaimet är ett LLM-fynd
+  som per design *påstår* att flera svaga signaler sammanfaller, och
+  påståendet kan korsverifieras mot de underliggande pattern-/entity-fynd
+  som faktiskt detekterades på samma span. Stöd = ≥ `min_evidence_count`
+  (default 2) `pattern.*`/`entity.*`-fynd med strikt span-överlapp mot
+  kombinations-spannet (designprincip 2; formel i 9.6.5).
+  Hög-konfidens-bypass behålls (Beslut 21) men sänks **inte** till
+  issue-förslagets 0.9 — se 9.6.2.2.
+
+- **R7 isolerade `context.*`-signaler — D5 oförändrad.** En enskild
+  kontextsignal utan validerad kombination ökar inte
+  identifieringsrisken (Beslut 11/19). Bevaras i `findings`, påverkar
+  inte `sensitivity`. Tabellen kodifierar bara befintligt beteende.
+
+#### 9.6.2.1 Article9Layer: ingen stödkrav, ingen bypass-tröskel
+
+Designprincip 1 (användarbeslut) stipulerar att artikel 9 har **lägsta
+möjliga stödkrav** och att recall-prioritet är *total*: hellre flagga
+falskt än missa verklig artikel 9-data. Specifikationen ska motivera om
+`article9.*` godtas helt utan stödkrav eller med minimalt stödkrav
+(t.ex. `high_confidence_no_support`-bypass tillämpas alltid).
+
+**Beslut: `article9.*` är `no_support_required` ovillkorligt — inget
+stödkrav och ingen bypass-tröskel.** Motivering:
+
+1. **Strukturell omöjlighet.** Article9Layer är den *enda* producenten
+   av `article9.*`-fynd (kodanalys §5.2: "`article9.*` produceras enbart
+   av Article9Layer"). Inget pattern-, entity- eller combination-lager
+   detekterar hälsodata, religiös övertygelse, etniskt ursprung osv. Att
+   kräva strukturellt stöd vore att kräva korroborering från lager som
+   per konstruktion aldrig kan ge den — ett stödkrav skulle alltså
+   *aldrig* uppfyllas och i praktiken nollställa artikel 9-detektionen.
+
+2. **Recall-prioritet total (designprincip 1).** Ett stödkrav, eller
+   ens en konfidensgolvtröskel, introducerar falska negativ utan
+   precisionsvinst, vilket strider direkt mot `recall > precision` och
+   mot empirin: de 6 missade artikel 9-etiketterna (kodanalys §5.2) är
+   redan LLM-/promptkonservatism; ytterligare ett aggregatorfilter
+   skulle förvärra recall.
+
+3. **Empiriskt liten FP-kostnad.** Article9Layer har ~93 % precision
+   och står för endast 3 av 73 FP (kodanalys §10-bilaga, §5.2). Det
+   finns ingen stor precisionsvinst att hämta som skulle kunna motivera
+   en recall-kostnad.
+
+4. **Privacy by Design som fail-safe (Beslut 21, GDPR artikel 25).**
+   Ett missat känsligt datum är allvarligare än ett felflaggat. Att
+   godta `article9.*` utan stöd är den fail-safe-konforma designen.
+
+5. **Ärlig transparensetikett.** `evidence_basis = no_support_required`
+   (inte `high_confidence_no_support`) är den korrekta taggen, eftersom
+   stöd inte ens är *strukturellt möjligt*. `high_confidence_no_support`
+   skulle felaktigt antyda att stöd fanns men kringgicks. Skillnaden är
+   inte kosmetisk: en granskare som filtrerar på
+   `high_confidence_no_support` letar efter fynd som *kunde* ha
+   korroborerats; artikel 9-fynd hör inte dit (9.6.3).
+
+**Övervägt och avfört alternativ:** "minimalt stödkrav" i form av en
+konfidensgolvtröskel (t.ex. behåll endast `article9.*` med
+`confidence ≥ 0.5`). Avfört: (a) det skulle göra
+`cross_validating`-läget recall-sämre än `legacy`-läget för artikel 9,
+vilket 9.6.1 förbjuder; (b) tröskelvärdet vore godtyckligt utan
+empiriskt underlag (Article9Layers konfidensfördelning är inte
+kalibrerad — den är modellrapporterad); (c) den nuvarande rena
+existenskollen i `_determine_dimensions` filtrerar redan idag *inte*
+artikel 9 på konfidens, så ett golv vore en recall-regression mot
+gällande baslinje. Om framtida empiri (I-7b) skulle visa en konkret
+FP-koncentration kan ett golv omprövas via Loggbok-beslut, men
+default-specifikationen är **inget golv**.
+
+#### 9.6.2.2 Generell hög-konfidens-bypass: 0.85, inte 0.9
+
+Designprincip 3 föreslår tröskel 0.9 för den generella
+`high_confidence_no_support`-bypassen men ber specifikationen motivera
+och eventuellt föreslå alternativ.
+
+**Beslut: behåll 0.85 (nuvarande kalibrerade default,
+`Aggregator.high_confidence_bypass`).** Motivering:
+
+- **Kalibreringskonsistens.** Beslut 51 / I-6
+  (`iteration_3_threshold_calibration.md`, `num_ctx_fix.md`) avslutade
+  tröskelkalibreringen med beslutet att *behålla* trösklarna på
+  Beslut 20-defaults (`medium_threshold=0.7`,
+  `high_confidence_bypass=0.85`, `min_evidence_count=2`). Att höja till
+  0.9 i I-7a vore en okalibrerad ad hoc-ändring som motsäger ett nyligen
+  fattat empiriskt beslut.
+- **Recall-riktning.** En *högre* bypass-tröskel betyder att *fler*
+  `context.kombination`-fynd måste ha strukturellt stöd för att räknas;
+  fynd med 0.85 ≤ konfidens < 0.9 och utan stöd skulle falla bort.
+  Eftersom bypassen är en fail-safe (Beslut 21) drar recall-prioritet
+  mot den *lägre* tröskeln, inte den högre.
+- **Separation av beslut.** Den enda funktionella nyheten i 9.6 är att
+  bypass-passagen nu *taggas explicit* (`high_confidence_no_support`,
+  9.6.3). Själva tröskelvärdet är en kalibreringsparameter som hör till
+  I-7b:s empiriska omkörning, inte till denna designspecifikation.
+
+**Rekommendation till I-7b:** behåll 0.85 som default; om I-7b:s
+ombaslinje visar att `high_confidence_no_support`-taggade fynd har
+oproportionerligt låg precision kan tröskeln kalibreras uppåt mot 0.9
+som dokumenterat Loggbok-beslut. 0.9 förs vidare som *kandidat*, inte
+som specificerad default.
+
+### 9.6.3 Transparens-flagga: `evidence_basis`
+
+**Fält.** Ett nytt fält som anger på vilken evidensgrund ett fynd
+tilläts påverka dimensionsbestämningen:
+
+```python
+evidence_basis: Literal[
+    "structural_support",        # ≥ min_evidence_count giltiga stödfynd överlappar
+    "high_confidence_no_support", # passerade bypass utan strukturellt stöd
+    "no_support_required",       # policy kräver inget stöd (R1/R2/R5)
+]
+```
+
+**Hemvist: primärt `Finding`.** `evidence_basis` är en egenskap *per
+fynd* — varje fynd passerade på sin egen grund — och hör därför hemma på
+`Finding` (`gdpr_classifier/core/finding.py`). Det ger den per-fynd-
+spårbarhet designprincip 3 kräver: utvärderingen och demon kan visa
+exakt vilket fynd som höjde känsligheten och *varför*. `Classification`
+exponerar ett **härlett sammandrag** (förslagsvis det svagaste
+`evidence_basis` bland de fynd som faktiskt bar `identifiability`/
+`data_class` — "den svagaste länken i klassningen") för
+intressentvisning, men *duplicerar inte* per-fynd-värdet och är inte
+sanningskälla.
+
+`Finding` är en `@dataclass(frozen=True)`; att lägga till ett fält är en
+**kodändring och hör till I-7b**. Kontraktet specificeras här:
+
+- Fältet får default `"no_support_required"` så att befintliga
+  konsumenter och `legacy`-läget inte bryts (analogt med hur
+  `Classification.identifiability/data_class` fick `NONE`-defaults under
+  I-5:s övergångsfönster, `arkitektur.md` §8).
+- Lager sätter **inte** fältet själva (lagren är ovetande om varandra,
+  princip 1). Aggregatorn är den enda producenten.
+
+**Produktion i aggregatorn.** I `cross_validating`-läget kör en
+evidensvägningspass *efter* containment/dedup och *före*
+dimensionsbestämning. För varje fynd som *bidrar till* `identifiability`
+eller `data_class` sätts `evidence_basis` enligt tabellen i 9.6.2:
+
+- `no_support_required` om radens stödkrav är "Nej" (R1/R2/R5).
+- `structural_support` om radens stödkrav är "Ja" och
+  `_count_structural_support(...) ≥ min_evidence_count` (9.6.5).
+- `high_confidence_no_support` om stödkrav är "Ja", strukturellt stöd
+  saknas, men `confidence ≥ high_confidence_bypass`.
+
+Eftersom `Finding` är frozen produceras taggade kopior via
+`dataclasses.replace` (samma mönster som
+`_deduplicate_same_category_overlap` redan använder för `metadata`,
+`aggregator.py:218`). I `legacy`-läget körs passen inte och alla fynd
+behåller default `no_support_required` (vilket gör legacy-utdata
+bakåtkompatibel och tyst).
+
+**Rapportering i utvärderingen.** `evidence_basis` blir en ny
+rapporteringsdimension vid sidan av per-kategori och per-lager (§9.2
+nämner redan "per mekanism"). Konkret: `report.py` /
+`confusion_matrix.py` aggregerar TP/FP/FN även per `evidence_basis`, så
+att man kan särskilja precision för `structural_support`-fynd från
+`high_confidence_no_support`-fynd och kvantifiera fail-safe-bypassens
+kostnad. **Varning (mätinstrumentpåverkan):** att ändra aggregator-
+beteendet i `cross_validating`-läge ändrar mätinstrumentet och gör
+tidigare baslinjer ojämförbara (kodanalys §10; `arkitektur.md` §14.1).
+Default är efter **I-7g** (2026-05-16) `cross_validating` (9.6.4);
+kravet på dokumenterat Loggbok-beslut plus fullständig ombaslinje
+uppfylldes av I-7b–I-7f, och `legacy` kvarstår som opt-in för
+reproduktion. I-7a (denna spec) ändrar inget mätinstrument.
+
+### 9.6.4 Aggregator-mode och fallback
+
+**Mode.** Aggregatorn får ett explicit läge:
+
+```python
+cross_validation_mode: Literal["legacy", "cross_validating"] = "cross_validating"
+```
+
+- **`legacy`** (opt-in via explicit
+  `cross_validation_mode="legacy"`): nuvarande beteende oförändrat —
+  `_determine_dimensions` använder ren existenskoll, `_has_validated_
+  kombination` använder Mekanism 3 enbart för `context.kombination`,
+  inget `evidence_basis` produceras (alla fynd behåller default).
+- **`cross_validating`** (default sedan I-7g): beslutstabellen i 9.6.2
+  tillämpas, den generaliserade Mekanism 3 (9.6.5) styr stödkrav per
+  (lager, kategori), och `evidence_basis` taggas (9.6.3).
+
+**Default `cross_validating` (I-7g, 2026-05-16) och dess motivering.**
+Att aktivera `cross_validating` ändrar mätinstrumentet
+(9.6.3-varningen); hela projektets spårbarhetsupplägg krävde därför att
+flippen föregicks av ett dokumenterat Loggbok-beslut och en fullständig
+ombaslinje (kodanalys §10; `arkitektur.md` §14.1). Det villkoret
+uppfylldes av I-7b–I-7f: **I-7f** bevisade på korpusskala att de två
+lägena ger byte-identiska klassifikationsutfall (0/159
+sanity-avvikelser, oförändrad konfusionsmatris, TP/FP/FN 212/70/21) men
+att `cross_validating` ger en *mer rättvisande* evidensredovisning — 5
+sanna `context.kombination`-fynd får `structural_support` i stället för
+en `high_confidence_no_support` bypass-tagg, utan precisions- eller
+recall-kostnad. Eftersom flippen är en ren transparens-leverans (ingen
+mätvärdesförändring) flippades defaulten till `cross_validating` så att
+I-18:s naturalistiska utvärdering ärver transparensen utan explicit
+opt-in. `legacy` kvarstår som opt-in via explicit
+`cross_validation_mode="legacy"` — **den som vill reproducera iteration
+2- eller pre-I-7f-mätningar måste sätta parametern explicit**. Detta
+stänger **Beslut 39:s precedens** för just denna flagga: till skillnad
+från reservplanens `use_legacy_sensitivity` (fortsatt default av) är
+korsvalideringen nu det dokumenterade standardbeteendet. Flippen loggas
+formellt i Loggboken iteration 3.
+
+**Konfigurationspunkt.** Parametern bor på `Aggregator.__init__`,
+analogt med de befintliga trösklarna (`medium_threshold`,
+`high_confidence_bypass`, `min_evidence_count`,
+`aggregator.py:54-71`) och med Beslut 39:s föreslagna
+`use_legacy_sensitivity: bool`. En framtida `AggregatorConfig`-dataklass
+kan samla samtliga aggregatorparametrar, men det är inte nödvändigt för
+I-7b och föreslås inte här (YAGNI — undvik att föregripa en
+konfigabstraktion som inget krav ännu motiverar). Konkret
+`config.py`/`__init__`-ändring hör till **I-7b**.
+
+### 9.6.5 Mekanism 3-generalisering
+
+**Val: Option 1 — generalisera Mekanism 3 till en allmän
+evidence-required-primitiv som drivs per (lager, kategori) av tabellen
+i 9.6.2.** `context.kombination` blir *en konfigurerad instans*, inte
+ett särfall i koden.
+
+Konkret extraheras span-överlapps-/evidensräkningen ur dagens
+`_passes_mechanism_3` till en parametriserad primitiv:
+
+```python
+def _count_structural_support(
+    self,
+    target: Finding,
+    all_findings: list[Finding],
+    valid_source_prefixes: tuple[str, ...],
+) -> int:
+    """Antal fynd vars source matchar valid_source_prefixes och vars
+    span strikt överlappar target-spannet."""
+    return sum(
+        1
+        for f in all_findings
+        if f.source.startswith(valid_source_prefixes)
+        and f.start < target.end
+        and target.start < f.end
+    )
+```
+
+Den nuvarande `_passes_mechanism_3(kombination, all_findings)` blir då
+en tunn anropare: `_count_structural_support(kombination, all_findings,
+("pattern.", "entity.")) >= self.min_evidence_count`. Beslutstabellens
+rader som har stödkrav "Ja" (idag enbart R6) anropar samma primitiv med
+sina `valid_source_prefixes` och `min_count`. Nya (lager, kategori)-fall
+läggs till som **tabellrader**, inte som nya metoder.
+
+**Motivering (SOLID / Open-Closed; Martin, R. C. (2003), *Agile
+Software Development: Principles, Patterns, and Practices*):**
+
+- **Single Responsibility.** Span-överlapps-/evidensräkningen
+  (en mekanisk primitiv) separeras från policyn (vilka källor räknas,
+  hur många krävs) — två ansvar som idag är hopslagna i
+  `_passes_mechanism_3`.
+- **Open-Closed.** Aggregatorn blir öppen för utvidgning (ny tabellrad)
+  men sluten för modifikation (ingen ny gren i `_determine_dimensions`
+  per kategori). Detta är raka motsatsen till dagens "glesa, hårdkodade"
+  skyddsmatris (kodanalys §7), där varje nytt fall krävde en ny
+  `_remove_*`-metod.
+- **DRY.** En enda span-överlappsdefinition i hela aggregatorn, inte
+  fyra ad hoc-varianter.
+- **Spårbar mot kodanalysens rekommendation.** §15 anvisar explicit
+  "generalisera Mekanism 3:s korsverifieringsmönster från enbart
+  `context.kombination` till en evidensvägande aggregator".
+
+**Avfört: Option 2 — behåll Mekanism 3 oförändrad och komplettera med
+separata nya regler för `article4.*`/`article9.*`.** Det skulle
+återskapa precis den utspridda, hårdkodade regelsamling kodanalysen §7
+kritiserar (varje kategori sin egen metod), bryta mot Open-Closed och
+göra evidence_basis-produktionen inkonsekvent mellan kategorier. Lägre
+risk på kort sikt, men sämre arkitektur och i strid med §15:s anvisning.
+
+**Stöddefinition (designprincip 2): strikt span-överlapp.** Stöd
+räknas *enbart* via formeln `f.start < target.end and target.start <
+f.end` — exakt nuvarande Mekanism 3-formel. **Inget närhetsbaserat
+stöd, inget "inom N tecken", ingen toleransmarginal.** Detta är
+medvetet konservativt och spårbart: en bredare stöddefinition vore en
+egen designändring med eget Loggbok-beslut.
+
+Beslut 19:s Mekanism 3 bevaras alltså semantiskt oförändrad — den blir
+implementationsmässigt ett konfigurerat anrop av den generella
+primitiven. Ingen befintlig `context.kombination`-klassning ändras av
+generaliseringen i sig (endast av att R5/R3/R4-policyn nu också gäller,
+vilket är hela poängen).
+
+**I-7e — source-medveten räkning i `cross_validating`-läget.** I
+`cross_validating`-läget konsulterar `_count_structural_support` även
+`finding.metadata["deduplicated_sources"]` för att återupptäcka stödfynd
+som `_deduplicate_same_category_overlap` tog bort vid
+same-category-källkollaps (t.ex. `entity.spacy_LOC` som faller bort när
+CombinationLayers `context.plats` vinner dedupliceringen). Detta är ett
+*medvetet avsteg* från primitivens annars källdrivna, mode-agnostiska
+karaktär: utan mode-gaten skulle tillägget ändra legacy-lägets
+`identifiability`-beslut via `_has_validated_kombination →
+_passes_mechanism_3` och bryta bakåtkompatibilitet (I-7e:s
+acceptanskriterium, alternativ iii). Stöddefinitionen ovan omformuleras
+därför från "källdriven, mode-agnostisk" till **"källdriven med
+mode-gateat `deduplicated_sources`-tillägg i `cross_validating`"**.
+
+Containment-borttagning (t.ex. `_remove_context_covered_by_article9`)
+propagerar *inte* source och fångas därför inte av denna mekanism. Den
+utgör en parallell, oadresserad kollaps-väg och dokumenteras som **öppen
+punkt** för framtida arbete (ev. I-7g); regressionsvakten
+`test_e_containment_does_not_propagate_source` fryser nuvarande beteende.
+
+### 9.6.6 Spårbarhet
+
+| Beslut (Loggbok it. 2) | Status under 9.6 | Innebörd |
+|---|---|---|
+| **Beslut 11** — LOC→ADRESS-mappning + matcher-alias behölls medvetet | **Omprövas (av I-7c)** | I-7c ändrar `LOC → context.plats`. 9.6 verifierar (9.6.7) att generaliserad Mekanism 3 plockar upp `context.plats` som giltig stödsignal eftersom source-taggen förblir `entity.spacy_LOC` (fortsatt `entity.*`-prefix). Matcher-aliaset `{ADRESS, PLATS}` (§9.2.1) omprövas i I-7c, inte här. |
+| **Beslut 19** — Mekanism 3 i aggregatorn, kombinationslogik i Lager 4 | **Omramas, bevaras** | Mekanism 3 blir en konfigurerad instans av den generella primitiven (9.6.5). `context.kombination`-semantiken är oförändrad; ansvarsfördelningen Lager 4 ↔ aggregator består. |
+| **Beslut 21** — Privacy by Design som fail-safe (GDPR art. 25) | **Behålls, lyfts till evidence_basis-nivå** | Hög-konfidens-bypassen finns kvar men opererar nu på `evidence_basis`-nivå: den producerar en explicit `high_confidence_no_support`-tagg i stället för en tyst tröskelpassage. Principen oförändrad; transparensen uppgraderad från råexistens till spårbar evidensgrund. |
+
+Ett **nytt beslut** ("Cross-Validating Aggregator: evidensvägningspolicy")
+ska föras in i Loggboken iteration 3 med full motivering (beslut,
+övervägda alternativ — särskilt Option 2 och article9-konfidensgolvet —,
+motivering, koppling till GDPR art. 5/25 och till kodanalys §15).
+Numret tilldelas av användaren i Loggboken; denna spec tilldelar inget
+nummer. Referensen Martin (2003) bör läggas till `arkitektur.md` §15 vid
+inplaceringen av §9.6 (lämpligen via I-20, SSOT-synk) — I-7a rör inte
+§15.
+
+### 9.6.7 Degerfors-fallet som genomgående exempel
+
+Designprincip 4 kräver att kombinationslogiken inte tappar platsen som
+signal efter `LOC→context.plats`-ommappningen. Verifieras med det
+kanoniska kontrastparet.
+
+**Text A (ej identifierbar):** *"En 25-åring med blått hår bor i
+Stockholm."*
+**Text B (högst identifierbar):** *"Samma person bor i Degerfors."*
+
+**Lager-utdata (efter I-7c, `cross_validating`-läge):**
+
+| Lager | Text A (Stockholm) | Text B (Degerfors) |
+|---|---|---|
+| 1 Pattern | inga fynd | inga fynd |
+| 2 Entity | `context.plats` "Stockholm", source `entity.spacy_LOC` | `context.plats` "Degerfors", source `entity.spacy_LOC` |
+| 3 Article9 | inga fynd | inga fynd |
+| 4 Combination | bedömer *ej* identifierbar (storstad, hög anonymitetsmängd) → **inget** (eller lågkonfident, < `medium_threshold`) `context.kombination`; ev. `context.plats`-signal | bedömer identifierbar (liten ort + ålder + särdrag) → `context.kombination` (span täcker ålder+hårfärg+ort) + `context.plats`-signal |
+
+**Aggregatorns beslut:**
+
+- **Text A:** Inget `context.kombination` (eller under
+  `medium_threshold`). `_has_validated_kombination` → `False`. Inget
+  `article4.*`/`article9.*`. → `identifiability = NONE`,
+  `data_class = NONE` → `derive_sensitivity(NONE, NONE)` = **`NONE`**.
+  `context.plats` "Stockholm" bevaras i `findings` (R7/D5) men
+  triggar inget. *Korrekt:* en 25-åring med blått hår i Stockholm är
+  inte identifierbar.
+
+- **Text B:** `context.kombination` finns med
+  `confidence ≥ medium_threshold`. Den generaliserade Mekanism 3 (R6)
+  räknar strukturellt stöd: `_count_structural_support(kombination,
+  all_findings, ("pattern.", "entity."))`. `entity.spacy_LOC`
+  "Degerfors" är ett `entity.*`-fynd vars span överlappar
+  kombinations-spannet → **räknas som stöd**. Är `min_evidence_count`
+  (2) uppnått (t.ex. tillsammans med ytterligare en överlappande
+  entity-/pattern-signal) passerar Mekanism 3 →
+  `evidence_basis = structural_support`; annars, om
+  `confidence ≥ high_confidence_bypass` (0.85), passerar fyndet via
+  fail-safe → `evidence_basis = high_confidence_no_support`. I båda
+  fallen: `_has_validated_kombination` → `True`. Inget `article4.*`. →
+  `identifiability = INDIRECT`, `data_class = NONE` →
+  `derive_sensitivity(INDIRECT, NONE)` = **`LOW`** men *spårbart
+  `INDIRECT`*.
+
+**Poängen (designprincip 4 verifierad):** Platssignalen "Degerfors"
+överlever ommappningen. Före I-7c var "Degerfors" ett
+`article4.adress`-fynd som hade trumfat fram `DIRECT` av fel skäl (ett
+nakent ortnamn är ingen gatuadress — kodanalys §4, §14). Efter I-7c är
+det `context.plats` med oförändrad `entity.spacy_LOC`-source, vilket gör
+att den generaliserade Mekanism 3 *fortfarande räknar den som stöd* för
+kombinationsclaimet. Platsen tappas alltså inte — den flyttas från en
+felaktig direkt-identifieringstrigger till sin korrekta roll som
+pusselbit som *styrker* den indirekta identifierbarheten. Stockholm
+kontra Degerfors körs genom *samma* maskineri och ger motsatt utfall
+enbart för att CombinationLayer (Lager 4) bedömer identifierbarheten
+olika — aggregatorn lägger inte till någon ortspecifik regel; den
+korsverifierar bara LLM-claimet mot de NER-signaler som faktiskt
+detekterades.
+
+> *(`evidence_basis`-noteringen: även om slutlig `sensitivity` blir
+> `LOW` för en ren pusselbit utan artikel 9-data, är det `INDIRECT` +
+> det taggade kombinationsfyndet som kommuniceras till intressenten och
+> som demon/utvärderingen kan spåra. Det är pusselbitseffektens
+> synlighet, inte sensitivity-siffran, som är leveransen här.)*
 
 
 ## 10. Filstruktur

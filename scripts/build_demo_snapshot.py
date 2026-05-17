@@ -7,17 +7,25 @@ to a JSON snapshot file that the demo reads at startup.
 
 Requirements:
     - Ollama running locally on http://localhost:11434
-    - Model qwen2.5:7b-instruct pulled in Ollama
+    - Model qwen3:14b pulled in Ollama
     - pip install -e ".[all]"
 
 Usage:
-    # Default: iteration 2 baseline snapshot
+    # Default: iteration 2 baseline snapshot (alla 159 texter)
     python scripts/build_demo_snapshot.py
 
     # Override prompt versions and output filename
     python scripts/build_demo_snapshot.py \\
         --combination-version v4 \\
         --output iteration_3_baseline_v4_reproduction.json
+
+    # Kör endast en delmängd (--subset {iteration_1,article9,combination,all})
+    python scripts/build_demo_snapshot.py --subset article9 \\
+        --output probe_checkpoint2_article9.json
+
+    # Byt LLM-modell via miljövariabel (default: qwen3:14b)
+    AEGIS_MODEL=qwen3:14b python scripts/build_demo_snapshot.py \\
+        --subset article9 --output probe_checkpoint2_qwen3_article9.json
 """
 
 from __future__ import annotations
@@ -25,6 +33,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -50,7 +59,7 @@ from gdpr_classifier.layers.combination import CombinationLayer  # noqa: E402
 from gdpr_classifier.layers.entity import EntityLayer  # noqa: E402
 from gdpr_classifier.layers.pattern import PatternLayer  # noqa: E402
 
-_MODEL = "qwen2.5:7b-instruct"
+_MODEL = os.getenv("AEGIS_MODEL", "qwen3:14b")
 _SNAPSHOTS_DIR = _PROJECT_ROOT / "demo" / "snapshots"
 _DEFAULT_SNAPSHOT_NAME = "iteration_2_report.json"
 _DATASET_PATHS = {
@@ -58,6 +67,13 @@ _DATASET_PATHS = {
     "article9": _PROJECT_ROOT / "tests" / "data" / "iteration_2" / "article9_dataset.json",
     "combination": _PROJECT_ROOT / "tests" / "data" / "iteration_2" / "combination_dataset.json",
 }
+_SUBSET_KEYS = {
+    "all": ("iteration_1", "article9", "combination"),
+    "iteration_1": ("iteration_1",),
+    "article9": ("article9",),
+    "combination": ("combination",),
+}
+_DEFAULT_SUBSET = "all"
 _DEFAULT_ARTICLE9_VERSION = "v5"
 _DEFAULT_COMBINATION_VERSION = "v5"
 
@@ -131,6 +147,15 @@ def parse_args() -> argparse.Namespace:
         default=_DEFAULT_COMBINATION_VERSION,
         help=f"CombinationLayer prompt version (default: {_DEFAULT_COMBINATION_VERSION}).",
     )
+    parser.add_argument(
+        "--subset",
+        choices=list(_SUBSET_KEYS.keys()),
+        default=_DEFAULT_SUBSET,
+        help=(
+            "Datasetdelmängd att utvärdera. "
+            f"Default: {_DEFAULT_SUBSET} (alla tre dataset, totalt 159 texter)."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -140,15 +165,19 @@ def main() -> None:
 
     check_ollama()
 
-    print("Laddar dataset...")
-    d1 = load_dataset(str(_DATASET_PATHS["iteration_1"]))
-    d2 = load_dataset(str(_DATASET_PATHS["article9"]))
-    d3 = load_dataset(str(_DATASET_PATHS["combination"]))
-    dataset = d1 + d2 + d3
+    print(f"Laddar dataset (subset={args.subset})...")
+    subset_counts = {key: 0 for key in _DATASET_PATHS}
+    dataset = []
+    for key in _SUBSET_KEYS[args.subset]:
+        loaded = load_dataset(str(_DATASET_PATHS[key]))
+        subset_counts[key] = len(loaded)
+        dataset.extend(loaded)
     n = len(dataset)
     print(
         f"Dataset: {n} texter "
-        f"({len(d1)} iteration-1 + {len(d2)} artikel-9 + {len(d3)} kombination)"
+        f"({subset_counts['iteration_1']} iteration-1 + "
+        f"{subset_counts['article9']} artikel-9 + "
+        f"{subset_counts['combination']} kombination)"
     )
 
     print(
@@ -251,15 +280,16 @@ def main() -> None:
         "metadata": {
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "model": _MODEL,
+            "subset": args.subset,
             "prompt_versions": {
                 "article9": args.article9_version,
                 "combination": args.combination_version,
             },
             "dataset": {
                 "total_texts": n,
-                "iteration_1_texts": len(d1),
-                "article9_texts": len(d2),
-                "combination_texts": len(d3),
+                "iteration_1_texts": subset_counts["iteration_1"],
+                "article9_texts": subset_counts["article9"],
+                "combination_texts": subset_counts["combination"],
             },
             "git_commit": commit,
             "pipeline_layers": ["pattern", "entity", "article9", "combination"],
