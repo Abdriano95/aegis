@@ -142,6 +142,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#118](https://github.com/Abdriano95/aegis/issues/118) (I-18) | Iteration 3:s naturalistiska utvärdering med V1, V2 och V4 | C | Gemensamt | ⬜ Ej startad | I-6, I-19 | Genererar input till I-15, I-17, I-10. |
 | [#119](https://github.com/Abdriano95/aegis/issues/119) (I-19) | Intervjuguide-revidering för iteration 3 | C | Gemensamt | ⬜ Ej startad | Inga | Styr I-18; ingen direkt rapportsektion. |
 | [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
+| [#142](https://github.com/Abdriano95/aegis/issues/142) (I-21) | Demo-dashboard: rapport/analys-fliksuppdelning, snapshot-väljare, version pinning-fix | A1 | Abdulla | ⬜ Ej startad | Inga | 5.1 uppdateras marginellt (demogränssnittets struktur); ingen designprincip-påverkan. |
 | (I-7a) | Designspecifikation för Cross-Validating Aggregator (§9.6 evidensvägningspolicy) | B | Gemensamt | ✅ Klar (2026-05-15) — utkast i [`arkitektur_9_6_utkast.md`](arkitektur_9_6_utkast.md), väntar arkitekt-agent-granskning | Inga | Ny §9.6 i SSOT (`docs/arkitektur.md`); underlag för DP/arkitekturkapitel. |
 | (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ✅ Klar (2026-05-16) — §9.6 implementerad i kod, default `legacy`, 214/214 tester gröna; default-flipp efter I-7d (se sessionspost 2026-05-16) | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
 | (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ✅ Klar (2026-05-16) — `_label_map` LOC → `Category.PLATS` (source bevarad), §5 uppdaterad, 217/217 tester gröna; mätbar effekt → I-7d, matcher-alias kvarstår (omprövas efter I-7d) (se sessionspost 2026-05-16) | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
@@ -151,6 +152,8 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | (I-7g) | Default-flipp legacy → cross_validating i Aggregator | A2 | Abdriano95 | ✅ Klar (2026-05-16) — default flippad till `cross_validating` (aggregator.py:76); `legacy` opt-in; reproducerbarhets-fix run_i7d_baseline.py:276,477; §9.6.4 stängd + minimal §9.6.3 rad-996-fix; legacy-paritetstester pinnade explicit (test_aggregator_evidence_weighting.py:220/241/524 + docstring); 222/222 tester gröna (se sessionspost 2026-05-16) | I-7f | Stänger §9.6.4-defaultfrågan; transparens-leverans till I-18; reproducerbarhetsnot för iteration 2-baslinjen. |
 
 > I-7a/b/c är en nedbrytning av den arkitektoniska rotorsaken i `docs/kodanalys_precision_och_falska_positiva.md` §15 (delvis realiserad korsverifiering). Skild från I-7/#107 (modellskalningsprobe). GitHub-nummer tilldelas vid skapande per intro-noten ovan; ID-kolumnen bär tills vidare enbart det iterationsinterna ID:t.
+
+> I-21 skapad 2026-05-17 efter att I-1 till I-20-reserveringen byggts ut för demogränssnitt-omarbete inför naturalistisk utvärdering V20. I-21 är första post-plan-iterationsinterna ID:t; behandlas som in-plan (på milestonen `iteration 3 / v0.3.0`, i huvudtabellen ovan).
 
 ### Separat buggfix (utanför iterationsplanen)
 
@@ -1514,3 +1517,26 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 **Statustabell - ändrad.** #108 (I-8): ⬜ Ej startad → ✅ Klar (omprövad bort — Beslut 61, 2026-05-17).
 
 **Out of scope för denna session:** Kod (`gdpr_classifier/` m.fl.) orörd; git (commit/push/branch) hanteras av användaren; Loggboken redigeras ej av agenten (Beslut 61 redan inskriven). Korsfilskontroll (read-only): `docs/arkitektur.md:582` "Issue #75 / I-8" avser iteration 2:s I-8 (#75), ej #108 — lämnad orörd; `CLAUDE.md` och `docs/iteration_3_utvardering.md` saknar #108-referenser — lämnade orörda. #107-bulleten på rad 41 i samma lågprio-sektion utanför scope (separat hanterad, sessionspost 2026-05-17d).
+
+### Session 2026-05-17f - Claude Code (Opus 4.7) — Issue #142 (I-21) skapad (demo-dashboard-omarbete, fas noll)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Skapa GitHub-issue för demogränssnitt-omarbetet (rapport/analys-fliksuppdelning, snapshot-väljare, Article9-version-pinning-fix) och föra in det i statustabellen som I-21. Fas noll — ingen kod, ingen branch, ingen git.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — ny I-21-rad i Issue-specifikationer; I-21-reserverings-not under tabellen; denna sessionspost.
+- GitHub-issue #142 (I-21) — skapad (labels iteration-3/spar-A1/prio-hog, milestone iteration 3 / v0.3.0, assignee Abdriano95); body spec-driven I-5-mönster.
+
+**Gjort:**
+- #142 skapad via `gh issue create`; skapande verifierat via återläsning (`gh issue view 142`): titel, tre labels, milestone, assignee bekräftade.
+- Statustabellen: I-21-rad tillagd mellan #120 (I-20) och (I-7a) (⬜ Ej startad, Spår A1, Abdulla, inga beroenden).
+- Reserverings-not tillagd under tabellen: I-21 utvidgar I-1…I-20-reserveringen, behandlas in-plan.
+
+**Beslut fattade:** Inga arkitekturbeslut. Operativt: I-5-mönstret (spec-driven body) valt; I-21 utvidgar planen i huvudtabellen (ej "utanför iterationsplanen"-tabellen); branch skapas manuellt av användaren via kanban.
+
+**Öppet/Nästa steg:** Användaren skapar branch via kanban-boarden; implementation körs i separat session efter att branch finns.
+
+**Statustabell - ändrad.** #142 (I-21): ny rad ⬜ Ej startad.
+
+**Out of scope för denna session:** Kod, branch, git (commit/push/branch — användaren manuellt), Loggboken (ej redigerad), Beroendekartans ASCII-diagram (ej uppdaterad — kuraterad delmängd, ej begärt).
