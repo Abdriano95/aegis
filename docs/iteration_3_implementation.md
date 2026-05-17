@@ -128,7 +128,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
 | [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ✅ Klar (omformulerad) — 2026-05-14, trösklar behålls vid Beslut 20-defaults, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md) och Beslut 51 (Loggbok iteration 3) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
-| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | 🔄 Pågår (checkpoint 1 till 5 klara 2026-05-15, syntes inför kapitel 6 återstår) | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
+| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | 🔄 Pågår (probe-arbetet konstruktionsmässigt klart, checkpoint 1-7; syntes till rapport kapitel 6 kvarstår) | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
 | [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
 | [#110](https://github.com/Abdriano95/aegis/issues/110) (I-10) | Villkorad formulering av DP6 | B | Abdulla | ⬜ Ej startad | I-5, I-18 | Detta ÄR formaliseringsarbetet (DP6 i 5.5 eller observation i 4.4.3/6). |
@@ -1439,3 +1439,33 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 **Statustabell — ingen ändring.** SSOT-auditen och modellbytet är spår-B-formalisering / SSOT-konsekvens, inte en spårad I-row med statusövergång; #120 är den spårade issuen och förblir OPEN. Samma princip som föregående iteration 3-sessioner.
 
 **Out of scope för denna session:** `docs/arkitektur.md`-redigering (→ #120), Loggbok-redigering, numrerade beslut i sessionsposten, commits, git, samt de fyra avsiktligt oredigerade kod-referenserna.
+
+### Session 2026-05-17c - Claude Code (Opus 4.7) - Probe #107 Checkpoint 7 + efteranalys + Beslut 60 (Claude Opus 4.7 vs qwen3:14b post-I-7g)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Genomföra probe #107:s molnmodell-jämförelse (checkpoint 7): Claude Opus 4.7 via AnthropicProvider mot qwen3:14b post-I-7g-baslinjen på fullpipeline (159 texter), följt av read-only textverifierande efteranalys, och synka repo-dokumentationen med Beslut 60. Inga commits, ingen git - användaren hanterar manuellt.
+
+**Ändrade filer:**
+- `demo/snapshots/i7d_legacy_opus47.json`, `i7d_cross_validating_opus47.json` - nya snapshots från Opus 4.7-körningen (suffix `_opus47`; qwen3:14b-baslinjen `i7d_legacy.json` orörd).
+- `docs/iteration_3_utvardering.md` - **ny Del 10** (probe #107 checkpoint 7: kvantitativt utfall + textverifierande efteranalys; SSOT för Opus-siffrorna).
+- `docs/iteration_3_implementation.md` - denna sessionspost samt statusrad #107 (se Statustabell nedan).
+
+**Gjort:**
+
+- Körde fullpipeline Claude Opus 4.7 via AnthropicProvider mot hela 159-korpusen (`scripts/run_i7d_baseline.py`, detect-once aggregate-twice, 318 LLM-anrop); AnthropicProvider (LLMProvider-abstraktionen från Beslut 17) var möjliggöraren för molnmodell-jämförelsen och implementerades enligt samma kontrakt som `OllamaProvider`/`GeminiProvider`.
+- Genomförde en read-only textverifierande efteranalys (slängbart temp-script, inget repo-avtryck) som kartlade fynd-deltat per text och kategori mot qwen3:14b och mot annoteringsguiderna.
+- **Allt kvantitativt utfall** (total-, per-lager-, per-kategori-tabeller, Δ-värden), per-text-deltakartan, FN→TP-verifieringen, Article9-FP-bedömningen mot facit och sanity-avvikelsen är flyttat till `docs/iteration_3_utvardering.md` **Del 10** (SSOT för checkpoint 7:s siffror). Sessionsposten hålls medvetet kort per CLAUDE.md §8 (sessionslogg = vad som gjordes; kvantitativ analys hör hemma i utvärderingsdokumentet).
+
+**Beslut fattade:** Inga numrerade arkitekturbeslut i sessionsposten. **Beslut 60** (Loggboken iteration 3, formulerad av användaren utanför agent-flödet): qwen3:14b behålls som lokal produktionsmodell per Beslut 17; probe #107:s Opus-utfall är ett vetenskapligt bidrag (modellkapacitet kontra uppgiftskomplexitet), inte underlag för produktionsbyte. Den förregistrerade vägledande beslutsregeln (P > 85 % OCH R > 90 %) uppfylldes inte: precisionströskeln missades med 1,86 pp (recall-tröskeln klarades). Operativt val: temperaturparametern utelämnas i AnthropicProvider eftersom Opus 4.7 avvisar explicit `temperature` med HTTP 400.
+
+**Probe-status #107:** Probe-frågan besvarad. Lokal modell är empiriskt tillräcklig: marginalen från qwen3:14b till Opus 4.7 är 0,26 pp precision, vilket indikerar att uppgiftens svårighet och prompt-konfigurationen sätter taket före modellkapaciteten. Lager 3/Lager 4-asymmetrins "inversion" från checkpoint 1-5 är delvis ett mätinstrumentfenomen (Article9-precisionstappet är facit-granularitetsdrivet, noll hallucinationer textverifierat; "Combination-lyftet" kommer från individuella signaler, ej pusselbits-logiken som regredierar svagt). Kvantifiering och full tolkning: `docs/iteration_3_utvardering.md` Del 10.
+
+**Öppet/Nästa steg:**
+- Facit-granskning av [95] biometri och [100] genetik som åtgärdskandidater för framtida revision (out of scope iteration 3; påverkar båda modeller symmetriskt, ändrar inte Beslut 60).
+- Modellfamiljsjämförelse (gemma/llama/mistral ej testade) som framtida arbete i rapportens kapitel 6.10.
+- Probe-syntes av checkpoint 1-7 till rapportens kapitel 6.5/6.7 kvarstår.
+
+**Statustabell - ändrad.** Till skillnad från checkpoint 3-6 (som avsiktligt lämnade #107-cellen orörd eftersom probe-konstruktionen pågick) uppdateras #107-statusraden nu: probe-arbetet är konstruktionsmässigt klart (checkpoint 1-7). Issuen förblir 🔄 Pågår eftersom rapport-syntesen kvarstår; issuen stängs inte (jfr GitHub-Projects-auto-close vid kortflytt till Done).
+
+**Out of scope för denna session:** `docs/arkitektur.md` (modellagnostisk SSOT), Loggbok-redigering (Beslut 60 inklistrad av användaren), commits, git, kodändring, README.md/CLAUDE.md.

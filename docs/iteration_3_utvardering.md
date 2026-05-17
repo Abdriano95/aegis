@@ -642,3 +642,198 @@ senare gör en per-source-uppdelning.
   molnmodell-jämförelse (AnthropicProvider) är ett separat utforskande steg, inte
   klart. Probe-syntes till rapportens kapitel 6.5/6.7 sker när probe-arbetet är
   slutfört. Issue #107 förblir 🔄 Pågår.
+
+## Del 10: Probe #107 - molnmodell-jämförelse `claude-opus-4-7` mot `qwen3:14b` (checkpoint 7 + efteranalys)
+
+> Källa: sessionspost 2026-05-17c i `docs/iteration_3_implementation.md` (operativt
+> händelseförlopp). Denna Del 10 är SSOT för probe #107 checkpoint 7:s kvantitativa
+> utfall och efteranalys; sessionsposten håller endast den kvalitativa
+> "vad gjordes"-noteringen. Del 10 fortsätter Del 9 (checkpoint 6, qwen3:14b mot
+> qwen2.5) och använder Del 9 §9.3.1:s qwen3:14b-rad som baslinje.
+
+### 10.1 Probe-frågan och bakgrund
+
+V4 rekommenderade i iteration 2 att proben skulle inkludera en stor molnmodell via
+API, för att avgöra om prestandataket i Lager 3 (Article9Layer) och Lager 4
+(CombinationLayer) ligger i modellens kapacitet eller i uppgiftens inneboende
+komplexitet. Checkpoint 1-6 jämförde endast lokala modeller (qwen2.5:7b-instruct,
+qwen3:14b). Checkpoint 7 stänger den öppna punkten genom att ställa Claude Opus 4.7
+mot den arkitektoniskt aktuella post-I-7g qwen3:14b-baslinjen (Del 9 §9.3.1) via
+samma instrument som producerade Del 8 och Del 9.
+
+Molnmodell-jämförelsen möjliggjordes av LLMProvider-abstraktionen (Beslut 17): en
+AnthropicProvider implementerades samma dag enligt samma kontrakt som
+OllamaProvider och GeminiProvider, vilket gör modellbytet till en
+konfigurationsändring utan ingrepp i pipeline eller lager. Providern är sanktionerad
+endast för utforskande bruk (ingen verklig persondata), inte produktion, per
+Beslut 17.
+
+En vägledande beslutsregel förregistrerades innan körningen: om Opus 4.7 ger total
+precision > 85 % OCH recall > 90 % är det underlag för att överväga molnprovider
+trots Beslut 17; annars dokumenteras utfallet som försök och qwen3:14b behålls.
+Regeln är vägledande, inte bindande; slutligt produktionsval kräver Loggboks-beslut
+(Beslut 60, se §10.6).
+
+### 10.2 Korpus och konfiguration
+
+| Variabel | Värde |
+|---|---|
+| Skript | `scripts/run_i7d_baseline.py` (detect-once aggregate-twice, `legacy` + `cross_validating`) |
+| Testkorpus | 159 texter (80 iteration-1 + 52 artikel-9 + 27 kombination) |
+| Baslinje | `qwen3:14b` - `i7d_legacy.json`, git_commit `8144ae1` (= Del 9 §9.3.1 checkpoint 6-raden, 213/44/20) |
+| Probe-kandidat | `claude-opus-4-7` - `i7d_legacy_opus47.json` / `i7d_cross_validating_opus47.json`, git_commit `928f042` |
+| Provider | AnthropicProvider (Anthropic API); `temperature` utelämnad (Opus 4.7 avvisar explicit `temperature` med HTTP 400), `max_tokens=4096`, `max_retries=3` |
+| LLM-anrop | 318 (159 article9 + 159 combination; ingen gating, samtliga texter träffar båda LLM-lagren) |
+| Promptversioner | Article9Layer v5, CombinationLayer v5 (oförändrade) |
+| Trösklar | `medium_threshold=0.7`, `high_confidence_bypass=0.85`, `min_evidence_count=2` (Beslut 51) |
+| Aggregator-mode | `cross_validating` default (Beslut 58) |
+| Körtid | 12,1 min, exit 0, 0 st 429-retries, `llm_failures.count = 0` |
+| Sanity-avvikelser | **1 / 159** legacy↔cross_validating (qwen3 hade 0/159; analys i §10.5) |
+
+`legacy` och `cross_validating` är byte-identiska på konfusionsmatrisen för Opus 4.7
+(som för qwen3 i Del 9 och qwen2.5 i Del 8); tabellerna nedan rapporterar därför
+`legacy`-talen, vilka är identiska med `cross_validating`. Suffixet `_opus47` valdes
+så att qwen3:14b-baslinjen (`i7d_legacy.json`) lämnades orörd.
+
+### 10.3 Resultat
+
+#### 10.3.1 Total-jämförelse
+
+| Konfiguration | TP | FP | FN | Precision | Recall | F1 |
+|---|---|---|---|---|---|---|
+| `qwen3:14b` (Del 9 checkpoint 6-baslinje) | 213 | 44 | 20 | 82,88 % | 91,42 % | 86,94 % |
+| `claude-opus-4-7` (checkpoint 7) | 217 | 44 | 16 | 83,14 % | 93,13 % | 87,85 % |
+| **Δ (opus − qwen3)** | **+4** | **0** | **−4** | **+0,26 pp** | **+1,71 pp** | **+0,91 pp** |
+
+Opus 4.7 är strikt bättre på varje totalmått: fyra FN konverterade till TP utan en
+enda ny FP. Rörelsen är recall-driven (FN 20 → 16) med nästan platt precision.
+Den förregistrerade beslutsregeln är **inte uppfylld**: recall-tröskeln klaras
+(93,13 % > 90 %) men precisionströskeln missas med 1,86 pp (83,14 % < 85 %).
+
+#### 10.3.2 Per-lager (`legacy`)
+
+| Lager | q3 TP/FP | q3 F1 | opus TP/FP | opus F1 | ΔF1 |
+|---|---|---|---|---|---|
+| pattern | 68/0 | 100,00 % | 68/0 | 100,00 % | ±0,0 pp |
+| article9 | 38/3 | 96,20 % | 39/6 | 92,86 % | −3,3 pp |
+| context | 68/30 | 81,93 % | 78/26 | 85,71 % | +3,8 pp |
+| entity | 39/11 | 87,64 % | 32/12 | 84,21 % | −3,4 pp |
+
+> **Mätinstrumentbegränsning (per-lager).** Som i Del 9 §9.3.3: `_build_report`
+> nycklar lagermängden enbart ur `cm.layer_tp + cm.layer_fp` (ingen `layer_fn`).
+> Per-lager-recall är därför strukturellt 100 % och per-lager-F1 är
+> precisions-driven; talen är inte lagrens faktiska recall och får inte refereras
+> som om de inkluderar lagrets missade fynd. Kvarstår som öppen punkt (egen
+> framtida issue); inget rört i checkpoint 7.
+
+Per-kategori-prosa: `context.plats` rör sig mest: q3 14/17/0 (P 45,16 %, F1 62,22 %)
+→ opus 14/8/0 (P 63,64 %, F1 77,78 %), alltså FP 17 → 8 (−9, ΔF1 +15,6 pp) med
+oförändrad TP och recall. Pusselbits-aggregatet `context.kombination` rör sig
+marginellt åt fel håll: aggregat-FP 6 → 7, noll FN→TP-konverteringar och noll
+TP→FN-regressioner (§10.4).
+
+### 10.4 Efteranalys (textverifiering)
+
+Read-only-analys i samma session (slängbart script i OS-temp, inget repo-avtryck)
+som kartlade fynd-deltat per text och kategori mot facit. Sammanfattat verdikt:
+nettolyftet är ärligt, men totalsiffrorna döljer churn och probe-rapportens
+initiala per-lager-tolkning behöver nyanseras.
+
+- **10.4.1 Aritmetisk sanity - grön.** I båda snapshots: Σ`per_category{tp,fp,fn}`
+  = `report.total` och samples-rollup (`Σ false_positives`/`false_negatives`) =
+  `total`. Idx-join snapshot↔snapshot giltig för alla 159 (samples-ordning =
+  datasetordning, noll textmismatch). Nettolyftet är inget aggregeringsfel.
+- **10.4.2 Per-text-deltakarta.** 128 texter identiska, 16 strikt bättre med Opus,
+  9 strikt sämre, 6 churn (summa 159). Strikt-sämre-index: 25, 91, 92, 95, 100,
+  119, 133, 136, 139. Churn-index: 51, 75, 77, 127, 142, 144. Opus är netto bättre
+  (16 mot 9) men inte monotont; 31 texter ändrades, endast nettot favoriserar Opus.
+- **10.4.3 FN→TP - 8 vunna, 4 förlorade, netto −4.** Åtta facit-fynd som Opus
+  räddade, råtext-verifierade (predikterat span = facit-span): fyra organisationer
+  (`Skatteverket` idx70, `Sigma IT` idx75, `Swedbank` idx76, `Teknik AB` idx77),
+  tre hälsa-vardagsuttryck (`ont i knät` idx81, `reumatologbesök` idx82, `ont i
+  magen` idx84) och ett yrke (`logistikstrategen` idx142). Fyra regressioner
+  (TP→FN): `article9.fackmedlemskap` idx92, `article9.biometrisk_data` idx95
+  (span-skifte), `context.yrke` idx139, `context.organisation` idx144. Probe-
+  rapportens "+4 FN→TP" är ett netto av 8 vunna minus 4 förlorade, inte en monoton
+  förbättring.
+- **10.4.4 Nya Article9-FP - inga hallucinationer.** Fyra nya article9-FP, samtliga
+  textförankrade (ordet finns i texten), bedömda mot `docs/annotation_guidelines.md`:
+  idx100 `genetisk_data "hans genetiska profil"` är enligt guidens §4.6 äkta
+  genetisk data (klient gjorde DNA-analys; facit underannoterar spannet); idx127
+  `sexuell_laggning "ordförande i företagets HBTQ-nätverk"` är genuint känsligt
+  (texten säger explicit "öppet homosexuell"; span-oenighet mot facit); idx95
+  `biometrisk_data "logga in med ansiktet"` är en möjlig facit-inkonsistens mot
+  guidens §4.7 (systembeskrivning av ansiktsigenkänning är enligt guiden inte
+  biometrisk data, men facit annoterar ändå ett närliggande span); idx136
+  `halsodata "bakterielinfektion"` är en defensibel bred läsning (generisk klinisk
+  rapport utan namngiven person). Hypotesen att Opus tolkar v5-Article9-instruktionen
+  bredare via hallucination stöds **inte**; precisionstappet är
+  facit-granularitetsdrivet, inte en modellkvalitetsregression.
+- **10.4.5 `context.plats`-reduktion - genuin.** Alla nio borttagna FP är
+  spanlöst hos Opus (taggar dem inte alls): `example.com` idx74, `Unga
+  Socialdemokrater` idx87, `kyrkan` idx88, `biometriska låssystem` idx96,
+  `sjukhuset` idx99, `Skövde` idx141, `industrivägen` idx142, `receptionen`
+  idx146, `konferensen` idx153. Per `combination_annotation_guidelines.md` §3.2/§8
+  är inget av dessa formella platsnamn (`Skövde` ⊂ organisationsnamnet "Volvo Cars
+  Skövde"). Detta är en äkta, guide-konsistent reduktion av qwen3:s övertaggning,
+  inte ett mätinstrumentartefakt - den motsatta riktningen mot Del 9 §9.4.5:s
+  qwen3-regression.
+- **10.4.6 CombinationLayer-aggregatet regredierar svagt.** `context.kombination`:
+  noll FN→TP, noll TP→FN, aggregat-FP 6 → 7. Hela "context"-lagrets +10 TP / −4 FP
+  kommer från **individuella signaler** (organisations-recall: de fyra
+  FN→TP-organisationerna i §10.4.3; plats-precision: −9 FP i §10.4.5; yrke), inte
+  från pusselbits-bedömningen. De sju Opus-kombinations-FP bär självsäkra
+  resonemang men hävdar `is_identifiable=true` där facit tillämpar den konservativa
+  Regel D-defaulten (`combination_annotation_guidelines.md` §5.2).
+
+### 10.5 Sanity-avvikelse
+
+Text 137 ("Sjuksköterskan på intensivvården vid Sahlgrenska Universitetssjukhuset
+i Göteborg ..."): `legacy` gav dimensions none/none/none, `cross_validating` gav
+identifiability=indirect, data_class=none, sensitivity=low. Avvikelsen ligger i
+aggregator-mode-skillnaden i identifiability-härledning, inte i fynd-listan: texten
+har FP=2 (`context.organisation "Hallands sjukhus"`, `context.plats "Hallands"`)
+och FN=0 **identiskt i båda modes**, vilket är varför `legacy` och
+`cross_validating` är byte-identiska på totalerna. Mätvärdena räknas från fynd, ej
+dimensioner, så avvikelsen påverkar inte precision/recall/F1. Antalet (1) ligger
+under skriptets > 2-abortgräns. Verifierat ofarligt.
+
+### 10.6 Slutsats och Beslut 60
+
+qwen3:14b behålls som lokal produktionsmodell per Beslut 17. Probe #107:s
+Opus-utfall är ett vetenskapligt bidrag (modellkapacitet kontra
+uppgiftskomplexitet), inte underlag för produktionsbyte; den vägledande
+beslutsregeln uppfylldes inte (precisionströskeln missad med 1,86 pp). Detta är
+formaliserat som Beslut 60 i Loggboken iteration 3.
+
+Tre nyanseringar av probe-rapportens initiala tolkning följer av textverifieringen.
+Per-lager-asymmetrins "inversion" relativt checkpoint 1-5 är delvis ett
+mätinstrumentfenomen snarare än ren modellkvalitet: Article9-lagrets precisionstapp
+drivs av facit-granularitet och span-oenighet på genuint känsligt innehåll, inte av
+hallucination, och den pusselbits-kombinatoriska logiken håller fortfarande som
+uppgiftsbunden eftersom `context.kombination`-aggregatet inte förbättrades utan
+regredierade svagt. Article9-precisionstappet är alltså facit-granularitetsdrivet,
+inte hallucinationsdrivet. Och "+4 FN→TP" är ett netto av åtta vunna minus fyra
+förlorade konverteringar, inte en monoton recall-förbättring.
+
+En fjärde observation är central för probe-frågan: den lokala modellen är empiriskt
+tillräcklig för uppgiften. qwen3:14b når 82,88 % precision, över V1:s 80
+%-riktmärke från iteration 2, och marginalen till Claude Opus 4.7 är endast 0,26
+procentenheter precision. Det indikerar att uppgiftens svårighet och
+prompt-konfigurationen sätter prestandataket före modellkapaciteten - en starkare
+modell flyttar inte taket nämnvärt på precisionssidan, vilket är probe #107:s
+huvudsakliga svar för rapportens kapitel 6.
+
+### 10.7 Öppna punkter
+
+- **Facit-granskning.** [95] biometri (möjlig inkonsistens mot
+  `annotation_guidelines.md` §4.7) och [100] genetik (möjlig underannotering mot
+  §4.6) är åtgärdskandidater för framtida facit-revision. De förskjuter
+  Article9-precisionsjämförelsen mätbart till Opus nackdel utan kvalitetsgrund.
+  Out of scope för iteration 3 (påverkar båda modellerna symmetriskt och ändrar
+  inte Beslut 60).
+- **Modellfamiljsjämförelse.** Endast qwen-familjen och Claude Opus 4.7 är testade;
+  gemma, llama och mistral är otestade. Bredare modellfamiljsjämförelse är
+  framtida arbete i rapportens kapitel 6.10.
+- **Probe-syntes.** Syntes av checkpoint 1-7 till rapportens kapitel 6.5/6.7
+  kvarstår. Issue #107 förblir 🔄 Pågår tills syntesen är klar.

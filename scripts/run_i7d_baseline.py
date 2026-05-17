@@ -68,12 +68,22 @@ from gdpr_classifier.core.classification import (  # noqa: E402
     DataClass,
     Identifiability,
 )
-from gdpr_classifier.layers.article9 import Article9Layer  # noqa: E402
-from gdpr_classifier.layers.combination import CombinationLayer  # noqa: E402
+from gdpr_classifier.layers.article9 import (  # noqa: E402
+    Article9Layer,
+    Article9LayerError,
+)
+from gdpr_classifier.layers.combination import (  # noqa: E402
+    CombinationLayer,
+    CombinationLayerError,
+)
 from gdpr_classifier.layers.entity import EntityLayer  # noqa: E402
+from gdpr_classifier.layers.llm.provider import LLMProviderError  # noqa: E402
 from gdpr_classifier.layers.pattern import PatternLayer  # noqa: E402
 
 _MODEL = os.getenv("AEGIS_MODEL", "qwen3:14b")
+# Probe-checkpoint 7 (#107): suffix the snapshot filenames so an Anthropic run
+# does not overwrite the qwen3:14b baseline (i7d_legacy.json / i7d_cross_*).
+_SNAPSHOT_SUFFIX = os.getenv("AEGIS_SNAPSHOT_SUFFIX", "")
 _SNAPSHOTS_DIR = _PROJECT_ROOT / "demo" / "snapshots"
 _DATASET_PATHS = {
     "iteration_1": _PROJECT_ROOT / "tests" / "data" / "iteration_1" / "test_dataset.json",
@@ -253,7 +263,10 @@ def _write_snapshot(
 
 def run_full() -> None:
     """Fas 1: full-corpus detect-once aggregate-twice measurement."""
-    check_ollama()
+    # Ollama-reachability is only a precondition when Ollama is the backend.
+    # For LLM_PROVIDER=anthropic/gemini this check is irrelevant (#107 probe).
+    if os.environ.get("LLM_PROVIDER", "ollama").lower() == "ollama":
+        check_ollama()
 
     print(f"Laddar dataset (subset=all, modell={_MODEL})...")
     subset_counts = {key: 0 for key in _DATASET_PATHS}
@@ -290,13 +303,28 @@ def run_full() -> None:
 
     instrument_fn_cases: list[dict] = []
     sanity_failures: list[dict] = []
+    # Probe-checkpoint 7 (#107): the v5 prompts were tuned for qwen, not Claude,
+    # and AnthropicProvider does a bare json.loads. A single fenced/preamble
+    # response would otherwise abort mid-run and waste every prior paid Opus
+    # call. Record per-text failures and continue instead.
+    llm_failures: list[dict] = []
 
     print(f"\nKör utvärdering ({n} texter, detect-once aggregate-twice)...\n")
     for i, item in enumerate(dataset, 1):
         print(f"  [{i:3d}/{n}] {truncate(item.text)}")
-        all_findings = _detect_once(layers, item.text)
-        cls_legacy = agg_legacy.aggregate(all_findings, active_layers)
-        cls_xval = agg_xval.aggregate(all_findings, active_layers)
+        try:
+            all_findings = _detect_once(layers, item.text)
+            cls_legacy = agg_legacy.aggregate(all_findings, active_layers)
+            cls_xval = agg_xval.aggregate(all_findings, active_layers)
+        except (LLMProviderError, Article9LayerError,
+                CombinationLayerError) as exc:
+            llm_failures.append({
+                "index": i,
+                "text": truncate(item.text, 80),
+                "error": str(exc),
+            })
+            print(f"        ! LLM/parse-fel, hoppar text {i}: {exc}")
+            continue
 
         # Sanity-assert (Justering 1): identifiability/data_class/sensitivity
         # MÅSTE vara identiska (per arkitektur). findings/weakest_evidence_basis
@@ -410,9 +438,18 @@ def run_full() -> None:
         "cases": instrument_fn_cases,
     }
     sanity_block = {"failure_count": nfail, "failures": sanity_failures}
+    llm_failures_block = {
+        "count": len(llm_failures),
+        "definition": (
+            "Texter som hoppades pga LLMProviderError/Article9LayerError/"
+            "CombinationLayerError (#107 probe-resiliens). Effektiv N för "
+            "mätvärden = total_texts - count."
+        ),
+        "cases": llm_failures,
+    }
 
     _write_snapshot(
-        _SNAPSHOTS_DIR / "i7d_legacy.json",
+        _SNAPSHOTS_DIR / f"i7d_legacy{_SNAPSHOT_SUFFIX}.json",
         report_legacy,
         mode="legacy",
         n=n,
@@ -421,6 +458,7 @@ def run_full() -> None:
         metadata_extra={
             "instrument_fn": instrument_block,
             "sanity_check": sanity_block,
+            "llm_failures": llm_failures_block,
         },
     )
     eb_breakdown = {
@@ -433,7 +471,7 @@ def run_full() -> None:
         ),
     }
     _write_snapshot(
-        _SNAPSHOTS_DIR / "i7d_cross_validating.json",
+        _SNAPSHOTS_DIR / f"i7d_cross_validating{_SNAPSHOT_SUFFIX}.json",
         report_xval,
         mode="cross_validating",
         n=n,
@@ -442,6 +480,7 @@ def run_full() -> None:
         metadata_extra={
             "instrument_fn": instrument_block,
             "sanity_check": sanity_block,
+            "llm_failures": llm_failures_block,
         },
         top_level_extra={"evidence_basis_breakdown": eb_breakdown},
     )
@@ -464,12 +503,18 @@ def run_full() -> None:
     if nfail:
         print(f"\nVARNING: {nfail} sanity-avvikelse(r) — dokumenteras i "
               f"Del 8.7 (för litet för att påverka 8.4).")
+    if llm_failures:
+        print(f"\nVARNING: {len(llm_failures)} text(er) hoppades pga "
+              f"LLM-/parse-fel (effektiv N = {n - len(llm_failures)}):")
+        for lf in llm_failures:
+            print(f"  [{lf['index']}] {lf['error']}")
     print("=" * 60)
 
 
 def run_degerfors() -> None:
     """Fas 2: isolerad Stockholm/Degerfors-verifikation (4 körningar)."""
-    check_ollama()
+    if os.environ.get("LLM_PROVIDER", "ollama").lower() == "ollama":
+        check_ollama()
     print(f"Isolerad Degerfors-verifikation (modell={_MODEL})\n")
     layers = _build_layers()
     active_layers = [layer.name for layer in layers]
