@@ -60,7 +60,7 @@ def load_snapshot_file(path: Path) -> SnapshotData | None:
     instrument_fn, sanity_check, llm_failures, ...) are ignored;
     ``evidence_basis_breakdown`` is captured when present.
     """
-    if not path.exists():
+    if not path.is_file():
         _LOG.info("Snapshot file not found at %s", path)
         return None
     try:
@@ -71,7 +71,10 @@ def load_snapshot_file(path: Path) -> SnapshotData | None:
             report=report,
             evidence_basis_breakdown=raw.get("evidence_basis_breakdown"),
         )
-    except (json.JSONDecodeError, FileNotFoundError, KeyError, ValueError):
+    except (json.JSONDecodeError, OSError, KeyError, TypeError, ValueError):
+        # Any malformed/unreadable snapshot degrades to None so a single bad
+        # file never aborts list_snapshots() (covers I/O errors from
+        # read_text and TypeErrors from schema drift in _rehydrate_report).
         _LOG.exception("Failed to load or rehydrate snapshot from %s", path)
         return None
 

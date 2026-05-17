@@ -199,7 +199,11 @@ def _resolve_version(layer_dir: Path, version: str, prompts_root: Path) -> Path:
         for _, path in candidates:
             try:
                 data = yaml.safe_load(path.read_text(encoding="utf-8"))
-            except (yaml.YAMLError, OSError) as exc:
+            except (yaml.YAMLError, UnicodeError, OSError) as exc:
+                # UnicodeError (e.g. invalid UTF-8) is a ValueError, not an
+                # OSError — catch it explicitly so a non-decodable candidate
+                # is skipped (per the design intent above) instead of
+                # aborting "latest" resolution.
                 _LOG.warning("Skipping unreadable prompt candidate %s: %s", path, exc)
                 last_load_error = PromptLoadError(
                     f"YAML parse error in {path}: {exc}"

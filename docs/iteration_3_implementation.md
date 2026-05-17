@@ -1586,3 +1586,18 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 **Gjort:** Flexbox-wrappning (`display:flex`, `gap:16px`, `flexWrap:wrap`, kolumner `flex:1`/`minWidth:300px`) → A och B sida vid sida, stackar responsivt vid smalt fönster. `_metadata_row`/`_evidence_basis_section` återanvända oförändrade; jämförelsetabeller och Δ-kolumner orörda. Verifiering: `pytest tests/` 246/246, demo-app bootar (200), två-kolumns-rendering bekräftad (metadata + båda-EBB-fallet).
 
 **Statustabell - oförändrad.** #142 (I-21) kvarstår ✅ Klar (polish).
+
+### Session 2026-05-17i - Claude Code (Opus 4.7) — Issue #142 (I-21) CodeRabbit-granskningsfixar (PR #143)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Åtgärda CodeRabbits PR-granskning av #143 (ingen omöppning — I-21 förblir ✅ Klar).
+
+**Ändrade filer:**
+- `demo/snapshot_loader.py` — `load_snapshot_file()`: `not path.is_file()`-gard; except breddad till `(json.JSONDecodeError, OSError, KeyError, TypeError, ValueError)` så en enskild trasig snapshot aldrig avbryter `list_snapshots()` (täcker I/O-fel + schemadrift-`TypeError` i `_rehydrate_report`).
+- `gdpr_classifier/prompts/loader.py` — `_resolve_version` "latest"-probing fångar nu även `UnicodeError` (icke-UTF8-promptfil → hoppas i stället för att avbryta resolveringen; meddelandet bevarat så befintligt `test_malformed_yaml` ej regredierar).
+- `docs/iteration_3_implementation.md` — denna sessionspost.
+
+**Gjort:** Två Major-fynd (robusthet, sammanföll med vår egen dokumenterade "hoppa trasig indata, krascha ej"-intention) åtgärdade. Två Minor-fynd avböjda med motivering kommenterade på PR:en: (1) nolldelta `+0.0 pp` grönt — kosmetiskt, endast vid exakt lika mätvärden, defererat; (2) RUF001 Unicode-minus — ingen Ruff/CI-lint-gate i repot, kodbasen använder `Δ`/`—`/`·` genomgående, repo-bred policyfråga utanför I-21. Verifiering: `pytest tests/` 246/246 grönt; `list_snapshots()` 23, katalog-/saknad-sökväg → `None`, `resolve_prompt_version("article9","latest")=="v5"`.
+
+**Statustabell - oförändrad.** #142 (I-21) kvarstår ✅ Klar (granskningsfixar, ingen omöppning).
