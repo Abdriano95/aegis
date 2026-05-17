@@ -138,7 +138,7 @@ print_report(report)
 `scripts/build_demo_snapshot.py` kör hela fyralager-pipelinen mot ett dataset och serialiserar utvärderingsrapporten till en JSON-snapshot under `demo/snapshots/`. Demon (`python -m demo.app`) läser snapshoten vid uppstart. Kräver att Ollama är igång och att modellen är pullad.
 
 ```bash
-# Default: alla 159 texter med qwen2.5:7b-instruct
+# Default: alla 159 texter med qwen3:14b
 python scripts/build_demo_snapshot.py
 
 # Endast artikel 9-delmängden (52 texter)
