@@ -128,7 +128,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#104](https://github.com/Abdriano95/aegis/issues/104) (I-4) | Promptförbättringar för svaga artikel 9-kategorier | A1 | Abdulla | ✅ Klar 2026-05-12 (rollback till v5, negativ empiri formaliserad - Beslut 48) | Inga | Empiriskt material för DP1; 4.5.2 och 6.5/6.7 uppdateras. |
 | [#105](https://github.com/Abdriano95/aegis/issues/105) (I-5) | Tvådimensionsoperationalisering enligt Variant 2 | A3 | Gemensamt | ✅ Klar (2026-05-13 fixup) — fyra commits levererade | I-3 | Villkorad DP6 (5.5); 5.3 klassdiagram och 4.4.3 uppdateras. |
 | [#106](https://github.com/Abdriano95/aegis/issues/106) (I-6) | Empirisk tröskelkalibrering | A4 | Johanna | ✅ Klar (omformulerad) — 2026-05-14, trösklar behålls vid Beslut 20-defaults, se [num_ctx_fix.md](iteration_3_num_ctx_fix.md) och Beslut 51 (Loggbok iteration 3) | I-1, I-2, I-3, I-4, I-5 | Stärker DP1 Rationale; 4.5.2 och 5.2 uppdateras. |
-| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | 🔄 Pågår (probe-arbetet konstruktionsmässigt klart, checkpoint 1-7; syntes till rapport kapitel 6 kvarstår) | Inga (efter I-1–I-5) | Diskussionsmaterial för kapitel 6 (6.5/6.7). |
+| [#107](https://github.com/Abdriano95/aegis/issues/107) (I-7) | Modellskalningsprob via större molnmodell | A1 | Johanna | ✅ Klar (2026-05-17) — probe-konstruktion (checkpoint 1-7) klar; resultat dokumenterade i [iteration_3_utvardering.md](iteration_3_utvardering.md) Del 9/10 + Beslut 59/60 (Loggbok it. 3); återstående rapportintegration är styckenivå, ej separat syntes | Inga (efter I-1–I-5) | Underlag till rapport: 5.2 (teknisk prestanda), 6.9 (begränsningar), 6.10 (framtida forskning). |
 | [#108](https://github.com/Abdriano95/aegis/issues/108) (I-8) | Narrativ specificitet som strukturerad output | A1 | Abdulla | ⬜ Ej startad | Inga (revideras efter I-1) | Villkorad — 5.3 eller 6 beroende på utfall. |
 | [#109](https://github.com/Abdriano95/aegis/issues/109) (I-9) | Revidering av DP1-DP5 med stärkt Rationale-komponent | B | Abdulla | ⬜ Ej startad | Påverkas av I-1–I-6 | Detta ÄR formaliseringsarbetet (5.5.1–5.5.5 revideras). |
 | [#110](https://github.com/Abdriano95/aegis/issues/110) (I-10) | Villkorad formulering av DP6 | B | Abdulla | ⬜ Ej startad | I-5, I-18 | Detta ÄR formaliseringsarbetet (DP6 i 5.5 eller observation i 4.4.3/6). |
@@ -1469,3 +1469,26 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 **Statustabell - ändrad.** Till skillnad från checkpoint 3-6 (som avsiktligt lämnade #107-cellen orörd eftersom probe-konstruktionen pågick) uppdateras #107-statusraden nu: probe-arbetet är konstruktionsmässigt klart (checkpoint 1-7). Issuen förblir 🔄 Pågår eftersom rapport-syntesen kvarstår; issuen stängs inte (jfr GitHub-Projects-auto-close vid kortflytt till Done).
 
 **Out of scope för denna session:** `docs/arkitektur.md` (modellagnostisk SSOT), Loggbok-redigering (Beslut 60 inklistrad av användaren), commits, git, kodändring, README.md/CLAUDE.md.
+
+### Session 2026-05-17d - Claude Code (Opus 4.7) — Issue #107 (I-7) status → ✅ Klar (korrigering av felaktig syntes-formulering)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Markera #107 (I-7) ✅ Klar och rätta den felaktiga "förblir 🔄 Pågår tills syntes till kapitel 6.5/6.7"-formuleringen. Användarklargörande 2026-05-17: 6.5/6.7-syntesen var en felaktig framställning (6.7 = metodologiska bidrag, inte syntesplats för probe-resultat) som propagerade via en tidigare sessionslogg; probe-resultaten är redan fullständigt dokumenterade. Inga commits, ingen git — användaren hanterar manuellt.
+
+**Ändrade filer:**
+- `docs/iteration_3_implementation.md` — #107-statusraden 🔄 Pågår → ✅ Klar (2026-05-17); leverabel-kolumnen rättad 6.5/6.7 → 5.2/6.9/6.10; denna sessionspost.
+- `docs/iteration_3_utvardering.md` — §10.7 "Probe-syntes"-punkten omformulerad till "Probe-rapportintegration" (felaktig syntes-framställning utgår; #107 markeras Klar).
+
+**Gjort:**
+- #107-statusraden satt till ✅ Klar (2026-05-17). Probe-konstruktionen (checkpoint 1-7) är klar; resultaten dokumenterade i `iteration_3_utvardering.md` Del 9/10 samt Beslut 59/60 (Loggbok iteration 3).
+- §10.7-punkten korrigerad: återstående rapportinsats är styckenivå-integration (5.2 teknisk prestanda, 6.9 begränsningar, 6.10 framtida forskning), inte separat syntes.
+- Historiska sessionsloggar (checkpoint 3-7, inkl. 2026-05-17c-raden om "6.5/6.7-syntes kvarstår") redigeras **inte** retroaktivt per CLAUDE.md-konventionen; denna post dokumenterar omramningen.
+
+**Beslut fattade:** Inga arkitekturbeslut. Operativt: #107 stängs inte automatiskt här — issuen/projektkortet hanteras manuellt av användaren (GitHub-Projects-auto-close vid kortflytt till Done).
+
+**Öppet/Nästa steg:** Styckenivå-integration av probe-underlaget i rapportens 5.2/6.9/6.10 (löpande rapportarbete, ej blockerande för I-7). Facit-granskning [95]/[100] och bredare modellfamiljsjämförelse kvarstår som tidigare (out of scope iteration 3).
+
+**Statustabell - ändrad.** #107 (I-7): 🔄 Pågår → ✅ Klar (2026-05-17).
+
+**Out of scope för denna session:** Kod, snapshots, Loggbok-redigering, commits/git (användaren manuellt), historiska sessionsloggar (ej retroaktiv redigering), CodeRabbit-svar K2/K3/K4 (PR-tråd).

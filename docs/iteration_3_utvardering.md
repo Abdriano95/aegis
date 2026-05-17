@@ -835,5 +835,10 @@ huvudsakliga svar för rapportens kapitel 6.
 - **Modellfamiljsjämförelse.** Endast qwen-familjen och Claude Opus 4.7 är testade;
   gemma, llama och mistral är otestade. Bredare modellfamiljsjämförelse är
   framtida arbete i rapportens kapitel 6.10.
-- **Probe-syntes.** Syntes av checkpoint 1-7 till rapportens kapitel 6.5/6.7
-  kvarstår. Issue #107 förblir 🔄 Pågår tills syntesen är klar.
+- **Probe-rapportintegration.** Probe-resultaten (checkpoint 1-7) är fullständigt
+  dokumenterade i Del 9/10 ovan samt Beslut 59/60 (Loggbok iteration 3). Det som
+  återstår är styckenivå-integration i rapporten (5.2 teknisk prestanda, 6.9
+  begränsningar, 6.10 framtida forskning) — inte en separat syntes. Issue #107
+  (I-7) är därmed ✅ Klar (2026-05-17); den tidigare formuleringen om "syntes till
+  kapitel 6.5/6.7" var en felaktig framställning (6.7 = metodologiska bidrag, inte
+  syntesplats för probe-resultat) som propagerade via en sessionslogg och utgår.
