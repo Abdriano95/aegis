@@ -142,7 +142,7 @@ Status-legenda: ✅ Klar | 🔄 Pågår | ⏸️ Blockerad | ⬜ Ej startad
 | [#118](https://github.com/Abdriano95/aegis/issues/118) (I-18) | Iteration 3:s naturalistiska utvärdering med V1, V2 och V4 | C | Gemensamt | ⬜ Ej startad | I-6, I-19 | Genererar input till I-15, I-17, I-10. |
 | [#119](https://github.com/Abdriano95/aegis/issues/119) (I-19) | Intervjuguide-revidering för iteration 3 | C | Gemensamt | ⬜ Ej startad | Inga | Styr I-18; ingen direkt rapportsektion. |
 | [#120](https://github.com/Abdriano95/aegis/issues/120) (I-20) | SSOT-uppdateringar för docs/arkitektur.md | B | Abdulla | ⬜ Ej startad | I-1–I-6 | SSOT (`docs/arkitektur.md`) synkas mot slutartefakten. |
-| [#142](https://github.com/Abdriano95/aegis/issues/142) (I-21) | Demo-dashboard: rapport/analys-fliksuppdelning, snapshot-väljare, version pinning-fix | A1 | Abdulla | ⬜ Ej startad | Inga | 5.1 uppdateras marginellt (demogränssnittets struktur); ingen designprincip-påverkan. |
+| [#142](https://github.com/Abdriano95/aegis/issues/142) (I-21) | Demo-dashboard: rapport/analys-fliksuppdelning, snapshot-väljare, version pinning-fix | A1 | Abdulla | ✅ Klar (2026-05-17) — rapport-flik pekar på `i7d_cross_validating.json`, ny analysflik, Article9 `latest`→v5 (status-filtrering); 246/246 tester gröna (se sessionspost 2026-05-17g) | Inga | 5.1 uppdateras marginellt (demogränssnittets struktur); ingen designprincip-påverkan. |
 | (I-7a) | Designspecifikation för Cross-Validating Aggregator (§9.6 evidensvägningspolicy) | B | Gemensamt | ✅ Klar (2026-05-15) — utkast i [`arkitektur_9_6_utkast.md`](arkitektur_9_6_utkast.md), väntar arkitekt-agent-granskning | Inga | Ny §9.6 i SSOT (`docs/arkitektur.md`); underlag för DP/arkitekturkapitel. |
 | (I-7b) | Implementation av Cross-Validating Aggregator (evidence_basis, generaliserad Mekanism 3, mode-flagga) | B | Gemensamt | ✅ Klar (2026-05-16) — §9.6 implementerad i kod, default `legacy`, 214/214 tester gröna; default-flipp efter I-7d (se sessionspost 2026-05-16) | I-7a, I-7c | Implementerar §9.6-policyn i kod; mätinstrumentändring → ombaslinje + Loggbok-beslut. |
 | (I-7c) | Ommappning `entity.spacy_LOC` → `context.plats` (omprövning av Beslut 11) | B | Gemensamt | ✅ Klar (2026-05-16) — `_label_map` LOC → `Category.PLATS` (source bevarad), §5 uppdaterad, 217/217 tester gröna; mätbar effekt → I-7d, matcher-alias kvarstår (omprövas efter I-7d) (se sessionspost 2026-05-16) | I-7a | §5 i SSOT uppdateras; matcher-alias `{ADRESS, PLATS}` omprövas. |
@@ -1540,3 +1540,49 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 **Statustabell - ändrad.** #142 (I-21): ny rad ⬜ Ej startad.
 
 **Out of scope för denna session:** Kod, branch, git (commit/push/branch — användaren manuellt), Loggboken (ej redigerad), Beroendekartans ASCII-diagram (ej uppdaterad — kuraterad delmängd, ej begärt).
+
+### Session 2026-05-17g - Claude Code (Opus 4.7) — Issue #142 (I-21) implementerad (demo-dashboard-omarbete)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Implementera I-21 enligt issue #142: rapportflik mot ny produktionssnapshot + rikare metadata, ny analysflik för snapshot-jämförelse, samt Article9 version pinning-fix.
+
+**Ändrade filer:**
+- `gdpr_classifier/prompts/loader.py` — status-filtrering i `_resolve_version` "latest"-gren; ny publik `resolve_prompt_version()`; defensiv YAML-läsning + logging.
+- `gdpr_classifier/layers/article9/article9_layer.py` — ny publik `prompt_version`-property (resolverar via loadern).
+- `demo/snapshot_loader.py` — `_SNAPSHOT_PATH` → `i7d_cross_validating.json`; `SnapshotData.evidence_basis_breakdown`; `load_snapshot_file()`; `SnapshotInfo` + `list_snapshots()`; inkompatibelt `per_dimension`-schema degraderas tyst.
+- `demo/snapshot_descriptions.py` — **ny** modul med kuraterade beskrivningar (23 toppnivå-snapshots) + fallback.
+- `demo/layout.py` — ny flik "Analys" mellan rapport och fritext; `analysis_tab_layout()`.
+- `demo/callbacks.py` — kuraterad metadata-rad + badges, evidence-basis-sektion, `tab-analysis`-gren, jämförelse-radbyggare + `update_analysis`-callback.
+- `tests/unit/test_prompt_loader.py` — `TestStatusFiltering` + `TestArticle9PromptVersionPinning`.
+- `docs/iteration_3_implementation.md` — status I-21 (🔄→✅) + denna sessionspost.
+
+**Gjort:**
+- Article9 `latest` resolverar nu till v5 (v6 hoppas via `status: experimental`); explicit `"v6"` opåverkad (probe/reproducerbarhet). Latent fritext-bugg (`build_pipeline` körde v6) åtgärdad automatiskt.
+- Rapportfliken laddar `i7d_cross_validating.json` (qwen3:14b, cross_validating) med modell-/mode-badges och evidence-basis-tabeller; befintlig rapportstruktur bevarad.
+- Analysfliken: två dropdowns från katalogskanning, A/B-metadata, jämförelse på fyra nivåer med färgkodade Δ-kolumner, nivå-togglar, evidence-basis-jämförelse, schemavarians-skydd ("Data saknas för denna nivå").
+- Verifiering: `pytest tests/` 246/246 gröna; pinning-introspektion (`resolve_prompt_version("article9","latest")=="v5"`); demo-app bootar (Flask test client 200, alla 5 callbacks registrerade); analys i7d↔iteration_2 renderar utan krasch.
+
+**Avvikelser prompt↔issue-body (issue-body vann på AC):** D1 23 (ej ~24) snapshots — dynamisk skanning, ingen påverkan. D2 `prompt_version`-property tillagd (krävs ordagrant av AC). D3 dropdown-etikett som superset (filnamn+modell+mode+subset). D4 evidence-basis renderat som TP/FP per mekanism (total + context_kombination_only + not) per faktisk datastruktur. D5 snapshots utan mode-fält visas som "legacy" (grå badge).
+
+**Beslut fattade:** Inga arkitekturbeslut (presentationsskikt + bugfix, per rapportens 5.1). Designdetaljer (prompt_version-property, evidence-basis-layout) godkända av användaren i Plan Mode.
+
+**Öppet/Nästa steg:** Manuell okulär kontroll av demon i webbläsare av användaren; git (add/commit `fixes #142`/push) hanteras manuellt.
+
+**Statustabell - ändrad.** #142 (I-21): 🔄 Pågår → ✅ Klar (2026-05-17).
+
+**Out of scope för denna session:** API-wrapper, långtextkorpus, sticky notes-cleanup utanför demo/pinning, fritextflikens UI/pipeline (utöver pinning-effekten), testdata-fliken, nya snapshots; git och Loggboken (användaren manuellt — designbesluten ej arkitektoniska).
+
+### Session 2026-05-17h - Claude Code (Opus 4.7) — Issue #142 (I-21) layout-polish
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Ren layout-justering av analysflikens metadata-block (ingen omöppning — I-21 förblir ✅ Klar).
+
+**Ändrade filer:**
+- `demo/callbacks.py` — ny hjälpare `_side_by_side()`; A/B-metadata och (när båda finns) evidence-basis-jämförelsen renderas nu i två likabreda flexkolumner istället för staplade.
+- `docs/iteration_3_implementation.md` — denna sessionspost.
+
+**Gjort:** Flexbox-wrappning (`display:flex`, `gap:16px`, `flexWrap:wrap`, kolumner `flex:1`/`minWidth:300px`) → A och B sida vid sida, stackar responsivt vid smalt fönster. `_metadata_row`/`_evidence_basis_section` återanvända oförändrade; jämförelsetabeller och Δ-kolumner orörda. Verifiering: `pytest tests/` 246/246, demo-app bootar (200), två-kolumns-rendering bekräftad (metadata + båda-EBB-fallet).
+
+**Statustabell - oförändrad.** #142 (I-21) kvarstår ✅ Klar (polish).

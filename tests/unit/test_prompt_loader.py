@@ -11,13 +11,18 @@ Tests cover:
 - Loading with only required fields (optional fields omitted)
 """
 
+from unittest.mock import MagicMock
+
 import pytest
 
+from gdpr_classifier.layers.article9 import Article9Layer
+from gdpr_classifier.layers.llm.provider import LLMProvider
 from gdpr_classifier.prompts.loader import (
     Prompt,
     PromptLoadError,
     PromptValidationError,
     load_prompt,
+    resolve_prompt_version,
 )
 
 
@@ -274,3 +279,95 @@ class TestOptionalFieldsOmitted:
         assert "Return JSON" in prompt.assembled_prompt
         # No examples or reasoning in minimal prompt
         assert "--- Examples ---" not in prompt.assembled_prompt
+
+
+# --- Version-pinning: status filtering for "latest" ---
+
+
+def _versioned(version: str, *, experimental: bool = False) -> str:
+    """Return _VALID_YAML re-stamped to ``version``, optionally experimental."""
+    meta = f'version: "{version}"'
+    if experimental:
+        meta += '\n  status: "experimental"'
+    return _VALID_YAML.replace('version: "v1"', meta)
+
+
+class TestStatusFiltering:
+    """version='latest' must skip prompts marked status: experimental."""
+
+    def test_latest_skips_experimental(self, tmp_path):
+        _write_prompt(tmp_path, "test_layer", "v1", _versioned("v1"))
+        _write_prompt(
+            tmp_path, "test_layer", "v2", _versioned("v2", experimental=True)
+        )
+
+        prompt = load_prompt("test_layer", version="latest", base_dir=tmp_path)
+        assert prompt.metadata["version"] == "v1"
+        assert (
+            resolve_prompt_version("test_layer", "latest", base_dir=tmp_path)
+            == "v1"
+        )
+
+    def test_missing_status_treated_as_active(self, tmp_path):
+        _write_prompt(tmp_path, "test_layer", "v1", _versioned("v1"))
+        _write_prompt(tmp_path, "test_layer", "v2", _versioned("v2"))
+
+        assert (
+            resolve_prompt_version("test_layer", "latest", base_dir=tmp_path)
+            == "v2"
+        )
+
+    def test_explicit_version_ignores_status(self, tmp_path):
+        _write_prompt(tmp_path, "test_layer", "v1", _versioned("v1"))
+        _write_prompt(
+            tmp_path, "test_layer", "v2", _versioned("v2", experimental=True)
+        )
+
+        prompt = load_prompt("test_layer", version="v2", base_dir=tmp_path)
+        assert prompt.metadata["version"] == "v2"
+        assert (
+            resolve_prompt_version("test_layer", "v2", base_dir=tmp_path) == "v2"
+        )
+
+    def test_malformed_candidate_skipped(self, tmp_path, caplog):
+        _write_prompt(tmp_path, "test_layer", "v1", _versioned("v1"))
+        _write_prompt(
+            tmp_path, "test_layer", "v2", "metadata:\n  version: [unterminated"
+        )
+
+        with caplog.at_level("WARNING"):
+            version = resolve_prompt_version(
+                "test_layer", "latest", base_dir=tmp_path
+            )
+        assert version == "v1"
+        assert any("v2.yaml" in r.message for r in caplog.records)
+
+    def test_all_experimental_raises(self, tmp_path):
+        _write_prompt(
+            tmp_path, "test_layer", "v1", _versioned("v1", experimental=True)
+        )
+        _write_prompt(
+            tmp_path, "test_layer", "v2", _versioned("v2", experimental=True)
+        )
+
+        with pytest.raises(PromptLoadError, match="non-experimental"):
+            resolve_prompt_version("test_layer", "latest", base_dir=tmp_path)
+
+
+class TestArticle9PromptVersionPinning:
+    """Article9Layer.prompt_version must resolve away experimental article9 v6.
+
+    Runs against the real prompts directory. The provider is never invoked by
+    the property (resolution is a pure filesystem read).
+    """
+
+    def test_latest_resolves_to_v5(self):
+        layer = Article9Layer(MagicMock(spec=LLMProvider))
+        assert layer.prompt_version == "v5"
+
+    def test_explicit_v6_is_preserved(self):
+        layer = Article9Layer(MagicMock(spec=LLMProvider), prompt_version="v6")
+        assert layer.prompt_version == "v6"
+
+    def test_resolver_helper_on_real_article9(self):
+        assert resolve_prompt_version("article9", "latest") == "v5"
