@@ -7,7 +7,7 @@ to a JSON snapshot file that the demo reads at startup.
 
 Requirements:
     - Ollama running locally on http://localhost:11434
-    - Model qwen2.5:7b-instruct pulled in Ollama
+    - Model qwen3:14b pulled in Ollama
     - pip install -e ".[all]"
 
 Usage:
@@ -23,7 +23,7 @@ Usage:
     python scripts/build_demo_snapshot.py --subset article9 \\
         --output probe_checkpoint2_article9.json
 
-    # Byt LLM-modell via miljövariabel (default: qwen2.5:7b-instruct)
+    # Byt LLM-modell via miljövariabel (default: qwen3:14b)
     AEGIS_MODEL=qwen3:14b python scripts/build_demo_snapshot.py \\
         --subset article9 --output probe_checkpoint2_qwen3_article9.json
 """
@@ -59,7 +59,7 @@ from gdpr_classifier.layers.combination import CombinationLayer  # noqa: E402
 from gdpr_classifier.layers.entity import EntityLayer  # noqa: E402
 from gdpr_classifier.layers.pattern import PatternLayer  # noqa: E402
 
-_MODEL = os.getenv("AEGIS_MODEL", "qwen2.5:7b-instruct")
+_MODEL = os.getenv("AEGIS_MODEL", "qwen3:14b")
 _SNAPSHOTS_DIR = _PROJECT_ROOT / "demo" / "snapshots"
 _DEFAULT_SNAPSHOT_NAME = "iteration_2_report.json"
 _DATASET_PATHS = {

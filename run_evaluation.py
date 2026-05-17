@@ -14,7 +14,7 @@ from evaluation.dataset.loader import load_dataset
 from evaluation.runner import run_evaluation
 from evaluation.report import print_report
 
-_MODEL = os.getenv("AEGIS_MODEL", "qwen2.5:7b-instruct")
+_MODEL = os.getenv("AEGIS_MODEL", "qwen3:14b")
 
 
 def main() -> None:

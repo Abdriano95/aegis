@@ -47,7 +47,7 @@ def _context_snippet(text: str, start: int, end: int, window: int = 20) -> str:
 
 def build_pipeline() -> Pipeline:
     """Construct the demo's iteration 2 four-layer pipeline."""
-    provider = get_llm_provider("qwen2.5:7b-instruct")
+    provider = get_llm_provider("qwen3:14b")
     return Pipeline(
         layers=[
             PatternLayer(),
@@ -794,12 +794,12 @@ def analyze_text(n_clicks: int, text: str | None) -> tuple:
         if _provider == "ollama":
             _err_text = (
                 "Ollama är inte tillgänglig. Starta Ollama (`ollama serve`) och "
-                "säkerställ att modellen `qwen2.5:7b-instruct` är pullad."
+                "säkerställ att modellen `qwen3:14b` är pullad."
             )
         else:
             _err_text = (
                 f"LLM-providern ({_provider}) är inte tillgänglig. "
-                "Kontrollera att modellen `qwen2.5:7b-instruct` är tillgänglig."
+                "Kontrollera att modellen `qwen3:14b` är tillgänglig."
             )
         error_msg = html.Div(_err_text, style={"color": "red"})
         return [error_msg], []

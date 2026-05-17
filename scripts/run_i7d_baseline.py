@@ -17,7 +17,7 @@ read-only. Endast cross_validation_mode varieras mellan de två
 aggregeringarna.
 
 Krav:
-    - Ollama på http://localhost:11434, modell qwen2.5:7b-instruct pullad
+    - Ollama på http://localhost:11434, modell qwen3:14b pullad
     - pip install -e ".[all]"
 
 Användning:
@@ -73,7 +73,7 @@ from gdpr_classifier.layers.combination import CombinationLayer  # noqa: E402
 from gdpr_classifier.layers.entity import EntityLayer  # noqa: E402
 from gdpr_classifier.layers.pattern import PatternLayer  # noqa: E402
 
-_MODEL = os.getenv("AEGIS_MODEL", "qwen2.5:7b-instruct")
+_MODEL = os.getenv("AEGIS_MODEL", "qwen3:14b")
 _SNAPSHOTS_DIR = _PROJECT_ROOT / "demo" / "snapshots"
 _DATASET_PATHS = {
     "iteration_1": _PROJECT_ROOT / "tests" / "data" / "iteration_1" / "test_dataset.json",

@@ -1374,3 +1374,68 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 - **Användarens manuella steg (utanför agent-flödet):** stänga issues #133, #134, #135, #136, #138, #139, #140 på GitHub med kort kommentar om att koden lever på probe-branchen; flytta dem till Done på Kanban-boarden; kontrollera om Projects-automation kan återöppna dem när probe-branchen senare PR:as till main.
 - Den slutliga samlade PR:en probe-branch → main planeras när probe-arbetet är slutfört. Den automatiska issue-stängningsfrasen för #107 används i den PR:en, inte i denna session eller sessionspost.
 - Branch 140 lämnas stående tills vidare; borttagning är inte beslutat och utanför denna sessions scope.
+
+### Session 2026-05-17 - Claude Code (Opus 4.7) — Probe #107 Checkpoint 6 + efteranalys (qwen3:14b fullpipeline mot post-I-7g qwen2.5:7b-baslinjen)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Köra qwen3:14b på post-I-7g-koden via `scripts/run_i7d_baseline.py` (fullpipeline, 159 texter, detect-once aggregate-twice) för att besvara probe #107:s fråga om Lager 3- och Lager 4-prestandataket är modell- eller uppgiftsbundet. Efterföljande read-only-efteranalys för att verifiera att precisionslyftet är ärligt och inte ett mätfel. Inga commits, ingen git, ingen kodändring — användaren hanterar manuellt.
+
+**Ändrade filer:**
+- `demo/snapshots/i7d_legacy.json`, `i7d_cross_validating.json` — överskrivna med qwen3:14b-körningen.
+- `demo/snapshots/i7d_legacy_qwen25_baseline.json`, `i7d_cross_validating_qwen25_baseline.json` — nya arkivkopior av qwen2.5:7b-baslinjen.
+- `demo/snapshots/_ckpt6_qwen3_run.log` — otrackad diagnostiklogg.
+- `docs/iteration_3_utvardering.md` — **ny Del 9** (probe #107 modelljämförelse: kvantitativt utfall + efteranalys; SSOT för probe-siffrorna).
+- `docs/iteration_3_implementation.md` — denna sessionspost. Statustabellen (Issue-specifikationer) avsiktligt orörd, se Beslut fattade.
+
+**Gjort:**
+
+- Arkiverade qwen2.5:7b-baslinjen (kopia, inte flytt) och verifierade arkivfilernas commit och konfusionsmatris innan körning.
+- Smoke-validerade qwen3-pipens fullväg via `scripts/run_i7d_baseline.py --degerfors` innan den långa körningen; upptäckte och kringgick PowerShell-tool↔python-stdout-buffringsartefakten (spurious exit 255, dokumenterad i checkpoint 3/5) genom Bash-bakgrundskörning med filredirect.
+- Körde fullpipeline qwen3:14b mot hela 159-korpusen via `scripts/run_i7d_baseline.py` (detect-once aggregate-twice); körningen slutförde rent utan sanity-avvikelser legacy↔cross_validating — **första qwen3-verifikationen av mode-pariteten** (I-7f:s motsvarande verifikation gällde qwen2.5).
+- Genomförde en read-only-efteranalys (slängbart temp-script, inget repo-avtryck) som verifierade att precisionslyftet är **ärligt och inte ett mät-/aggregeringsfel**.
+- **Allt kvantitativt utfall** (total-, per-kategori-, per-lager- och evidence_basis-tabeller, Δ-värden), efteranalysens detaljerade utfall, per-lager-mätinstrumentbegränsningen och I-7c-transparensnoteringen är flyttat till `docs/iteration_3_utvardering.md` **Del 9** (SSOT för probe #107:s siffror). Sessionsposten hålls medvetet kort per CLAUDE.md §8 (sessionslogg = vad som gjordes; kvantitativ analys hör hemma i utvärderingsdokumentet).
+
+**Beslut fattade:** Inga numrerade arkitekturbeslut i sessionsposten. Modellbytet — omprövning av Beslut 17 (`qwen2.5:7b-instruct` → `qwen3:14b` som lokal produktionsmodell) — loggas formellt av användaren i Loggboken iteration 3 utanför agent-flödet, med full motivering, övervägda alternativ och koppling till empiri. Operativa val i denna session: arkivering via kopia (inte flytt) för robusthet mot abort; Bash-bakgrundskörning i stället för PowerShell pga dokumenterad stdout-buffringsartefakt; efteranalys via slängbart temp-script utan repo-avtryck.
+
+**Probe-status #107:** Probe-frågan delvis besvarad. **Lager 3 (Article9Layer) är modellbundet** (precisionsvinst plus recall-vinst på indirekta `sexuell_laggning`/`religios_overtygelse`-ledtrådar). **Lager 4 (CombinationLayer) lyfter måttligt** — ej fullt avgjort om primärt uppgifts- eller modellbundet. Asymmetri-mönstret från checkpoint 3–5 (pre-I-7c) replikeras på post-I-7g-koden, inklusive en materiell `context.plats`-regression som fördjupas med större modell. Kvantifiering och fullständig tolkning: `docs/iteration_3_utvardering.md` Del 9 (§9.5).
+
+**Öppet/Nästa steg:**
+- Loggbok-beslut (omprövning av Beslut 17 → ny lokal produktionsmodell `qwen3:14b`) skrivs manuellt av användaren utanför agent-flödet.
+- AnthropicProvider-implementation enligt `GeminiProvider`-mönstret är fortsatt planerat utforskande steg inom probe #107 (molnmodell-jämförelse — utforskande, inte produktionsbeslut).
+- Mätinstrumentbegränsning i `_build_report` per_layer (`layer_fn` saknas i nyckelmängden → strukturell recall 100 %) noterad för framtida egen issue.
+- Issue #107 förblir 🔄 Pågår.
+- Probe-syntes till rapportens kapitel 6.5 och 6.7 sker när probe-arbetet är slutfört.
+
+**Statustabell — ingen ändring.** #107 förblir 🔄 Pågår; probe-arbetet är inte avslutat och statustabellen lämnas avsiktligt orörd (samma princip som checkpoint 3–5 och git-konsolideringssessionen).
+
+**Out of scope för denna session:** Loggbok-redigering, commits, git, kodändring, formell text för Beslut 17-omprövningen.
+
+### Session 2026-05-17b - Claude Code (Opus 4.7) — SSOT-audit, default-modellbyte qwen2.5:7b-instruct → qwen3:14b, issue #120-scope
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** SSOT-konsekvenser av Loggboksbeslutet 2026-05-17 (omprövning av Beslut 17, lokal produktionsmodell `qwen2.5:7b-instruct` → `qwen3:14b`, grundat på probe #107 checkpoint 6 / utvärdering Del 9): (a) read-only audit av `docs/arkitektur.md` mot iteration 3-förändringarna, (b) byt alla live default-modellvärden i exekverbar kod, (c) synka issue #120 med audit-fynden. Inga commits, ingen git — användaren hanterar manuellt.
+
+**Ändrade filer:**
+- `run_evaluation.py`, `scripts/run_i7d_baseline.py`, `scripts/build_demo_snapshot.py`, `demo/callbacks.py`, `scripts/demonstrations/stub_substitution.py` — default-modell `qwen2.5:7b-instruct` → `qwen3:14b` (12 edits: 5 live defaults + 2 användarvända felmeddelandesträngar i `callbacks.py` + 5 nu-stale docstrings/kommentarer i berörda filer).
+- `docs/iteration_3_implementation.md` — denna sessionspost. Statustabellen (Issue-specifikationer) avsiktligt orörd, se Beslut fattade.
+- (GitHub, ej repo) Issue #120-body uppdaterad två gånger via `gh issue edit` — temp-fil utanför repot, inget repo-avtryck.
+
+**Gjort:**
+
+- **Read-only SSOT-audit av `docs/arkitektur.md`** (hela dokumentet, §1–§15). Identifierade en hård intern motsägelse — §9.2.1:s LOC→ADRESS-motivering är stale post-I-7c och motsäger §5/§9.6.2/§9.6.6 — plus stale-puts: header-datum (rad 7), §6.1 Issue #70-rester (rad 329/338, `GENETISK_DATA` finns nu i `category.py:27`), §11.3 saknar probe #107 + I-7-arbetsströmmen, §12 fryst vid Beslut 21. §9.6.4 (I-7g default-flipp) och §9.6.5 (I-7e source-medveten räkning) samt Beslut 50/51 verifierades redan synkade. Rapport levererad till arkitekt-instansen i konversationen; `arkitektur.md` lämnades orörd (modellagnostisk; fångas av #120).
+- **Default-modellbytet:** 12 edits över 5 filer. Repo-wide grep bekräftade **noll kvarvarande live modell-defaults i exekverbar kod**; återstående `qwen2.5`-träffar är historiska records (snapshot-arkiv, sessionsloggar, utvärderingsdokument), en testfixtur, samt fyra avsiktligt oredigerade kod-referenser (tokenizer-jämförelselabel, usage-exempelargument, historisk förklaringskommentar). `pytest tests/` → 222 passed (bytet rör ej aggregator-/lager-/matcher-logik). Prompten avsåg 2 filer; `run_evaluation.py` (I-18-utvärderingens ingångspunkt, identiskt `AEGIS_MODEL`-mönster) m.fl. tillkom efter användarbeslut om full omfattning + docstring-puts.
+- **Issue #120 (GitHub):** body omskriven till audit-scopet (Måste/Bör fixas-struktur, uppdaterade Beroenden/Acceptanskriterier/Out of scope), därefter utökad med `README.md:141` doc-drift-kandidaten som upptäcktes under modellbytes-verifieringen. Metadata (titel/milestone/labels/assignee/state) bevarad; verifierad via återläsning båda gångerna.
+
+**Beslut fattade:** Inga numrerade arkitekturbeslut i sessionsposten. Beslut 17-omprövningen (`qwen2.5:7b-instruct` → `qwen3:14b` som lokal produktionsmodell) loggas formellt av användaren i Loggboken iteration 3 utanför agent-flödet, med full motivering, övervägda alternativ och empirisk koppling (probe #107 / Del 9). Operativa val: full omfattning på modellbytet (alla live kod-defaults, ej bara de 2 i prompten) + puts av stale docstrings i berörda filer, enligt användarbeslut; `arkitektur.md` orörd då den är modellagnostisk och fångas av #120; issue-body redigerad via temp-fil utan repo-avtryck.
+
+**Öppet/Nästa steg:**
+- Issue #120 utför de faktiska `arkitektur.md`-ändringarna, inkl. §9.2.1 LOC→ADRESS-motsägelsen (måste-fix), header-datum, §6.1/§11.3/§12, samt `README.md:141`-doc-driften.
+- `README.md:141` och `scripts/generate_combination_candidates.py:6` är doc-drift-kandidater (`qwen2.5`-referenser i icke-default-kontext) — flaggade i #120, medvetet ej ändrade i denna session.
+- Beslut 17-omprövningens formella text → Loggboken iteration 3 (användaren, utanför agent-flödet).
+- Issue #107 förblir 🔄 Pågår.
+
+**Statustabell — ingen ändring.** SSOT-auditen och modellbytet är spår-B-formalisering / SSOT-konsekvens, inte en spårad I-row med statusövergång; #120 är den spårade issuen och förblir OPEN. Samma princip som föregående iteration 3-sessioner.
+
+**Out of scope för denna session:** `docs/arkitektur.md`-redigering (→ #120), Loggbok-redigering, numrerade beslut i sessionsposten, commits, git, samt de fyra avsiktligt oredigerade kod-referenserna.

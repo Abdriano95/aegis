@@ -468,3 +468,177 @@ en framtida läsare måste förstå innan alternativet övervägs.
   source och är en kvarstående, oadresserad parallell väg (ev. framtida I-7g).
   Motiveringen för mode-gate-avsteget och containment-punkten dokumenteras i
   **Loggboken iteration 3** (skrivs manuellt av användaren utanför agent-flödet).
+
+---
+
+## Del 9: Probe #107 — modelljämförelse `qwen2.5:7b-instruct` mot `qwen3:14b` (checkpoint 6 + efteranalys)
+
+> Källa: sessionspost 2026-05-17 i `docs/iteration_3_implementation.md` (operativt
+> händelseförlopp). Denna Del 9 är SSOT för probe #107:s kvantitativa utfall och
+> efteranalys; sessionsposten håller endast den kvalitativa "vad gjordes"-noteringen.
+
+### 9.1 Bakgrund och frågeställning
+
+Probe #107 (I-7) frågar om iteration 2:s prestandatak i Lager 3 (Article9Layer) och
+Lager 4 (CombinationLayer) är **modellbundet** eller **uppgiftsbundet**. Checkpoint 1–5
+(sessionsloggar, pre-I-7c/pre-I-7e-kod) jämförde mot `iteration_3_post_num_ctx_fix.json`
+(F1 79,33 %). Checkpoint 6 gör om fullpipeline-mätningen **metodologiskt rent** på
+post-I-7g-koden via samma instrument som producerade Del 8:s baslinje
+(`scripts/run_i7d_baseline.py`, detect-once aggregate-twice), så att qwen3:14b ställs
+mot den arkitektoniskt aktuella post-I-7g qwen2.5:7b-baslinjen i stället för ett
+äldre, instrumentmässigt inkompatibelt tal.
+
+Frågeställning: höjer ett modellbyte inom samma familj (qwen2.5:7b-instruct → qwen3:14b)
+det globala talet, och var i pipelinen sitter rörelsen — och är ett observerat
+precisionslyft **ärligt** eller ett mät-/aggregeringsfel?
+
+### 9.2 Experimentell setup
+
+| Variabel | Värde |
+|---|---|
+| Skript | `scripts/run_i7d_baseline.py` (detect-once aggregate-twice, `legacy` + `cross_validating`) |
+| Testkorpus | 159 texter (80 iteration-1 + 52 artikel-9 + 27 kombination) |
+| Baslinje | `qwen2.5:7b-instruct` — arkiv `i7d_*_qwen25_baseline.json`, git_commit `2d6c302` (= Del 8 §8.3.1 I-7f post-I-7e-raden, 212/70/21) |
+| Probe-kandidat | `qwen3:14b` — `i7d_legacy.json` / `i7d_cross_validating.json`, git_commit `8144ae1` (post-I-7g-tip) |
+| Provider | Ollama, `temperature=0.0`, `num_ctx=16384`, `think=False` |
+| Promptversioner | Article9Layer v5, CombinationLayer v5 (oförändrade) |
+| Trösklar | `medium_threshold=0.7`, `high_confidence_bypass=0.85`, `min_evidence_count=2` |
+| Körtid qwen3 | 40 min 41 s (2026-05-16T22:30:07Z → 23:10:48Z), exit 0 |
+| Sanity-avvikelser | **0 / 159** legacy↔cross_validating — **första qwen3-verifikationen** av mode-pariteten (I-7f:s 0/159 gällde qwen2.5) |
+
+`legacy` och `cross_validating` är byte-identiska på konfusionsmatrisen för qwen3:14b
+(som för qwen2.5 i Del 8); tabellerna nedan rapporterar därför `legacy`-talen, vilka
+är identiska med `cross_validating`.
+
+### 9.3 Resultat
+
+#### 9.3.1 Total-jämförelse
+
+| Konfiguration | TP | FP | FN | Precision | Recall | F1 |
+|---|---|---|---|---|---|---|
+| `qwen2.5:7b-instruct` (post-I-7g baslinje; = Del 8 §8.3.1 I-7f post-I-7e) | 212 | 70 | 21 | 75,18 % | 90,99 % | 82,33 % |
+| `qwen3:14b` (checkpoint 6) | 213 | 44 | 20 | 82,88 % | 91,42 % | 86,94 % |
+| **Δ (qwen3 − qwen2.5)** | **+1** | **−26** | **−1** | **+7,70 pp** | **+0,43 pp** | **+4,61 pp** |
+
+Lyftet är **precision-drivet** (FP 70 → 44) med nästan platt recall. qwen3:14b:s
+precision (82,88 %) ligger över iteration 2:s V1-riktmärke på ≈80 %.
+
+#### 9.3.2 Per-kategori (F1-rörelse ≥ 5 pp i någon riktning, `legacy`)
+
+| Kategori | q2.5 TP/FP/FN | q2.5 F1 | q3 TP/FP/FN | q3 F1 | ΔF1 |
+|---|---|---|---|---|---|
+| context.yrke | 16/20/6 | 55,17 % | 18/6/4 | 78,26 % | +23,1 pp |
+| article9.sexuell_laggning | 4/0/2 | 80,00 % | 6/0/0 | 100,00 % | +20,0 pp |
+| article9.religios_overtygelse | 5/1/1 | 83,33 % | 6/0/0 | 100,00 % | +16,7 pp |
+| article9.halsodata | 5/4/2 | 62,50 % | 4/0/3 | 72,73 % | +10,2 pp |
+| context.kombination | 9/11/0 | 62,07 % | 8/6/1 | 69,57 % | +7,5 pp |
+| context.organisation | 23/19/4 | 66,67 % | 21/9/6 | 73,68 % | +7,0 pp |
+| article9.fackmedlemskap | 5/0/1 | 90,91 % | 6/2/0 | 85,71 % | −5,2 pp |
+| article9.politisk_asikt | 6/0/0 | 100,00 % | 5/0/1 | 90,91 % | −9,1 pp |
+| context.plats | 14/10/0 | 73,68 % | 14/17/0 | 62,22 % | −11,5 pp |
+
+Övriga kategorier (article4.* m.fl.) rörde sig < 5 pp och utelämnas.
+
+#### 9.3.3 Per-lager (`legacy`)
+
+| Lager | q2.5 TP/FP | q2.5 F1 | q3 TP/FP | q3 F1 | ΔF1 |
+|---|---|---|---|---|---|
+| pattern | 68/0 | 100,00 % | 68/0 | 100,00 % | ±0,0 pp |
+| article9 | 36/7 | 91,14 % | 38/3 | 96,20 % | +5,1 pp |
+| context | 63/49 | 72,00 % | 68/30 | 81,93 % | +9,9 pp |
+| entity | 45/14 | 86,54 % | 39/11 | 87,64 % | +1,1 pp |
+
+> **Mätinstrumentbegränsning (per-lager).** `_build_report` i
+> `scripts/run_i7d_baseline.py` nycklar lagermängden enbart ur
+> `cm.layer_tp + cm.layer_fp` (ingen `layer_fn`). Per-lager-recall är därför
+> strukturellt 100 % och per-lager-F1 är precisions-driven — talen är **inte**
+> lagrens faktiska recall och får inte refereras som om de inkluderar lagrets
+> missade fynd. Samma egenskap som checkpoint 5 flaggade för
+> `build_demo_snapshot.py`. Kvarstår som öppen punkt (egen framtida issue: inkludera
+> `layer_fn` i nyckelmängden); inget rört i checkpoint 6.
+
+#### 9.3.4 Per-`evidence_basis` (`cross_validating`, endast `context.kombination`)
+
+| evidence_basis | qwen2.5 TP/FP | qwen3 TP/FP |
+|---|---|---|
+| structural_support | 5/2 | 4/1 |
+| high_confidence_no_support | 4/9 | 4/5 |
+| no_support_required | 0/0 | 0/0 |
+
+### 9.4 Efteranalys — verifiering att precisionslyftet är ärligt
+
+Read-only-analys (slängbart script i OS-temp, inget repo-avtryck) som svarar på frågan
+"är lyftet ärligt eller ett mätfel". Sammanfattat verdikt: **ärligt, inte ett mätfel.**
+
+- **9.4.1 Aritmetisk sanity — grön.** I båda snapshots: Σ`per_category{tp,fp,fn}` =
+  `report.total`, samples-rollup (`Σ false_positives`/`false_negatives`) = `total`,
+  och omräknat P/R/F1 = lagrat (exakt). Idx-join snapshot↔dataset giltig för alla 159
+  (samples-ordning = datasetordning). Precisionslyftet är inget aggregeringsfel.
+- **9.4.2 FP-differens — netto −26 avstämt.** 47 försvunna och 21 nytillkomna FP
+  (47 − 21 motsvarar ΔFP via nettoriktningen; |q3| − |q25| = 44 − 70 = −26). De
+  försvunna är till överväldigande del äkta qwen2.5-överprediktioner (hallucinerad
+  Lager 3/4-taggning, t.ex. "sökt för samma besvär"→`article9.halsodata`, "leddes
+  av"→`context.yrke`) som qwen3 inte gör. De nytillkomna domineras av
+  `context.plats`-överprediktion (→ §9.4.5).
+- **9.4.3 TP-deltat (+1) härlett.** Via FN-mängddifferens (ground truth identisk
+  mellan körningar): 10 q25-only FN (q3 vann TP) − 9 q3-only FN (q3 förlorade TP)
+  = +1 = −ΔFN. Stämt av mot per_category-TP-rörelse (sexuell_laggning +2, yrke +2,
+  religios +1, fackmedlemskap +1; halsodata −1, politisk_asikt −1, kombination −1,
+  organisation −2 → netto +1).
+- **9.4.4 De tre största F1-hoppen — textverifierade legitima.** `context.yrke`:
+  qwen3 droppar uppenbart skräp ("leddes av", "Anställd", "lars.berg@privat.se"
+  taggat som yrke). `article9.sexuell_laggning`: qwen3 fångar indirekta ledtrådar
+  q25 missade som FN ("sin flickvän" idx125, "hennes fru Lisa" idx127).
+  `article9.religios_overtygelse`: qwen3 droppar spurious FP "köpa böcker om
+  religion" (idx88) och fångar FN "fira påsk i kyrkan" (idx121). Inga artefakter.
+- **9.4.5 `context.plats`-regressionen — genuint qwen3-beteende, ej GT/matcher.**
+  q25 14/10/0 → q3 14/17/0 (oförändrad TP & FN, +7 FP; 9 nya FP-texter). I samtliga
+  9 saknas `article4.adress` i facit → `{ADRESS, PLATS}`-aliaset (Beslut 45) är
+  uteslutet som orsak. FP:erna är genuina överprediktioner av vardagliga substantiv
+  ("kyrkan", "biometriska låssystem", "sjukhuset", "industrivägen", "receptionen",
+  "konferensen") eller felmärkning av icke-plats (idx86 "Unga Socialdemokrater"
+  överlappar `article9.politisk_asikt`; idx140 "Skövde" överlappar
+  `context.organisation`; idx73 "example.com" överlappar `article4.email`). Detta är
+  probe-arbetets enda materiella regression och fördjupas med större modell.
+- **9.4.6 Ground-truth-sanity — ren.** 0 snapshot-FN (över både q25 och q3) saknas
+  verbatim i datasetets `expected_findings` → matcher/loader läser facit korrekt,
+  alla FN är äkta facit-spans. 0 q3-FP överlappar en same/aliasad expected → ingen
+  matcher-felscoring, inget FP är dolt TP. Lyftet är inte uppblåst av en scoring-bugg.
+
+### 9.5 Tolkning (probe-svar, delvis)
+
+- **Lager 3 (Article9Layer) är modellbundet.** Lagret F1 91,14 → 96,20 med
+  recall-vinst på indirekta artikel 9-ledtrådar (`sexuell_laggning` 80,0 → 100,0,
+  `religios_overtygelse` 83,3 → 100,0). Mönstret replikerar checkpoint 3 (pre-I-7c).
+- **Lager 4 (CombinationLayer) lyfter måttligt.** `context.kombination`
+  F1 62,07 → 69,57; ej fullt avgjort om primärt uppgifts- eller modellbundet.
+- **Asymmetri-mönstret från checkpoint 3–5** (modellbunden precisionsvinst på
+  Lager 3, blandad/uppgiftspräglad rörelse på Lager 4, materiell `context.plats`-
+  regression) **replikeras på post-I-7g-koden**. Globalt thesis-rapporterbart:
+  +4,61 pp total-F1 inom samma modellfamilj utan recall-kostnad.
+
+### 9.6 Transparensnotering — I-7c-källomsourcing
+
+En del av FP-churnen mellan qwen2.5 och qwen3 är *samma* fel-span omsourcad mellan
+`entity.spacy_LOC` och `context.plats` snarare än ett genuint nytt/borttaget fel —
+t.ex. idx88 "Södermalm" och idx126 "Mellanöstern" (`context.plats(src=entity.spacy_LOC)`
+i q25 → `context.plats(src=context.plats)` i q3). Eftersom FP-nyckeln i efteranalysen
+inkluderar `source` räknas dessa i både försvunna- och nytillkomna-listorna (§9.4.2);
+nettoneutralt och påverkar **inte** netto −26 eller F1, men relevant om rapporten
+senare gör en per-source-uppdelning.
+
+### 9.7 Begränsningar
+
+- **LLM-icke-determinism.** Endast `temperature=0.0`, inget seed. qwen2.5-baslinjen
+  är en lagrad I-7f-körning (commit `2d6c302`), qwen3 en separat körning (`8144ae1`).
+  Kodvägen är oförändrad mellan commits (endast #140:s defaultflipp, irrelevant då
+  `run_i7d_baseline.py` instansierar båda lägena explicit), men residual
+  modell-stokasticitet mellan sessioner kvarstår som confounder.
+- **Per-lager-recall strukturellt 100 %** (§9.3.3-rutan) — per-lager-F1 ej lagrens
+  faktiska recall.
+- **Testkorpusstorlek.** 159 texter, dataset-bias enligt Pilán et al. (2022);
+  absoluta tal små, indikativa snarare än stabila populationsestimat.
+- **Probe-frågan endast delvis besvarad.** Lager 4:s modell-vs-uppgift inte avgjord;
+  molnmodell-jämförelse (AnthropicProvider) är ett separat utforskande steg, inte
+  klart. Probe-syntes till rapportens kapitel 6.5/6.7 sker när probe-arbetet är
+  slutfört. Issue #107 förblir 🔄 Pågår.

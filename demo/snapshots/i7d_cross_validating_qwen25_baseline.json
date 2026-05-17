@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generated_at": "2026-05-16T23:10:48.129883+00:00",
-    "model": "qwen3:14b",
+    "generated_at": "2026-05-16T12:59:45.712439+00:00",
+    "model": "qwen2.5:7b-instruct",
     "subset": "all",
     "cross_validation_mode": "cross_validating",
     "prompt_versions": {
@@ -14,7 +14,7 @@
       "article9_texts": 52,
       "combination_texts": 27
     },
-    "git_commit": "8144ae13d65057600f3e2477a48f92fbaa459fa3",
+    "git_commit": "2d6c30261a1229a7805bd3f5f37b81fb8eebbfe1",
     "pipeline_layers": [
       "pattern",
       "entity",
@@ -38,15 +38,71 @@
   },
   "report": {
     "total": {
-      "tp": 213,
-      "fp": 44,
-      "fn": 20,
-      "recall": 0.9141630901287554,
-      "precision": 0.8287937743190662,
-      "f1": 0.8693877551020408
+      "tp": 212,
+      "fp": 70,
+      "fn": 21,
+      "recall": 0.9098712446351931,
+      "precision": 0.75177304964539,
+      "f1": 0.8233009708737864
     },
     "per_category": {
-      "article9.religios_overtygelse": {
+      "article9.politisk_asikt": {
+        "tp": 6,
+        "fp": 0,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "f1": 1.0
+      },
+      "article9.fackmedlemskap": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 1,
+        "recall": 0.8333333333333334,
+        "precision": 1.0,
+        "f1": 0.9090909090909091
+      },
+      "article9.genetisk_data": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 2,
+        "recall": 0.7142857142857143,
+        "precision": 1.0,
+        "f1": 0.8333333333333333
+      },
+      "article9.biometrisk_data": {
+        "tp": 6,
+        "fp": 1,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.8571428571428571,
+        "f1": 0.923076923076923
+      },
+      "context.yrke": {
+        "tp": 16,
+        "fp": 20,
+        "fn": 6,
+        "recall": 0.7272727272727273,
+        "precision": 0.4444444444444444,
+        "f1": 0.5517241379310345
+      },
+      "context.organisation": {
+        "tp": 23,
+        "fp": 19,
+        "fn": 4,
+        "recall": 0.8518518518518519,
+        "precision": 0.5476190476190477,
+        "f1": 0.6666666666666667
+      },
+      "article4.personnummer": {
+        "tp": 18,
+        "fp": 0,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "f1": 1.0
+      },
+      "article4.betalkort": {
         "tp": 6,
         "fp": 0,
         "fn": 0,
@@ -62,104 +118,40 @@
         "precision": 1.0,
         "f1": 0.9655172413793104
       },
-      "article4.email": {
-        "tp": 19,
-        "fp": 0,
+      "context.plats": {
+        "tp": 14,
+        "fp": 10,
         "fn": 0,
         "recall": 1.0,
-        "precision": 1.0,
-        "f1": 1.0
-      },
-      "context.kombination": {
-        "tp": 8,
-        "fp": 6,
-        "fn": 1,
-        "recall": 0.8888888888888888,
-        "precision": 0.5714285714285714,
-        "f1": 0.6956521739130435
-      },
-      "article9.halsodata": {
-        "tp": 4,
-        "fp": 0,
-        "fn": 3,
-        "recall": 0.5714285714285714,
-        "precision": 1.0,
-        "f1": 0.7272727272727273
-      },
-      "article9.biometrisk_data": {
-        "tp": 6,
-        "fp": 1,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 0.8571428571428571,
-        "f1": 0.923076923076923
-      },
-      "article4.namn": {
-        "tp": 32,
-        "fp": 3,
-        "fn": 1,
-        "recall": 0.9696969696969697,
-        "precision": 0.9142857142857143,
-        "f1": 0.9411764705882354
+        "precision": 0.5833333333333334,
+        "f1": 0.7368421052631579
       },
       "article9.sexuell_laggning": {
-        "tp": 6,
+        "tp": 4,
         "fp": 0,
+        "fn": 2,
+        "recall": 0.6666666666666666,
+        "precision": 1.0,
+        "f1": 0.8
+      },
+      "article9.halsodata": {
+        "tp": 5,
+        "fp": 4,
+        "fn": 2,
+        "recall": 0.7142857142857143,
+        "precision": 0.5555555555555556,
+        "f1": 0.6250000000000001
+      },
+      "context.kombination": {
+        "tp": 9,
+        "fp": 11,
         "fn": 0,
         "recall": 1.0,
-        "precision": 1.0,
-        "f1": 1.0
+        "precision": 0.45,
+        "f1": 0.6206896551724138
       },
       "article4.telefonnummer": {
         "tp": 15,
-        "fp": 0,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 1.0,
-        "f1": 1.0
-      },
-      "article4.betalkort": {
-        "tp": 6,
-        "fp": 0,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 1.0,
-        "f1": 1.0
-      },
-      "context.plats": {
-        "tp": 14,
-        "fp": 17,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 0.45161290322580644,
-        "f1": 0.6222222222222222
-      },
-      "context.yrke": {
-        "tp": 18,
-        "fp": 6,
-        "fn": 4,
-        "recall": 0.8181818181818182,
-        "precision": 0.75,
-        "f1": 0.7826086956521738
-      },
-      "article9.politisk_asikt": {
-        "tp": 5,
-        "fp": 0,
-        "fn": 1,
-        "recall": 0.8333333333333334,
-        "precision": 1.0,
-        "f1": 0.9090909090909091
-      },
-      "article9.fackmedlemskap": {
-        "tp": 6,
-        "fp": 2,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 0.75,
-        "f1": 0.8571428571428571
-      },
-      "article4.personnummer": {
-        "tp": 18,
         "fp": 0,
         "fn": 0,
         "recall": 1.0,
@@ -174,32 +166,40 @@
         "precision": 1.0,
         "f1": 0.9523809523809523
       },
-      "article9.genetisk_data": {
-        "tp": 5,
-        "fp": 0,
-        "fn": 2,
-        "recall": 0.7142857142857143,
-        "precision": 1.0,
-        "f1": 0.8333333333333333
+      "article9.etniskt_ursprung": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "recall": 0.0,
+        "precision": 0.0,
+        "f1": 0.0
       },
-      "context.organisation": {
-        "tp": 21,
-        "fp": 9,
-        "fn": 6,
-        "recall": 0.7777777777777778,
-        "precision": 0.7,
-        "f1": 0.7368421052631577
+      "article9.religios_overtygelse": {
+        "tp": 5,
+        "fp": 1,
+        "fn": 1,
+        "recall": 0.8333333333333334,
+        "precision": 0.8333333333333334,
+        "f1": 0.8333333333333334
+      },
+      "article4.email": {
+        "tp": 19,
+        "fp": 0,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 1.0,
+        "f1": 1.0
+      },
+      "article4.namn": {
+        "tp": 32,
+        "fp": 3,
+        "fn": 1,
+        "recall": 0.9696969696969697,
+        "precision": 0.9142857142857143,
+        "f1": 0.9411764705882354
       }
     },
     "per_layer": {
-      "article9": {
-        "tp": 38,
-        "fp": 3,
-        "fn": 0,
-        "recall": 1.0,
-        "precision": 0.926829268292683,
-        "f1": 0.9620253164556963
-      },
       "pattern": {
         "tp": 68,
         "fp": 0,
@@ -209,20 +209,28 @@
         "f1": 1.0
       },
       "context": {
-        "tp": 68,
-        "fp": 30,
+        "tp": 63,
+        "fp": 49,
         "fn": 0,
         "recall": 1.0,
-        "precision": 0.6938775510204082,
-        "f1": 0.819277108433735
+        "precision": 0.5625,
+        "f1": 0.72
       },
       "entity": {
-        "tp": 39,
-        "fp": 11,
+        "tp": 45,
+        "fp": 14,
         "fn": 0,
         "recall": 1.0,
-        "precision": 0.78,
-        "f1": 0.8764044943820225
+        "precision": 0.7627118644067796,
+        "f1": 0.8653846153846153
+      },
+      "article9": {
+        "tp": 36,
+        "fp": 7,
+        "fn": 0,
+        "recall": 1.0,
+        "precision": 0.8372093023255814,
+        "f1": 0.9113924050632911
       }
     },
     "samples": [
@@ -238,7 +246,18 @@
       },
       {
         "text": "Patienten är född 710214-5674 och har tidigare sökt för samma besvär.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "article9.halsodata",
+            "start": 47,
+            "end": 68,
+            "text_span": "sökt för samma besvär",
+            "confidence": 0.95,
+            "source": "article9.halsodata",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -328,18 +347,7 @@
       },
       {
         "text": "Betala in avgiften till vårt konto: SE41 3456 7890 1234 5678 90, så märker vi det som betalt.",
-        "false_positives": [
-          {
-            "category": "article9.fackmedlemskap",
-            "start": 0,
-            "end": 18,
-            "text_span": "Betala in avgiften",
-            "confidence": 0.85,
-            "source": "article9.fackmedlemskap",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
+        "false_positives": [],
         "false_negatives": []
       },
       {
@@ -469,7 +477,28 @@
       },
       {
         "text": "Mötet den 14 mars leddes av Lars-Göran Berg och protokollfördes av Maria Lindqvist.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 48,
+            "end": 66,
+            "text_span": "protokollfördes av",
+            "confidence": 0.9,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.yrke",
+            "start": 18,
+            "end": 27,
+            "text_span": "leddes av",
+            "confidence": 0.85,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -505,7 +534,7 @@
             "start": 30,
             "end": 47,
             "text_span": "Ansvarig tekniker",
-            "confidence": 0.9,
+            "confidence": 0.95,
             "source": "context.yrke",
             "metadata": null,
             "evidence_basis": "no_support_required"
@@ -515,12 +544,44 @@
       },
       {
         "text": "Chattlogg: Hej, jag heter Maja Hellström och undrar om ni kan hjälpa mig.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "article9.etniskt_ursprung",
+            "start": 26,
+            "end": 40,
+            "text_span": "Maja Hellström",
+            "confidence": 0.85,
+            "source": "article9.etniskt_ursprung",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
         "text": "HR-notat: Anställd Per-Olof Lindberg påbörjar sin tjänst den första i månaden.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 10,
+            "end": 18,
+            "text_span": "Anställd",
+            "confidence": 0.95,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.organisation",
+            "start": 0,
+            "end": 8,
+            "text_span": "HR-notat",
+            "confidence": 0.85,
+            "source": "context.organisation",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -530,7 +591,18 @@
       },
       {
         "text": "Enligt protokollet framförde Ingrid Karlsson synpunkter, vilket Fredrik Ek noterade.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 75,
+            "end": 83,
+            "text_span": "noterade",
+            "confidence": 0.85,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -555,7 +627,18 @@
       },
       {
         "text": "Lagret finns i Örebro och hanterar norra regionen.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.plats",
+            "start": 35,
+            "end": 49,
+            "text_span": "norra regionen",
+            "confidence": 0.95,
+            "source": "context.plats",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -605,15 +688,19 @@
       },
       {
         "text": "Skatteverket kontaktade Lars Berg (lars.berg@privat.se) gällande deklarationen.",
-        "false_positives": [],
-        "false_negatives": [
+        "false_positives": [
           {
-            "category": "context.organisation",
-            "start": 0,
-            "end": 12,
-            "text_span": "Skatteverket"
+            "category": "context.yrke",
+            "start": 35,
+            "end": 54,
+            "text_span": "lars.berg@privat.se",
+            "confidence": 0.0,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
           }
-        ]
+        ],
+        "false_negatives": []
       },
       {
         "text": "Hej,\n\nJag heter Sofia Ekström och mitt personnummer är 930715-1002. Jag har ett ärende gällande min senaste faktura som inte stämmer. Ni kan nå mig på sofia.ekstrom@mail.se eller ringa 073-555 12 34.\n\nMed vänliga hälsningar,\nSofia Ekström",
@@ -649,13 +736,13 @@
           {
             "category": "context.kombination",
             "start": 86,
-            "end": 202,
-            "text_span": "systemutvecklare på Ericsson AB den 1 april. Han är bosatt i Linköping och ska arbeta från kontoret på Teknikvägen 8",
-            "confidence": 0.93,
+            "end": 203,
+            "text_span": "systemutvecklare på Ericsson AB den 1 april. Han är bosatt i Linköping och ska arbeta från kontoret på Teknikvägen 8.",
+            "confidence": 0.92,
             "source": "context.kombination",
             "metadata": {
-              "reasoning": "Kombinationen av en specifik yrkesroll (systemutvecklare), en namngiven organisation (Ericsson AB), en namngiven stad (Linköping) och en specifik adress (Teknikvägen 8) gör det möjligt att identifiera en individ i en realistisk kontext, särskilt för någon med viss kunskap om Ericsson AB och dess lokaler.",
-              "validation_path": "reconstructed"
+              "reasoning": "Kombinationen av yrkesroll (systemutvecklare), organisation (Ericsson AB) och specifik plats (Teknikvägen 8) ger tillräcklig identifierbarhet för en person med viss kunskap om den specifika företagsplatsen.",
+              "validation_path": "exact"
             },
             "evidence_basis": "structural_support"
           }
@@ -664,19 +751,40 @@
       },
       {
         "text": "Ekonomirapport Q1 2026\n\nHandelsbanken har bekräftat att överföringen till leverantören Anna-Karin Bergström genomfördes den 12 mars. Beloppet krediterades IBAN SE90 8000 5555 4444 3333 2222. Vid frågor, kontakta ekonomiavdelningen på ekonomi@foretaget.se.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 212,
+            "end": 230,
+            "text_span": "ekonomiavdelningen",
+            "confidence": 0.85,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
         "text": "Ärende #4521 – Omtvistad transaktion\n\nKund: Henrik Sjöberg\nKortnummer: 4532 8901 2345 6785\nHenrik rapporterar en okänd debitering på 2 450 kr den 28 februari. Han nås enklast via telefon 070-888 99 11 eller på henrik.sjoberg@example.com. Ärendet eskaleras till bedrägerienheten.",
         "false_positives": [
           {
-            "category": "context.plats",
-            "start": 225,
-            "end": 236,
-            "text_span": "example.com",
-            "confidence": 0.0,
-            "source": "context.plats",
+            "category": "context.organisation",
+            "start": 261,
+            "end": 277,
+            "text_span": "bedrägerienheten",
+            "confidence": 0.98,
+            "source": "context.organisation",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.yrke",
+            "start": 38,
+            "end": 58,
+            "text_span": "Kund: Henrik Sjöberg",
+            "confidence": 0.95,
+            "source": "context.yrke",
             "metadata": null,
             "evidence_basis": "no_support_required"
           }
@@ -686,6 +794,19 @@
       {
         "text": "Protokoll från styrelsemöte 2026-04-10\n\nNärvarande: Eva Nilsson (ordförande), Karl Hedlund (ledamot) och Fatima Al-Hassan (sekreterare).\n\nMötet hölls i Göteborgs lokaler hos Sigma IT. Eva Nilsson öppnade mötet och noterade att samtliga ledamöter var närvarande. Nästa möte planeras till den 8 maj.",
         "false_positives": [
+          {
+            "category": "context.kombination",
+            "start": 138,
+            "end": 182,
+            "text_span": "Mötet hölls i Göteborgs lokaler hos Sigma IT",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av den specifika platsen (Göteborgs lokaler hos Sigma IT) ger tillräcklig identifierbarhet för en person med kännedom om denna plats och organisation.",
+              "validation_path": "exact"
+            },
+            "evidence_basis": "high_confidence_no_support"
+          },
           {
             "category": "article4.namn",
             "start": 184,
@@ -705,12 +826,6 @@
             "start": 105,
             "end": 121,
             "text_span": "Fatima Al-Hassan"
-          },
-          {
-            "category": "context.organisation",
-            "start": 174,
-            "end": 182,
-            "text_span": "Sigma IT"
           }
         ]
       },
@@ -728,15 +843,32 @@
       },
       {
         "text": "Incidentrapport – IT-säkerhet 2026-04-22\n\nRapportör: Björn Axelsson, bjorn.axelsson@teknikab.se, telefon 08-123 45 67.\nIncidenten upptäcktes av Teknik AB:s driftteam i Uppsala. En obehörig inloggning registrerades från en extern IP-adress kl. 03:14. Åtkomsten spärrades omedelbart och ärendet har rapporterats till CERT-SE.",
-        "false_positives": [],
-        "false_negatives": [
+        "false_positives": [
           {
-            "category": "context.organisation",
-            "start": 144,
+            "category": "context.yrke",
+            "start": 42,
+            "end": 117,
+            "text_span": "Rapportör: Björn Axelsson, bjorn.axelsson@teknikab.se, telefon 08-123 45 67",
+            "confidence": 0.9,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.kombination",
+            "start": 42,
             "end": 153,
-            "text_span": "Teknik AB"
+            "text_span": "Rapportör: Björn Axelsson, bjorn.axelsson@teknikab.se, telefon 08-123 45 67.\nIncidenten upptäcktes av Teknik AB",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av en specifik person (Björn Axelsson) och den specifika organisationen (Teknik AB) ger tillräcklig identifierbarhet för en person med kunskap om Teknik AB.",
+              "validation_path": "reconstructed"
+            },
+            "evidence_basis": "structural_support"
           }
-        ]
+        ],
+        "false_negatives": []
       },
       {
         "text": "Betalningsbekräftelse\n\nKund: Petra Forsberg, anställd vid SEB Kort AB.\nBetalning mottagen via kort 4012 8888 8888 8811 den 15 april 2026. Beloppet 12 500 kr har bokförts. Kvitto skickas till petra.forsberg@seb.se.",
@@ -800,27 +932,42 @@
       },
       {
         "text": "Hej Malin! Hoppas du mår bra efter semestern. Jag har en fråga angående din arbetsskada från förra sommaren. Har du fortfarande ont i knät? Det är viktigt att vi ser till att du får rätt stöd och rehabilitering för att kunna komma tillbaka till jobbet fullt ut.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 76,
+            "end": 107,
+            "text_span": "arbetsskada från förra sommaren",
+            "confidence": 0.85,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": [
           {
             "category": "article9.halsodata",
-            "start": 128,
-            "end": 138,
-            "text_span": "ont i knät"
+            "start": 76,
+            "end": 87,
+            "text_span": "arbetsskada"
           }
         ]
       },
       {
         "text": "Hej Lisa, jag hoppas du mår bättre! Jag tänkte bara höra om hur det gick med din reumatologbesök igår. Har läkaren sagt något mer om dina besvär? Hoppas att du får bra hjälp och snabb lindring.",
-        "false_positives": [],
-        "false_negatives": [
+        "false_positives": [
           {
             "category": "article9.halsodata",
-            "start": 81,
-            "end": 96,
-            "text_span": "reumatologbesök"
+            "start": 133,
+            "end": 144,
+            "text_span": "dina besvär",
+            "confidence": 0.85,
+            "source": "article9.halsodata",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
           }
-        ]
+        ],
+        "false_negatives": []
       },
       {
         "text": "Hej Sofia, \n\nJag skrev till dig för att få en uppdatering på hur det går med din handledare. Jag vet att du har varit sjukskriven sedan förra veckan med magsjukan och jag vill bara kolla om allt är lugnt.",
@@ -829,72 +976,90 @@
       },
       {
         "text": "Hej Anna, fick ett mail från Lars igår - han är inte på jobbet idag utan har ringt in sjuk. Han nämnde att han hade ont i magen sedan igår kväll och misstänker det kan vara matförgiftning. Hörde du någonting mer om det?",
-        "false_positives": [],
-        "false_negatives": [
+        "false_positives": [
           {
             "category": "article9.halsodata",
-            "start": 116,
-            "end": 127,
-            "text_span": "ont i magen"
+            "start": 73,
+            "end": 90,
+            "text_span": "har ringt in sjuk",
+            "confidence": 0.95,
+            "source": "article9.halsodata",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
           }
-        ]
+        ],
+        "false_negatives": []
       },
       {
         "text": "Hej Sofia, \n\nJag vet att du är ledig idag men jag tänkte höra om hur det går med dig efter operationen. Jag hoppas allt läker bra och att du inte har ont.\n\nHälsningar,\nAnna",
         "false_positives": [],
-        "false_negatives": []
+        "false_negatives": [
+          {
+            "category": "article9.halsodata",
+            "start": 91,
+            "end": 102,
+            "text_span": "operationen"
+          }
+        ]
       },
       {
         "text": "Hej Johan, snabb fråga om det politiska läget inför valet. Kanske vi kan diskutera vilka partier som verkar bäst för företaget och våra anställda? Jag själv lutar åt en mer liberala linje när det gäller ekonomisk politik. Vad tycker du?",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.organisation",
+            "start": 117,
+            "end": 126,
+            "text_span": "företaget",
+            "confidence": 0.95,
+            "source": "context.organisation",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.yrke",
+            "start": 147,
+            "end": 156,
+            "text_span": "Jag själv",
+            "confidence": 0.85,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
         "text": "Hej Lars! Kul att du deltar i den här diskussionen om framtidens arbetsmarknad. Jag såg att du är aktivt engagerad i Unga Socialdemokrater, det är imponerande! Vi har en spännande idé för ett nytt projekt som vi tror kan vara bra för unga arbetare. Vill du diskutera det mer på Zoom imorgon?",
-        "false_positives": [
-          {
-            "category": "context.plats",
-            "start": 117,
-            "end": 138,
-            "text_span": "Unga Socialdemokrater",
-            "confidence": 0.85,
-            "source": "context.plats",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
+        "false_positives": [],
         "false_negatives": []
       },
       {
         "text": "Hej! Har du sett att det är full fart på anmälan till den kristna ungdomsgruppen som håller till i kyrkan? Vi behöver nog fler ledare, vad säger du?",
-        "false_positives": [
-          {
-            "category": "context.plats",
-            "start": 99,
-            "end": 105,
-            "text_span": "kyrkan",
-            "confidence": 0.75,
-            "source": "context.plats",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
+        "false_positives": [],
         "false_negatives": []
       },
       {
         "text": "Hej! \n\nJag har precis fått en förfrågan från en kund, som heter Lars. Han vill beställa ett presentkort till sin dotter som firar sina 18-år. Han nämnde att hon är väldigt aktiv i den baptistförsamlingen på Södermalm och gärna skulle använda presentkortet till att köpa böcker om religion.",
         "false_positives": [
           {
+            "category": "article9.religios_overtygelse",
+            "start": 265,
+            "end": 288,
+            "text_span": "köpa böcker om religion",
+            "confidence": 0.85,
+            "source": "article9.religios_overtygelse",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
             "category": "context.plats",
             "start": 207,
             "end": 216,
             "text_span": "Södermalm",
-            "confidence": 0.95,
-            "source": "context.plats",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
             "metadata": {
-              "deduplicated_sources": [
-                "entity.spacy_LOC"
-              ]
+              "ner_label": "LOC"
             },
             "evidence_basis": "no_support_required"
           }
@@ -903,12 +1068,40 @@
       },
       {
         "text": "Hej Stefan, \n\nJag hoppas allt är bra! Vi har ett fackligt möte imorgon kl 10:00 i konferensrummet för att diskutera den nya arbetstidsmodellen. Det är viktigt att alla fackliga representanter från vår avdelning deltar, särskilt du som är skyddsombud för Unionen. \n\nMed vänlig hälsning,\nAnna",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.kombination",
+            "start": 238,
+            "end": 261,
+            "text_span": "skyddsombud för Unionen",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av en specifik yrkesroll (skyddsombud) och den namngivna organisationen (Unionen) gör individen identifierbar, eftersom det är ett unikt roll-organisation-par i arbetsmiljön.",
+              "validation_path": "exact"
+            },
+            "evidence_basis": "high_confidence_no_support"
+          }
+        ],
         "false_negatives": []
       },
       {
         "text": "Hej Lars, \n\nJag vill kolla med dig om den kommande fackföreningsmötet. Jag har hört att du är skyddsombud för Byggnads? Det skulle vara kul att höra mer om vad som diskuteras. ",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.kombination",
+            "start": 88,
+            "end": 118,
+            "text_span": "du är skyddsombud för Byggnads",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av en specifik yrkesroll (skyddsombud) och en specifik organisation (Byggnads) ger tillräcklig identifierbarhet, eftersom det är ett unikt kombinationsätt som riktar sig mot en viss person.",
+              "validation_path": "exact"
+            },
+            "evidence_basis": "high_confidence_no_support"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -918,7 +1111,18 @@
       },
       {
         "text": "Hej Lars, hoppas du mår bra! \n\nJag tänkte fråga om det går att få in din biometriska data i vårt system. Vi använder fingeravtryck för autentisering och det skulle underlätta arbetet med åtkomst till vissa filer. Skicka gärna ett mail tillbaka när du har tid att diskutera detta.",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "article9.biometrisk_data",
+            "start": 69,
+            "end": 89,
+            "text_span": "din biometriska data",
+            "confidence": 0.95,
+            "source": "article9.biometrisk_data",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -930,12 +1134,12 @@
         "text": "Hej Jonas!\n\nJag har testat det nya säkerhetssystemet med ansiktsigenkänning. Det fungerade bra! Mina kollegor tyckte också att det var smidigt att logga in med ansiktet, de sa att det kändes mer futuristiskt än att använda fingeravtryck. \n\nVad tycker du om att vi implementerar detta på vårt kontor?\n\nMvh,\nSofia",
         "false_positives": [
           {
-            "category": "article9.biometrisk_data",
-            "start": 223,
-            "end": 236,
-            "text_span": "fingeravtryck",
+            "category": "context.yrke",
+            "start": 101,
+            "end": 109,
+            "text_span": "kollegor",
             "confidence": 0.85,
-            "source": "article9.biometrisk_data",
+            "source": "context.yrke",
             "metadata": null,
             "evidence_basis": "no_support_required"
           }
@@ -944,18 +1148,7 @@
       },
       {
         "text": "Hej Lars, \n\nKan du hjälpa mig med det här? Vi har ett problem med vårt nya biometriska låssystem. Det verkar som att Lisa's ansiktssigenkänning inte fungerar korrekt. Hon har provat flera gånger men systemet accepterar inte hennes mätningar. Kan du kolla in det så fort som möjligt?",
-        "false_positives": [
-          {
-            "category": "context.plats",
-            "start": 75,
-            "end": 96,
-            "text_span": "biometriska låssystem",
-            "confidence": 0.65,
-            "source": "context.plats",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
+        "false_positives": [],
         "false_negatives": []
       },
       {
@@ -977,32 +1170,44 @@
       },
       {
         "text": "Hej Lena! Har du sett Anna på sjukhuset idag? Hon verkar lite låg i energi och berättade att hon nyligen gjorde en genetisk testning som visade att hon har en förhöjd risk för diabetes. Det är ju tråkigt, men hoppas det inte blir något allvarligt.",
-        "false_positives": [
-          {
-            "category": "context.plats",
-            "start": 30,
-            "end": 39,
-            "text_span": "sjukhuset",
-            "confidence": 0.75,
-            "source": "context.plats",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
+        "false_positives": [],
         "false_negatives": []
       },
       {
         "text": "Anna jobbade som genetisk rådgivare på ett privat företag. En klient, Lars, hade genomgått en DNA-analys och fick besked att han har en högre risk att utveckla Parkinsons sjukdom än genomsnittet. Anna förklarade för Lars att detta inte betyder att han automatiskt kommer att få sjukdomen, utan att det är ett resultat av hans genetiska profil. Hon rekommenderade honom att prata med sin läkare om riskerna och möjliga förebyggande åtgärder.",
         "false_positives": [
           {
+            "category": "context.organisation",
+            "start": 39,
+            "end": 57,
+            "text_span": "ett privat företag",
+            "confidence": 0.98,
+            "source": "context.organisation",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
             "category": "context.yrke",
             "start": 17,
             "end": 35,
             "text_span": "genetisk rådgivare",
-            "confidence": 0.9,
+            "confidence": 0.95,
             "source": "context.yrke",
             "metadata": null,
             "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.kombination",
+            "start": 0,
+            "end": 57,
+            "text_span": "Anna jobbade som genetisk rådgivare på ett privat företag",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av yrkesroll (genetisk rådgivare) och specifik organisation (ett privat företag) ger tillräcklig identifierbarhet för en person med viss kunskap om den branschen.",
+              "validation_path": "exact"
+            },
+            "evidence_basis": "high_confidence_no_support"
           }
         ],
         "false_negatives": []
@@ -1026,7 +1231,18 @@
       },
       {
         "text": "Hej Johan! Jag skrev bara för att höra hur det går med projektet. Har du hunnit diskutera designen med din pojkvän, som jag vet är superkunnig inom detta område?",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 131,
+            "end": 160,
+            "text_span": "superkunnig inom detta område",
+            "confidence": 0.85,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -1037,7 +1253,7 @@
             "start": 52,
             "end": 61,
             "text_span": "Stockholm",
-            "confidence": 0.95,
+            "confidence": 0.99,
             "source": "context.plats",
             "metadata": {
               "deduplicated_sources": [
@@ -1052,6 +1268,16 @@
       {
         "text": "Hej Stefan, hoppas du har en bra dag! Har du koll på när vi ska ha det mötet med kunden från XYZ AB? Jag skickade ett mail om det igår men fick inget svar. Hör av dig när du får chansen!\n\nMvh,\nAnna",
         "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 81,
+            "end": 99,
+            "text_span": "kunden från XYZ AB",
+            "confidence": 0.95,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
           {
             "category": "context.organisation",
             "start": 93,
@@ -1118,7 +1344,7 @@
             "start": 73,
             "end": 91,
             "text_span": "Teknisk Service AB",
-            "confidence": 0.95,
+            "confidence": 0.98,
             "source": "context.organisation",
             "metadata": {
               "deduplicated_sources": [
@@ -1153,14 +1379,7 @@
       {
         "text": "Hej Lars,\n\nTack för att du tog upp det på mötet igår. Jag håller helt med dig om att vi borde rösta nej till det nya förslaget om utökad kameraövervakning på arbetsplatsen. Det strider mot grundläggande integritetsprinciper.\n\nMvh,\nAnna",
         "false_positives": [],
-        "false_negatives": [
-          {
-            "category": "article9.politisk_asikt",
-            "start": 94,
-            "end": 171,
-            "text_span": "rösta nej till det nya förslaget om utökad kameraövervakning på arbetsplatsen"
-          }
-        ]
+        "false_negatives": []
       },
       {
         "text": "Hej Johan,\n\nJag såg att du kandiderar för Vänsterpartiet i höstens val. Det är modigt! Jag vet att det inte alltid är enkelt att vara öppen med politiska engagemang på arbetsplatsen.\n\nMvh,\nKarin",
@@ -1185,7 +1404,14 @@
       {
         "text": "Hej Lisa,\n\nJag har fått in en förfrågan från Lars om att byta sina semesterdagar. Han vill ha ledigt under påskveckan eftersom han och hans familj brukar fira påsk i kyrkan med sina barn.\n\nMvh,\nJohan",
         "false_positives": [],
-        "false_negatives": []
+        "false_negatives": [
+          {
+            "category": "article9.religios_overtygelse",
+            "start": 154,
+            "end": 172,
+            "text_span": "fira påsk i kyrkan"
+          }
+        ]
       },
       {
         "text": "Hej!\n\nVi behöver uppdatera personalregistret. Ahmed har meddelat att han är aktiv i den lokala moskéförsamlingen och önskar att det noteras för att undvika mötesbokningar under ramadan.\n\nMvh,\nPersonalavdelningen",
@@ -1195,12 +1421,10 @@
             "start": 192,
             "end": 211,
             "text_span": "Personalavdelningen",
-            "confidence": 0.85,
-            "source": "context.organisation",
+            "confidence": 0.8,
+            "source": "entity.spacy_ORG",
             "metadata": {
-              "deduplicated_sources": [
-                "entity.spacy_ORG"
-              ]
+              "ner_label": "ORG"
             },
             "evidence_basis": "no_support_required"
           }
@@ -1209,7 +1433,18 @@
       },
       {
         "text": "Hej Anna,\n\nKarin har berättat att hon numera är Jehovas vittne och därför inte längre kan delta i firandet av jul och midsommar på kontoret. Vi behöver tänka på hur vi hanterar det framöver.\n\nMvh,\nPer",
-        "false_positives": [],
+        "false_positives": [
+          {
+            "category": "context.organisation",
+            "start": 131,
+            "end": 139,
+            "text_span": "kontoret",
+            "confidence": 0.98,
+            "source": "context.organisation",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
         "false_negatives": []
       },
       {
@@ -1219,34 +1454,63 @@
       },
       {
         "text": "Hej Maria,\n\nJag ville höra om du kan ta över Annas arbetspass på torsdag. Hon behöver ledigt för att hämta sin flickvän på flygplatsen.\n\nMvh,\nStefan",
-        "false_positives": [],
-        "false_negatives": []
+        "false_positives": [
+          {
+            "category": "context.plats",
+            "start": 123,
+            "end": 134,
+            "text_span": "flygplatsen",
+            "confidence": 0.95,
+            "source": "context.plats",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.yrke",
+            "start": 111,
+            "end": 119,
+            "text_span": "flickvän",
+            "confidence": 0.85,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          }
+        ],
+        "false_negatives": [
+          {
+            "category": "article9.sexuell_laggning",
+            "start": 107,
+            "end": 119,
+            "text_span": "sin flickvän"
+          }
+        ]
       },
       {
         "text": "Hej Lars,\n\nJag har sett att Erik är ordförande i företagets HBTQ-nätverk och öppet homosexuell. Är det något vi bör ta hänsyn till vid kundmötena i Mellanöstern nästa kvartal?\n\nMvh,\nAnna",
         "false_positives": [
           {
+            "category": "context.kombination",
+            "start": 28,
+            "end": 72,
+            "text_span": "Erik är ordförande i företagets HBTQ-nätverk",
+            "confidence": 0.85,
+            "source": "context.kombination",
+            "metadata": {
+              "reasoning": "Kombinationen av en specifik yrkesroll (ordförande) och en specifik organisation (företagets HBTQ-nätverk) ger tillräcklig identifierbarhet, eftersom det är ett unikt nätverk inom ett företag. Detta kombinerat med Erik som personnamn skulle ge starkt identifierbarhet.",
+              "validation_path": "exact"
+            },
+            "evidence_basis": "high_confidence_no_support"
+          },
+          {
             "category": "context.plats",
             "start": 148,
             "end": 160,
             "text_span": "Mellanöstern",
-            "confidence": 0.95,
-            "source": "context.plats",
+            "confidence": 0.8,
+            "source": "entity.spacy_LOC",
             "metadata": {
-              "deduplicated_sources": [
-                "entity.spacy_LOC"
-              ]
+              "ner_label": "LOC"
             },
-            "evidence_basis": "no_support_required"
-          },
-          {
-            "category": "context.yrke",
-            "start": 36,
-            "end": 46,
-            "text_span": "ordförande",
-            "confidence": 0.85,
-            "source": "context.yrke",
-            "metadata": null,
             "evidence_basis": "no_support_required"
           }
         ],
@@ -1255,6 +1519,16 @@
       {
         "text": "Hej!\n\nEtt förtydligande inför konferensen: Karin och hennes fru Lisa bor på samma rum under övernattningen. Bokningsavdelningen ska notera detta.\n\nMvh,\nAdministrationen",
         "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 108,
+            "end": 127,
+            "text_span": "Bokningsavdelningen",
+            "confidence": 0.95,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
           {
             "category": "context.organisation",
             "start": 152,
@@ -1268,7 +1542,14 @@
             "evidence_basis": "no_support_required"
           }
         ],
-        "false_negatives": []
+        "false_negatives": [
+          {
+            "category": "article9.sexuell_laggning",
+            "start": 53,
+            "end": 68,
+            "text_span": "hennes fru Lisa"
+          }
+        ]
       },
       {
         "text": "Hej Stefan,\n\nJag fick precis bekräftelse från IF Metall att du är registrerad som medlem hos dem. Det innebär att du omfattas av det kollektivavtal vi tecknat.\n\nMvh,\nHR",
@@ -1278,7 +1559,7 @@
             "start": 46,
             "end": 55,
             "text_span": "IF Metall",
-            "confidence": 0.95,
+            "confidence": 0.98,
             "source": "context.organisation",
             "metadata": {
               "deduplicated_sources": [
@@ -1300,7 +1581,14 @@
             "evidence_basis": "no_support_required"
           }
         ],
-        "false_negatives": []
+        "false_negatives": [
+          {
+            "category": "article9.fackmedlemskap",
+            "start": 66,
+            "end": 96,
+            "text_span": "registrerad som medlem hos dem"
+          }
+        ]
       },
       {
         "text": "Hej Anna,\n\nJag vill informera om att Maja har gått med i Lärarförbundet sedan förra månaden. Hon har bett om att få delta i deras utbildningsdagar den 12 mars.\n\nMvh,\nPer",
@@ -1311,13 +1599,31 @@
         "text": "Hej Johan,\n\nFör att hantera löneförhandlingen korrekt behöver vi veta om Lars är medlem i Unionen eller Akademikerförbundet SSR. Han har tidigare nämnt att han betalar fackkontingent till Unionen.\n\nMvh,\nEkonomi",
         "false_positives": [
           {
-            "category": "article9.fackmedlemskap",
-            "start": 81,
-            "end": 127,
-            "text_span": "medlem i Unionen eller Akademikerförbundet SSR",
+            "category": "context.organisation",
+            "start": 90,
+            "end": 97,
+            "text_span": "Unionen",
             "confidence": 0.95,
-            "source": "article9.fackmedlemskap",
-            "metadata": null,
+            "source": "context.organisation",
+            "metadata": {
+              "deduplicated_sources": [
+                "entity.spacy_ORG"
+              ]
+            },
+            "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.organisation",
+            "start": 104,
+            "end": 127,
+            "text_span": "Akademikerförbundet SSR",
+            "confidence": 0.95,
+            "source": "context.organisation",
+            "metadata": {
+              "deduplicated_sources": [
+                "entity.spacy_ORG"
+              ]
+            },
             "evidence_basis": "no_support_required"
           }
         ],
@@ -1336,7 +1642,7 @@
             "start": 95,
             "end": 116,
             "text_span": "Göteborgs universitet",
-            "confidence": 0.97,
+            "confidence": 0.98,
             "source": "context.organisation",
             "metadata": {
               "deduplicated_sources": [
@@ -1364,6 +1670,16 @@
               ]
             },
             "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "article9.halsodata",
+            "start": 92,
+            "end": 123,
+            "text_span": "akut tandvård för hennes dotter",
+            "confidence": 0.95,
+            "source": "article9.halsodata",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
           }
         ],
         "false_negatives": []
@@ -1371,6 +1687,16 @@
       {
         "text": "Professor Lars Eriksson, rektor på Hvitfeldtska gymnasiets musiklinje, meddelade personalen att de förväntade sig ett ökat antal elever.",
         "false_positives": [
+          {
+            "category": "context.yrke",
+            "start": 0,
+            "end": 9,
+            "text_span": "Professor",
+            "confidence": 0.95,
+            "source": "context.yrke",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
           {
             "category": "article4.namn",
             "start": 10,
@@ -1408,16 +1734,6 @@
         "text": "Sjuksköterskan på intensivvården vid Sahlgrenska Universitetssjukhuset i Göteborg tog emot patienten från Hallands sjukhus.",
         "false_positives": [
           {
-            "category": "context.organisation",
-            "start": 106,
-            "end": 122,
-            "text_span": "Hallands sjukhus",
-            "confidence": 0.97,
-            "source": "context.organisation",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          },
-          {
             "category": "context.plats",
             "start": 106,
             "end": 114,
@@ -1434,24 +1750,13 @@
       },
       {
         "text": "Förläggaren för den nya elbilen, Volvo Cars, har etablerat ett produktionscenter i Trollhättan. De anställda där arbetar som montörer och mekaniker med hög specialisering inom elbilsteknik.",
-        "false_positives": [
-          {
-            "category": "context.yrke",
-            "start": 138,
-            "end": 147,
-            "text_span": "mekaniker",
-            "confidence": 0.95,
-            "source": "context.yrke",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
+        "false_positives": [],
         "false_negatives": [
           {
-            "category": "context.kombination",
-            "start": 33,
+            "category": "context.yrke",
+            "start": 125,
             "end": 133,
-            "text_span": "Volvo Cars, har etablerat ett produktionscenter i Trollhättan. De anställda där arbetar som montörer"
+            "text_span": "montörer"
           }
         ]
       },
@@ -1459,6 +1764,12 @@
         "text": "Avdelningschefen på vårdcentralen i Karlskoga diskuterade med den nya sjuksköterskan om patientflödet.",
         "false_positives": [],
         "false_negatives": [
+          {
+            "category": "context.yrke",
+            "start": 70,
+            "end": 84,
+            "text_span": "sjuksköterskan"
+          },
           {
             "category": "context.organisation",
             "start": 20,
@@ -1474,47 +1785,12 @@
       },
       {
         "text": "Den första kvinnliga produktionschefen på Volvo Cars Skövde, som rekryterades från huvudkontoret förra hösten, kommer att tala på branschkonferensen i juni.",
-        "false_positives": [
-          {
-            "category": "context.plats",
-            "start": 53,
-            "end": 59,
-            "text_span": "Skövde",
-            "confidence": 0.99,
-            "source": "context.plats",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
+        "false_positives": [],
         "false_negatives": []
       },
       {
         "text": "Det nya lagret på industrivägen öppnar i morgon och de första anställda börjar sin utbildning. Den ansvariga förlogistikstrategen, som flyttat hit från huvudkontoret i Stockholm, har gett tydliga instruktioner om hur man ska hantera den höga arbetsbelastningen.",
-        "false_positives": [
-          {
-            "category": "context.kombination",
-            "start": 95,
-            "end": 177,
-            "text_span": "Den ansvariga förlogistikstrategen, som flyttat hit från huvudkontoret i Stockholm",
-            "confidence": 0.89,
-            "source": "context.kombination",
-            "metadata": {
-              "reasoning": "Kombinationen av en specifik yrkesroll (logistikstrateg) och två specifika platsinformationer (industrivägen och Stockholm) gör det möjligt att identifiera en individ, särskilt om personen är känd inom logistik eller har kopplingar till huvudkontoret i Stockholm.",
-              "validation_path": "normalized"
-            },
-            "evidence_basis": "high_confidence_no_support"
-          },
-          {
-            "category": "context.plats",
-            "start": 18,
-            "end": 31,
-            "text_span": "industrivägen",
-            "confidence": 0.85,
-            "source": "context.plats",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
+        "false_positives": [],
         "false_negatives": [
           {
             "category": "context.yrke",
@@ -1528,15 +1804,25 @@
         "text": "Under mötesdagen diskuterade projektledaren och den ekonomiska experten från huvudkontoret om de nya budgetplanerna för deras gemensamma projekt i Uppsala.",
         "false_positives": [
           {
+            "category": "context.organisation",
+            "start": 77,
+            "end": 90,
+            "text_span": "huvudkontoret",
+            "confidence": 0.97,
+            "source": "context.organisation",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
             "category": "context.kombination",
             "start": 29,
             "end": 154,
             "text_span": "projektledaren och den ekonomiska experten från huvudkontoret om de nya budgetplanerna för deras gemensamma projekt i Uppsala",
-            "confidence": 0.88,
+            "confidence": 0.85,
             "source": "context.kombination",
             "metadata": {
-              "reasoning": "Kombinationen av två specifika yrkesroller (projektledare och ekonomisk expert) samt en namngiven plats (Uppsala) kan i vissa kontexter göra en individ identifierbar, särskilt om det finns begränsat antal personer med dessa roller i Uppsala.",
-              "validation_path": "exact"
+              "reasoning": "Kombinationen av specifik yrkesroll (projektledare och ekonomisk expert) samt en specifik organisation (huvudkontoret) och plats (Uppsala) ger tillräcklig identifierbarhet för en person med viss kunskap om projektet.",
+              "validation_path": "reconstructed"
             },
             "evidence_basis": "high_confidence_no_support"
           }
@@ -1551,20 +1837,37 @@
             "start": 16,
             "end": 73,
             "text_span": "projektledare på den kommunala vårdcentralen i Karlskrona",
-            "confidence": 0.92,
+            "confidence": 0.93,
             "source": "context.kombination",
             "metadata": {
-              "reasoning": "Kombinationen av en specifik yrkesroll (projektledare), en namngiven plats (Karlskrona) och en organisation (den kommunala vårdcentralen) gör det möjligt att identifiera en individ, särskilt för någon med lokal- och organisationskännedom.",
+              "reasoning": "Kombinationen av en specifik yrkesroll (projektledare) och en specifik plats (den kommunala vårdcentralen i Karlskrona) ger tillräcklig identifierbarhet för en person med viss lokal kunskap.",
               "validation_path": "exact"
             },
             "evidence_basis": "high_confidence_no_support"
           }
         ],
-        "false_negatives": []
+        "false_negatives": [
+          {
+            "category": "context.organisation",
+            "start": 37,
+            "end": 60,
+            "text_span": "kommunala vårdcentralen"
+          }
+        ]
       },
       {
         "text": "På mötet diskuterade vi med den nya ekonomichefen hur projektet skulle drivas framåt. Han har tidigare arbetat som konsult inom IT-sektorn, men är nu ansvarig för vår avdelning här på fabriken i Borås.",
         "false_positives": [
+          {
+            "category": "context.organisation",
+            "start": 184,
+            "end": 200,
+            "text_span": "fabriken i Borås",
+            "confidence": 0.98,
+            "source": "context.organisation",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
           {
             "category": "context.kombination",
             "start": 36,
@@ -1573,7 +1876,7 @@
             "confidence": 0.85,
             "source": "context.kombination",
             "metadata": {
-              "reasoning": "Kombinationen av en specifik yrkesroll (ekonomichef) och en namngiven plats (Borås) gör det möjligt att identifiera en individ, särskilt om det finns viss bakgrundsinformation om personalen i fabriken i Borås.",
+              "reasoning": "Kombinationen av en specifik yrkesroll (ekonomichef) och en specifik plats (fabriken i Borås) ger tillräcklig identifierbarhet för den som har viss kännedom om organisationens struktur.",
               "validation_path": "reconstructed"
             },
             "evidence_basis": "high_confidence_no_support"
@@ -1585,12 +1888,22 @@
         "text": "Det var en anställd på receptionen som berättade att de nya systemen för bokning av mötesrum skulle bli tillgängliga i höst. Hon nämnde också att personalen på IT-avdelningen jobbade hårt med det, men att det fortfarande var lite oklart när exakt de skulle vara färdiga.",
         "false_positives": [
           {
-            "category": "context.plats",
+            "category": "context.organisation",
+            "start": 160,
+            "end": 174,
+            "text_span": "IT-avdelningen",
+            "confidence": 0.98,
+            "source": "context.organisation",
+            "metadata": null,
+            "evidence_basis": "no_support_required"
+          },
+          {
+            "category": "context.organisation",
             "start": 23,
             "end": 34,
             "text_span": "receptionen",
-            "confidence": 0.75,
-            "source": "context.plats",
+            "confidence": 0.95,
+            "source": "context.organisation",
             "metadata": null,
             "evidence_basis": "no_support_required"
           }
@@ -1636,31 +1949,20 @@
       },
       {
         "text": "Lagledningen på konferensen diskuterade vikten av att anställa fler medarbetare med erfarenhet inom dataanalys och digital marknadsföring för att möta framtidens utmaningar.",
-        "false_positives": [
-          {
-            "category": "context.plats",
-            "start": 16,
-            "end": 27,
-            "text_span": "konferensen",
-            "confidence": 0.6,
-            "source": "context.plats",
-            "metadata": null,
-            "evidence_basis": "no_support_required"
-          }
-        ],
-        "false_negatives": [
-          {
-            "category": "context.yrke",
-            "start": 68,
-            "end": 79,
-            "text_span": "medarbetare"
-          }
-        ]
+        "false_positives": [],
+        "false_negatives": []
       },
       {
         "text": "Att jobba som försäljningskonsult i Malmö kan vara utmanande, men också väldigt givande. Det är viktigt att ha god kundservice och ett starkt nätverk för att lyckas.",
         "false_positives": [],
-        "false_negatives": []
+        "false_negatives": [
+          {
+            "category": "context.yrke",
+            "start": 14,
+            "end": 33,
+            "text_span": "försäljningskonsult"
+          }
+        ]
       },
       {
         "text": "På mötet diskuterade vi behovet av fler lärare inom den digitala utbildningen i Stockholm.",
@@ -1694,13 +1996,13 @@
         "false_positives": [
           {
             "category": "context.kombination",
-            "start": 33,
+            "start": 46,
             "end": 65,
-            "text_span": "tjänster som ekonomichef i Malmö",
-            "confidence": 0.92,
+            "text_span": "ekonomichef i Malmö",
+            "confidence": 0.85,
             "source": "context.kombination",
             "metadata": {
-              "reasoning": "Kombinationen av en specifik yrkesroll (ekonomichef) och en namngiven plats (Malmö) kan i vissa kontexter göra en individ identifierbar, särskilt om det finns begränsat antal kandidater med detta yrke i den specifika orten.",
+              "reasoning": "Kombinationen av en specifik yrkesroll (ekonomichef) och en specifik plats (Malmö) ger tillräcklig identifierbarhet för att skapa pusselbitseffekten, särskilt i en kontext där det finns många ansökningar.",
               "validation_path": "exact"
             },
             "evidence_basis": "high_confidence_no_support"
@@ -1710,37 +2012,37 @@
       }
     ],
     "per_dimension": {
-      "identifiability_none": 88,
-      "identifiability_indirect": 12,
+      "identifiability_none": 84,
+      "identifiability_indirect": 16,
       "identifiability_direct": 59,
-      "data_class_none": 120,
-      "data_class_special": 39,
+      "data_class_none": 121,
+      "data_class_special": 38,
       "data_class_criminal": 0
     }
   },
   "evidence_basis_breakdown": {
     "total": {
       "structural_support": {
-        "tp": 4,
-        "fp": 1
+        "tp": 5,
+        "fp": 2
       },
       "high_confidence_no_support": {
         "tp": 4,
-        "fp": 5
+        "fp": 9
       },
       "no_support_required": {
-        "tp": 205,
-        "fp": 38
+        "tp": 203,
+        "fp": 59
       }
     },
     "context_kombination_only": {
       "structural_support": {
-        "tp": 4,
-        "fp": 1
+        "tp": 5,
+        "fp": 2
       },
       "high_confidence_no_support": {
         "tp": 4,
-        "fp": 5
+        "fp": 9
       },
       "no_support_required": {
         "tp": 0,
