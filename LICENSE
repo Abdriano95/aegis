@@ -19,3 +19,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-------------------------------------------------------------------------------
+NOTE ON DATA (informational; not part of the MIT license terms above)
+
+All test, evaluation, and demonstration data in this repository is synthetic.
+All personal data (names of individuals, national identification numbers,
+e-mail addresses, phone numbers, health data, and other special categories of
+personal data) is entirely fabricated and does not refer to, describe, or
+derive from any real person. Organisation and authority names that appear
+(e.g. Volvo, Ericsson, SEB, Sahlgrenska Universitetssjukhuset, Högskolan i
+Borås) are public entities used solely as realistic, non-identifying examples
+and imply no connection to, data about, or involvement of those organisations.
+See DATA.md for the full statement.
+-------------------------------------------------------------------------------

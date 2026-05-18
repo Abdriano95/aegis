@@ -2,6 +2,17 @@
 
 A layered Python pipeline for automatic GDPR text classification.
 
+> ⚠️ **All test- och utvärderingsdata i detta repo är syntetisk.**
+> Samtliga personuppgifter (namn på individer, personnummer, e-post,
+> telefonnummer samt hälso- och andra känsliga uppgifter) är helt
+> fabricerade och avser, beskriver eller härrör inte från någon verklig
+> person. Förekommande organisations- och myndighetsnamn (t.ex. Volvo,
+> Ericsson, SEB, Sahlgrenska Universitetssjukhuset, Högskolan i Borås) är
+> offentliga entiteter som används enbart som realistiska,
+> icke-individidentifierande exempel och innebär ingen koppling till,
+> data om eller medverkan av dessa organisationer. Se [DATA.md](DATA.md)
+> för fullständig redogörelse.
+
 ### Miljösetup
 
 ```bash
