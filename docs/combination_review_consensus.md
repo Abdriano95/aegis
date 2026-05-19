@@ -430,14 +430,16 @@ Beror egentligen på kontext. Det står inget företagsnamn. "kontoret" borde va
 
 **Underrepresenterade celler som behöver manuell komplettering:** Cell 1 tappade 2 entries (entries 7 och 8) och är nu 7 — acceptabelt men tight. Cell 2 är nere på 6 efter att entry 13 strukits — fungerar men kan behöva en ny gränsfallsentry. Rekommendation: generera minst 1 ny Cell 1 Regel C-entry och överväg 1 ny Cell 2-entry.
 
-**Divergenspunkter mellan granskarna:**
+**Divergenspunkter mellan granskarna (7 st, verifierade per-entry mot de oberoende arken `combination_review_abdulla.md` och `combination_review_johanna.md`):**
 
 | Entry | Abdulla | Johanna | Konsensus | Motivering |
 |---|---|---|---|---|
-| 6 | Justera | Stryk | Justera | Texten håller men annoteringar korrigeras (yrke=låg, organisation=låg) |
-| 9 | Justera | Stryk | Justera | Texten är identifierbar — behålls med rättade annoteringar (plats=Stockholm, organisation tas bort) |
+| 6 | Justera | Stryk | Justera (behållen) | Texten håller men annoteringar korrigeras (yrke=låg, organisation=låg) |
+| 7 | Justera | Stryk | Stryk | "kontoret" är ingen organisation → inget aggregat → Regel C ej uppfylld |
+| 8 | Justera | Stryk | Stryk | "Förstärkningen" är inte ett yrke → Regel C ej uppfylld |
+| 9 | Justera | Stryk | Justera (behållen) | Texten är identifierbar — behålls med rättade annoteringar (plats=Stockholm, organisation tas bort) |
 | 13 | Stryk | Justera | Stryk | Texten är för generell; "anställda" och "ledning" ger inte identifierbar signal ens med korrigering |
 | 23 | Behåll | Justera | Justera | Malmö ska vara låg enligt guiden — annoteringskorrigering krävs |
 | 29 | Justera | Stryk | Stryk | "lokala" är ingen plats; texten ger inte tillräcklig signal för Cell 4 |
 
-**Övergripande kommentar:** Granskarna var eniga om de flesta beslut — samtliga Cell 3-entries godkänns, entries 7 och 8 stryks av båda (ingen organisation eller korrekt yrkesbeteckning = Regel C uppfylls inte), och stockholms-/malmö-problematiken identifierades oberoende av varandra. Det vanligaste annotationsfelet är att storstäder klassificeras som "mellan" när de ska vara "låg". Övriga systematiska fel: felaktiga organisationsspann i entries 1–3 (musiklinje vs Hvitfeldtska gymnasiet), saknade plats- och organisationssignaler i entries 11 och 16, och "banksektorn" i entry 27 är inte ett yrke. Konsensus löste fem divergenspunkter: entry 6 och 9 behålls (texterna är identifierbara men annoteringar fel), entry 13 stryks (texten räddas inte via korrigering), entry 23 justeras (Malmö=låg), entry 29 stryks (lokala inte en plats).
+**Övergripande kommentar:** Granskarna var eniga om 22 av 29 entries (75,9 % strikt enighet på beslutsnivå) — samtliga Cell 3-entries godkändes och stockholms-/malmö-problematiken identifierades oberoende av varandra. De 7 divergenspunkterna var entries 6, 7, 8, 9, 13, 23 och 29. Notera: entries 7 och 8 var **inte** eniga i den oberoende FAS B-granskningen (Abdulla=Justera, Johanna=Stryk) — de löstes till Stryk först i konsensus via guiden, inte genom initial enighet. Det vanligaste annotationsfelet är att storstäder klassificeras som "mellan" när de ska vara "låg". Övriga systematiska fel: felaktiga organisationsspann i entries 1–3 (musiklinje vs Hvitfeldtska gymnasiet), saknade plats- och organisationssignaler i entries 11 och 16, och "banksektorn" i entry 27 är inte ett yrke. Konsensus löste sju divergenspunkter via annoteringsguiden: entry 6 och 9 behålls (identifierbara men annoteringar fel), entries 7, 8, 13 och 29 stryks, entry 23 justeras (Malmö=låg).

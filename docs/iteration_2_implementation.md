@@ -380,10 +380,21 @@ FAS B-granskning och komplettering.
   mot GDPR artikel 9.1, IMY:s vägledning och EU-domstolens dom
   C-184/20 (OT-domen, 1 augusti 2022, ECLI:EU:C:2022:601).
 - Genomförde oberoende FAS B-granskning: JG och AM granskade alla 60
-  kandidater separat. Inter-rater agreement: 58,3% (25 avvikelser av
-  60 kandidater). Avvikelserna koncentrerade till kategorier med subtila
-  gränsdragningar (politisk_asikt, religios_overtygelse, fackmedlemskap,
-  sexuell_laggning). Samtliga avvikelser löstes via annoteringsguiden utan subjektiv kompromiss. Konsensus: 31 behåll, 5 justera, 24 stryk.
+  kandidater separat (källa: `Artikel 9 testdata utvärdering - Blad1.csv`,
+  kolumnerna J: och A:). Verifierad per-entry-jämförelse: 32 entries klar
+  enighet, 18 klar oenighet, 10 obestämbara (≥1 granskare avgav inget
+  definitivt beslut — koncentrerat till religios_overtygelse, entries
+  19–23, och fackmedlemskap, entries 25–28). Strikt enighet på de 50
+  par där båda avgav definitivt beslut: 32/50 = 64,0 %. Negativa
+  kontroller hade 12/12 = 100 % enighet. De 18 klara oenigheterna
+  fördelas över halsodata (4), etniskt_ursprung (3), politisk_asikt (4),
+  fackmedlemskap (2), biometrisk_data (2), genetisk_data (1),
+  sexuell_laggning (2). Samtliga fall löstes via annoteringsguiden utan
+  subjektiv kompromiss. Konsensus (verifierad mot K-kolumnen): 31 behåll,
+  5 justera, 24 stryk.
+  *Errata: tidigare angiven siffra "58,3 % / 25 avvikelser av 60" var
+  ej reproducerbar från arket under någon enskild transparent regel och
+  är ersatt av ovanstående verifierade nedbrytning (2026-05-19).*
 - Identifierade att tre kategorier var kritiskt underrepresenterade
   efter strykning (politisk_asikt: 2, religios_overtygelse: 2,
   sexuell_laggning: 2). Genererade 16 kompletterande kandidater
@@ -551,8 +562,8 @@ Privacy by Design-principen uppfylls eftersom IBAN-fyndet bevarar rätt sensitiv
 
 **Gjort:**
 - Körde FAS A-genereringsskriptet mot gemma2:9b lokalt på Abdullas maskin. 29 kandidater producerades, 1 droppad (Cell 1 Regel A: text_span under 5 tecken). Validatorn passerade 29/29 entries.
-- Genomförde oberoende FAS B-granskning av båda annotörerna mot kandidatfilen. Inter-rater agreement: 22/29 = 75,9% strikt enighet. Avvikelser koncentrerade till Cell 1 där 4 av 5 divergenser handlade om Justera vs Stryk (Abdulla mer benägen att rädda entries via justering, Johanna mer benägen att stryka). Konsensus löstes via guiden utan subjektiv kompromiss.
-- Konsensusbeslut: 25 entries behållna (varav 21 justerade), 4 strukna (entries 7, 8, 13, 29). Vanligaste annoteringsfelet i FAS A var att storstäder klassificerats som "mellan" specificitet trots att guidens 4.2 explicit listar Stockholm/Göteborg/Malmö som låg specificitet (storstadsområden över 200 000 invånare). Andra återkommande fel: felaktiga organisationsspann i entries 1-3 (musiklinje vs Hvitfeldtska gymnasiet), saknade plats- och organisationssignaler i entries 11 och 16, "banksektorn" felaktigt klassat som yrke i entry 27.
+- Genomförde oberoende FAS B-granskning av båda annotörerna mot kandidatfilen. Inter-rater agreement: 22/29 = 75,9% strikt enighet (verifierad per-entry mot de oberoende arken `combination_review_abdulla.md` och `combination_review_johanna.md`). 7 divergenspunkter (entries 6, 7, 8, 9, 13, 23, 29), varav 6 på Justera↔Stryk-axeln (Abdulla mer benägen att rädda entries via justering, Johanna mer benägen att stryka) och 1 på Behåll↔Justera (entry 23). 4 av de 7 låg i Cell 1 (entries 6–9). Konsensus löstes via guiden utan subjektiv kompromiss.
+- Konsensusbeslut: 25 entries behållna (varav 17 justerade, 8 oförändrade — enligt konsensusarkets per-entry-beslut i `docs/combination_review_consensus.md`), 4 strukna (entries 7, 8, 13, 29). Vanligaste annoteringsfelet i FAS A var att storstäder klassificerats som "mellan" specificitet trots att guidens 4.2 explicit listar Stockholm/Göteborg/Malmö som låg specificitet (storstadsområden över 200 000 invånare). Andra återkommande fel: felaktiga organisationsspann i entries 1-3 (musiklinje vs Hvitfeldtska gymnasiet), saknade plats- och organisationssignaler i entries 11 och 16, "banksektorn" felaktigt klassat som yrke i entry 27.
 - Cell 1 Regel C tappade 2 av 3 entries efter strykningar (endast entry 9 kvar) och kvarvarande entry omklassades till Cell 2 efter att organisation tagits bort. Genererade 2 manuellt kompletterande Regel C-entries med direkt span-verifiering — båda triggar Regel C via två signaler med minst mellan specificitet plus hög narrativ specificitet (tidsmarkör, händelsereferens, demografisk detalj).
 - Slutfördelning: Cell 1 Regel A (4), Regel B (3), Regel C (2); Cell 2 (5); Cell 3 (6); Cell 4 (7). Totalt 27 entries inom 25-35-intervallet.
 - Validerade slutdatasetet via `scripts/validate_combination_dataset.py`. Aggregat-konsistensregeln (Mekanism A: aggregat.start = min(starts), aggregat.end = max(ends)) nödvändiggjorde justering av Regel C-aggregatens spans så att narrativ kontext faller utanför aggregat-spannet. Detta är konsistent med vad CombinationLayer producerar enligt #72.
