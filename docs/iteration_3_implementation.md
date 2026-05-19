@@ -1601,3 +1601,19 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 **Gjort:** Två Major-fynd (robusthet, sammanföll med vår egen dokumenterade "hoppa trasig indata, krascha ej"-intention) åtgärdade. Två Minor-fynd avböjda med motivering kommenterade på PR:en: (1) nolldelta `+0.0 pp` grönt — kosmetiskt, endast vid exakt lika mätvärden, defererat; (2) RUF001 Unicode-minus — ingen Ruff/CI-lint-gate i repot, kodbasen använder `Δ`/`—`/`·` genomgående, repo-bred policyfråga utanför I-21. Verifiering: `pytest tests/` 246/246 grönt; `list_snapshots()` 23, katalog-/saknad-sökväg → `None`, `resolve_prompt_version("article9","latest")=="v5"`.
 
 **Statustabell - oförändrad.** #142 (I-21) kvarstår ✅ Klar (granskningsfixar, ingen omöppning).
+
+### Session 2026-05-18 - Claude Code (Opus 4.7) — Teknisk stack-inventering (kapitel 4-underlag)
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Producera ett strukturerat inventeringsunderlag över artefaktens fullständiga tekniska stack för avsnitt 4.1.x "Teknisk stack" (underlag, ej rapportprosa). Ej en numrerad issue — ingen statustabellsändring.
+
+**Ändrade filer:**
+- `docs/tech_stack_inventory.md` — **ny fil.** Sammanfattningstabell, per-kategori-beskrivning, faktarutor per verktyg, motiveringsbehov, död/kvarvarande kod, kronologisk tidslinje iter 1→3.
+- `docs/iteration_3_implementation.md` — denna sessionspost.
+
+**Gjort:** Full repo-skanning på `main` (HEAD `21b9417`): `pyproject.toml` + `git log -p`, alla `import`-rader (helrepo, `.venv` exkl.), LLM-providers, `entity_layer.py`, Lager 1-recognizers, `.env.example`, `README.md`, `.claude/settings.json`. Versionskolumn dubbel källa per användarbeslut (pyproject-specifier + lokalt observerad `.venv`-version, ej auktoritativ — repot saknar lock-fil). Verifierat och flaggat: `GeminiProvider` (`5312490` 2026-04-30) och `AnthropicProvider` (`91a573d` 2026-05-17, Beslut 60) är **båda mergade till `main`** (avvikelse mot spec-regel 7:s antagande) — listade som "implementerad, icke-produktion, behållen för reproducerbarhet". Upptäckt vid skanning, ej i pyproject: `tiktoken`/`transformers` i `tools/measure_prompt_tokens.py`. Övriga anomalier flaggade: ofullständig `[all]`-extra (CLAUDE.md↔README-inkonsekvens), pyproject `version="0.1.0"` vs `v0.3.0-dev`, Ruff/mypy avsedda men ej konfig./installerade. Inga befintliga filer ändrade utöver denna sessionspost.
+
+**Beslut fattade:** Inga (rent dokumentationsunderlag; designbeslut hör till Loggboken, ej här).
+
+**Öppet/Nästa steg:** Abdulla/Johanna formulerar om till rapportprosa i 4.1.x. Git (add/commit/push) hanteras manuellt av teamet — ingen commit i denna session.
