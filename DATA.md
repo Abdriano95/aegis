@@ -1,10 +1,14 @@
 # Datadeklaration
 
 > Auktoritativ, kortfattad deklaration om all data i detta repo. Den
-> fullständiga metodologiska redogörelsen (curation rationale, Data
-> Statement enligt Bender & Friedman 2018, granskningsprotokoll, kända
-> begränsningar) finns i [`tests/data/iteration_2/data_statement.md`](tests/data/iteration_2/data_statement.md)
+> fullständiga metodologiska redogörelsen för iteration 2:s dataset
+> (Lager 3/4 — curation rationale, Data Statement enligt Bender &
+> Friedman 2018, granskningsprotokoll, kända begränsningar) finns i
+> [`tests/data/iteration_2/data_statement.md`](tests/data/iteration_2/data_statement.md)
 > och [`tests/data/iteration_2/README.md`](tests/data/iteration_2/README.md).
+> Iteration 1:s dataset (Lager 1/2) konstruerades med en annan, mindre
+> formaliserad metod som beskrivs i
+> [`tests/data/iteration_1/README.md`](tests/data/iteration_1/README.md).
 
 ## All testdata är syntetisk
 
@@ -27,11 +31,16 @@ utan begränsning:
 - hälsouppgifter och övriga särskilda kategorier av personuppgifter
   enligt GDPR artikel 9 samt uppgifter enligt artikel 10.
 
-Texterna skapades enligt en hybridmetod: språkmodellsgenererade
-kandidater (FAS A) följt av oberoende manuell granskning med
-konsensuskrav (FAS B). Inga verkliga personuppgifter har vid något
-tillfälle hanterats, samlats in eller behandlats i projektet
-(Privacy by Design). Eventuell likhet mellan ett syntetiskt namn och en
+Texterna skapades med olika metoder beroende på iteration. Iteration
+1:s dataset (Lager 1/2, `tests/data/iteration_1/`) konstruerades
+manuellt av projektteamet mot issue-specifikationer, med ett
+engångsskript enbart för att beräkna korrekta teckenpositioner och
+validera checksummor — ingen språkmodell genererade innehållet.
+Iteration 2:s dataset (Lager 3/4, `tests/data/iteration_2/`) skapades
+enligt en formaliserad hybridmetod: språkmodellsgenererade kandidater
+(FAS A) följt av oberoende manuell granskning med konsensuskrav
+(FAS B). Inga verkliga personuppgifter har vid något tillfälle
+hanterats, samlats in eller behandlats i projektet (Privacy by Design). Eventuell likhet mellan ett syntetiskt namn och en
 verklig person är en oavsiktlig och statistiskt ofrånkomlig egenskap hos
 fabricerad provdata och innebär ingen koppling till den personen.
 
