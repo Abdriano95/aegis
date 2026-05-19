@@ -1617,3 +1617,21 @@ Probe-arbetet på Issue #107 är komplett. Inga ytterligare checkpoints planeras
 **Beslut fattade:** Inga (rent dokumentationsunderlag; designbeslut hör till Loggboken, ej här).
 
 **Öppet/Nästa steg:** Abdulla/Johanna formulerar om till rapportprosa i 4.1.x. Git (add/commit/push) hanteras manuellt av teamet — ingen commit i denna session.
+
+### Session 2026-05-19 - Claude Code (Opus 4.7) — Demotexter iteration 3 i Fritext-analys-vyn
+
+**Iteration:** 3 / v0.3.0-dev
+
+**Mål:** Lägga till tre nya syntetiska demotexter i Fritext-analys-vyn som tydligt triggar iteration 3:s leveranser, märkta med härledd känslighetsnivå, som demonstrationsunderlag inför I-18:s naturalistiska utvärdering. Ej en numrerad issue — ingen statustabellsändring.
+
+**Ändrade filer:**
+- `demo/layout.py` — `_DEMO_TEXTS` utökad 3 → 6 poster.
+- `docs/iteration_3_implementation.md` — denna sessionspost.
+
+**Gjort:** Lade till `Text 4: HÖG` (HR-ärende: direkt identifierare + artikel 9 → HÖG; lång text som även exercerar kontextfönster-fixen, Beslut 50), `Text 5: MEDEL` (anonym visselblåsarrapport: indirekt identifierbar via pusselbitar + artikel 9 → MEDEL; visar plats-omklassning Beslut 53 och Cross-Validating Aggregatorns transparensmärkning I-7a–g) och `Text 6: LÅG` (generisk fallbeskrivning: ingen identifierbar person + artikel 9 → LÅG; överklassificeringsskydd via tvådimensionsmodellen Beslut 37/49 + bortfall av falska adressfynd). Samtliga texter är syntetiska. Knapparna och `fill_demo_text`-callbacken är datadrivna från `_DEMO_TEXTS` (layout via `enumerate`, callback via `range(len(...))`), så de tre nya knapparna autokopplas utan callback-ändring. Befintliga Text 1–3 orörda. Verifiering: `ast.parse` + import rent, `freetext_tab_layout()` bygger sex knappar (nya texter 1009 / 892 / 756 tecken), inga tester refererar dicten.
+
+**Beslut fattade:** Inga (demo-innehåll; inga arkitektur- eller designbeslut).
+
+**Öppet/Nästa steg:** Kör de tre texterna genom pipelinen och pinna dem i en demo-ögonblicksbild före I-18-mötet, eftersom artikel 9- och kombinationslagren är LLM-drivna och inte fullt deterministiska. Fler/större varianter (t.ex. flersidig kontextfönster-text eller kontrasttext utan strukturellt stöd) kan tas fram på begäran.
+
+**Statustabell - oförändrad.** Demo-prep inför I-18; ej en spårad I-row, ingen statustabellsändring (samma princip som sessionen 2026-05-18).

@@ -19,6 +19,57 @@ _DEMO_TEXTS = {
         "Den nya rektorn på Hvitfeldtska gymnasiets fick utmärkelsen "
         "i fjol efter sitt arbete med ensembleundervisning."
     ),
+    "Text 4: HÖG": (
+        "Internt HR-ärende 2026-0418, sammanställning inför uppföljningsmöte\n\n"
+        "Medarbetare: Karin Lindqvist, anställd som logistiksamordnare sedan "
+        "2019. Kontaktuppgifter enligt personalsystemet: "
+        "karin.lindqvist@nordstromlogistik.se, mobil 070-413 88 21.\n\n"
+        "Bakgrund: Karin har varit sjukskriven på heltid sedan den 3 mars efter "
+        "att företagshälsovården ställt diagnosen utmattningssyndrom. Två "
+        "rehabiliteringssamtal har hållits. Karin uppger att hon under perioden "
+        "även genomgått utredning för en kronisk inflammatorisk tarmsjukdom och "
+        "att hon medicinerar dagligen, samt att hon av hälsoskäl behöver slippa "
+        "nattskift.\n\n"
+        "Vid det senaste samtalet nämnde Karin att hon och hennes fru planerar "
+        "att flytta närmare arbetsplatsen för att korta restiden. Hon bad också "
+        "om att få gå ifrån en eftermiddag i månaden för möten i den lokala "
+        "församling där hon är aktiv, och önskade ledigt för att fira en högtid "
+        "med familjen i mitten av maj.\n\n"
+        "Chefens bedömning och planerad åtgärd dokumenteras separat. Ärendet "
+        "följs upp vid nästa möte."
+    ),
+    "Text 5: MEDEL": (
+        "Visselblåsarrapport, inkommen 2026-05-09 via extern "
+        "rapporteringskanal, anonym anmälare\n\n"
+        "Anmälan rör påstådda missförhållanden i en offentlig verksamhet. "
+        "Anmälaren har valt att inte uppge namn eller kontaktuppgifter.\n\n"
+        "Personen som anmälan gäller namnges aldrig i underlaget, men beskrivs "
+        "enligt följande: hen är regionens enda barnkardiolog, arbetar vid "
+        "Region Bergslagens enhet i Degerfors och har enligt anmälaren suttit i "
+        "den lokala fackklubbens styrelse de senaste fyra åren. Anmälaren uppger "
+        "vidare att personen var sjukskriven under hösten och att flera kollegor "
+        "kände till orsaken.\n\n"
+        "Anmälaren beskriver ett upprepat agerande som anmälaren menar avviker "
+        "från verksamhetens rutiner. Ingen brottsrubricering anges.\n\n"
+        "Notering från mottagningsfunktionen: underlaget innehåller inga direkta "
+        "identifikationsuppgifter, men kombinationen av yrkesroll, arbetsgivare "
+        "och ort är ovanligt specifik."
+    ),
+    "Text 6: LÅG": (
+        "Anonymiserad fallbeskrivning, internt utbildningsmaterial i "
+        "bemötande\n\n"
+        "En patient i 50-årsåldern söker vård för återkommande ledvärk och "
+        "trötthet. Patienten har sedan tidigare en autoimmun diagnos och "
+        "behandlas med immundämpande läkemedel. Av anteckningen framgår att "
+        "patienten nyligen kommit till Sverige, att tolk anlitades och att "
+        "patienten uppger att liknande besvär är vanliga i släkten.\n\n"
+        "Vårdcentralen i Hjo remitterade patienten vidare till sjukhuset i "
+        "Skövde för utredning. Uppföljning planeras i samband med en kommande "
+        "patientutbildning på konferensen i höst.\n\n"
+        "Fallet används enbart i utbildningssyfte. Inga namn, personnummer eller "
+        "kontaktuppgifter förekommer, och beskrivningen är medvetet generell så "
+        "att ingen enskild person kan identifieras."
+    ),
 }
 
 
