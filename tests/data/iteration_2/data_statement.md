@@ -29,7 +29,39 @@ Målet är att simulera de kontexter där ostrukturerade personuppgifter vanligt
 
 ## 6. Text Characteristics
 
-[Fylls i FAS B] (Detaljer kring textlängd, register och exakt ämnesfördelning per artikel 9-kategori efter granskning.)
+Slutdatasetet (`article9_dataset.json`) består av 52 syntetiska svenska
+texter: 40 positiva och 12 negativa kontroller. Texterna är 105–440
+tecken långa (medel 212, median 202; positiva 120–440, negativa
+kontroller 105–217) och utgör arbetsplatskommunikation (e-post, chatt,
+interna anteckningar, ärendeloggar). Totalt 44 positiva fynd, varav 4
+entries innehåller fler än ett fynd. Fördelning per artikel 9-kategori:
+
+| Kategori | Entries | Fynd |
+|---|---|---|
+| article9.halsodata | 5 | 7 |
+| article9.etniskt_ursprung | 0 | 0 |
+| article9.politisk_asikt | 6 | 6 |
+| article9.religios_overtygelse | 6 | 6 |
+| article9.fackmedlemskap | 6 | 6 |
+| article9.biometrisk_data | 6 | 6 |
+| article9.genetisk_data | 5 | 7 |
+| article9.sexuell_laggning | 6 | 6 |
+| **Summa** | **40** | **44** |
+
+**Känd begränsning — `article9.etniskt_ursprung` saknar entries.**
+Kategorin är en giltig artikel 9-kategori i annoteringsguiden
+(`docs/annotation_guidelines.md` sektion 4.2), men guidens strikta
+IMY-baserade kriterium skiljer etniskt ursprung från nationalitet,
+medborgarskap och geografisk hemvist och kräver att uppgiften avslöjar
+etnicitet om en identifierbar person. Samtliga sex FAS A-kandidater för
+kategorin underkändes i FAS B-konsensus eftersom de uttryckte
+nationalitet/födelseland/geografi snarare än etnicitet, eller inte var
+kopplade till en identifierbar person. Kategorin kompletterades inte
+manuellt. Article9Layers prestanda för `article9.etniskt_ursprung` kan
+därför inte mätas mot detta dataset (TP = FN = 0, recall odefinierad)
+och redovisas som N/A — konsistent med per-kategori-tabellen i
+`docs/iteration_3_utvardering.md`. Detta är en känd och dokumenterad
+begränsning, ej en tyst lucka.
 
 ## 7. Recording Quality
 
@@ -93,7 +125,7 @@ Datasetet består av 27 syntetiskt genererade svenska texter, fördelade enligt:
 - Cell 3 (inga signaler): 6 entries
 - Cell 4 (signaler men inte identifierande): 7 entries
 
-Texterna är 30-260 tecken långa och representerar arbetsplatskontexter (e-post, interna anteckningar, ärendeloggar). Totalt 46 individuella signaler (yrke 22, plats 14, organisation 10) plus 9 aggregat-fynd av typ `context.kombination`. Texternas innehåll är fiktivt; inga verkliga personer, händelser eller direkta personuppgifter förekommer.
+Texterna är 81-270 tecken långa (medel 157, median 155) och representerar arbetsplatskontexter (e-post, interna anteckningar, ärendeloggar). Totalt 46 individuella signaler (yrke 22 — varav hög 3, mellan 13, låg 6; plats 14 — varav hög 1, mellan 5, låg 8; organisation 10 — varav hög 5, mellan 4, låg 1) plus 9 aggregat-fynd av typ `context.kombination` (samtliga `is_identifiable=true`). Texternas innehåll är fiktivt; inga verkliga personer, händelser eller direkta personuppgifter förekommer.
 
 ### 10.7 Recording Quality
 

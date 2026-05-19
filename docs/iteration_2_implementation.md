@@ -399,10 +399,21 @@ FAS B-granskning och komplettering.
   efter strykning (politisk_asikt: 2, religios_overtygelse: 2,
   sexuell_laggning: 2). Genererade 16 kompletterande kandidater
   manuellt med riktad prompt och direkt span-verifiering.
+- `article9.etniskt_ursprung` föll till 0 entries: samtliga 6 FAS
+  A-kandidater underkändes i konsensus (nationalitet/geografi ≠
+  etnicitet enligt guidens IMY-kriterium, eller ej kopplat till
+  identifierbar person) och kategorin kompletterades INTE manuellt.
+  Kategorin saknar därför ground truth i slutdatasetet och redovisas
+  som N/A — dokumenterat i data_statement.md sektion 6 och konsistent
+  med per-kategori-tabellen i docs/iteration_3_utvardering.md.
 - Validerade slutlig dataset via scripts/validate_article9_dataset.py.
   Alla 52 kandidater schema-giltiga, inga span-fel.
-- 52/52 texter schema-giltiga, 0 fel, 0 varningar. 44 totala fynd
-  fördelade på 40 positiva (6-7 per kategori) och 12 negativa kontroller utan fynd.
+- 52/52 texter schema-giltiga, 0 fel, 0 varningar. 44 fynd i 40
+  positiva entries plus 12 negativa kontroller utan fynd. Fördelning
+  (entries/fynd): halsodata 5/7, etniskt_ursprung 0/0, politisk_asikt
+  6/6, religios_overtygelse 6/6, fackmedlemskap 6/6, biometrisk_data
+  6/6, genetisk_data 5/7, sexuell_laggning 6/6. Textlängd 105–440
+  tecken (medel 212). 4 entries har fler än ett fynd.
 
 **Beslut fattade:** Kompletterande generering genomfördes manuellt
 utanför genereringsskriptet för de tre tunna kategorierna.
