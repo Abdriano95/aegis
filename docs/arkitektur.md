@@ -1340,7 +1340,7 @@ Designcykel 3:s utfall utgör underlag för Formalization of Learning (separat f
 
 ## 12. Beslut att dokumentera i loggboken
 
-Följande designbeslut ska dokumenteras löpande, som råmaterial för designprinciper (delfråga 1.1) och arkitekturell lösning (delfråga 1.2):
+Följande designbeslut ska dokumenteras löpande, som råmaterial för arkitekturell lösning (delfråga 1) och designprinciper (delfråga 4):
 
 - Varför lageruppdelning valdes framför monolitisk klassificering
 - Varför alla lager får samma input (parallell pipeline) istället för sekventiell kedja

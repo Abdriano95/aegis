@@ -208,3 +208,6 @@ __marimo__/
 /CLAUDE.md
 .claude/settings.local.json
 .claude/settings.json
+
+# Lokal Google Drive-spegling
+googledrivemappar/
